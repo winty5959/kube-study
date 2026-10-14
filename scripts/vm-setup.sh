@@ -33,7 +33,9 @@ fi
 mkdir -p "$HOME/.kube"
 sudo install -m 600 -o "$USER" -g "$USER" /etc/rancher/k3s/k3s.yaml "$HOME/.kube/config"
 # k3s' kubectl falls back to the root-only /etc/rancher/k3s/k3s.yaml unless KUBECONFIG is set
-echo 'export KUBECONFIG=$HOME/.kube/config' | sudo tee /etc/profile.d/kubeconfig.sh >/dev/null
+printf '%s\n' 'export KUBECONFIG=$HOME/.kube/config' \
+  'case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH=$HOME/.local/bin:$PATH ;; esac' \
+  | sudo tee /etc/profile.d/kubeconfig.sh >/dev/null
 sed -i '/^export KUBECONFIG=/d' "$HOME/.bashrc"
 # ~/.bashrc returns early for non-interactive shells, so `ssh host cmd` needs it before that guard
 grep -q 'kubeconfig.sh' "$HOME/.bashrc" || sed -i '1i . /etc/profile.d/kubeconfig.sh' "$HOME/.bashrc"
