@@ -59,10 +59,8 @@ services:
   api:
     image: album-api:local
     build: { context: apps/api, args: { APP_VERSION: local } }
-    environment:
-      <<: *app-env
-      # Presigned URLs are signed for this host; it must equal what the browser requests
-      S3_PUBLIC_ENDPOINT: ${PUBLIC_URL:-http://localhost:8088}
+    # S3_PUBLIC_ENDPOINT unset: presigned URLs are signed for the Host the browser used
+    environment: *app-env
     read_only: true
     tmpfs: [/tmp]
     depends_on:

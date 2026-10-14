@@ -23,7 +23,6 @@ def client(monkeypatch):
         "DATABASE_URL": "postgresql://u:p@127.0.0.1:1/db?connect_timeout=1",
         "REDIS_URL": "redis://127.0.0.1:1/0",
         "S3_ENDPOINT": "http://127.0.0.1:1",
-        "S3_PUBLIC_ENDPOINT": "http://127.0.0.1:1",
         "S3_ACCESS_KEY": "test",
         "S3_SECRET_KEY": "test",
         "MAX_UPLOAD_BYTES": "1024",
@@ -83,6 +82,37 @@ def test_upload_rejects_oversize(client):
 
 def test_invalid_id_is_404(client):
     assert client.get("/api/photos/not-a-uuid").status_code == 404
+
+
+def test_public_endpoint_follows_request_host():
+    from starlette.requests import Request
+
+    from app.main import _public_endpoint
+
+    def request(settings_endpoint: str, headers: dict) -> Request:
+        app = type("A", (), {})()
+        app.state = type("S", (), {})()
+        app.state.settings = type("C", (), {"s3_public_endpoint": settings_endpoint})()
+        raw = [(k.lower().encode(), v.encode()) for k, v in headers.items()]
+        scope = {
+            "type": "http",
+            "app": app,
+            "headers": raw,
+            "scheme": "http",
+            "server": ("api", 8000),
+            "path": "/",
+            "query_string": b"",
+        }
+        return Request(scope)
+
+    assert _public_endpoint(request("", {"host": "album.dev.local:8080"})) == (
+        "http://album.dev.local:8080"
+    )
+    assert (
+        _public_endpoint(request("", {"host": "album.local", "x-forwarded-proto": "https"}))
+        == "https://album.local"
+    )
+    assert _public_endpoint(request("http://fixed:9000", {"host": "x"})) == "http://fixed:9000"
 
 
 def test_metrics_exposed(client):

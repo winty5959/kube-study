@@ -2,6 +2,7 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+from functools import lru_cache
 from urllib.parse import quote
 
 import redis
@@ -40,8 +41,11 @@ async def lifespan(app: FastAPI):
     app.state.pool = pool
     app.state.redis = rds
     app.state.s3 = storage.client(s.s3_endpoint, s.s3_access_key, s.s3_secret_key)
-    # Presigned URLs are signed for the host the browser will call, not the in-cluster name
-    app.state.s3_public = storage.client(s.s3_public_endpoint, s.s3_access_key, s.s3_secret_key)
+    # Presigned URLs are signed for the host the browser will call, not the in-cluster name.
+    # Clients are cached per public endpoint; bounded so arbitrary Host headers cannot grow it.
+    app.state.s3_public = lru_cache(maxsize=8)(
+        lambda endpoint: storage.client(endpoint, s.s3_access_key, s.s3_secret_key)
+    )
     app.state.buckets_ready = False
     log.info("api %s starting on %s", s.app_version, s.pod_name)
     yield
@@ -73,11 +77,21 @@ async def observe(request: Request, call_next):
     return response
 
 
+def _public_endpoint(request: Request) -> str:
+    """Where the browser reaches object storage: the configured value, or else the same
+    scheme://host it used to reach the api (Ingress routes /originals and /thumbnails)."""
+    s: Settings = request.app.state.settings
+    if s.s3_public_endpoint:
+        return s.s3_public_endpoint
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    return f"{scheme}://{request.headers.get('host', request.url.netloc)}"
+
+
 def _presign(request: Request, bucket: str, key: str | None, **params) -> str | None:
     if not key:
         return None
     s: Settings = request.app.state.settings
-    return request.app.state.s3_public.generate_presigned_url(
+    return request.app.state.s3_public(_public_endpoint(request)).generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket, "Key": key, **params},
         ExpiresIn=s.presign_ttl_seconds,

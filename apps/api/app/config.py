@@ -15,8 +15,9 @@ class Settings:
     database_url: str = field(default_factory=lambda: _env("DATABASE_URL"))
     redis_url: str = field(default_factory=lambda: _env("REDIS_URL"))
     s3_endpoint: str = field(default_factory=lambda: _env("S3_ENDPOINT"))
-    # Endpoint the browser uses for presigned URLs (goes through the gateway/Ingress)
-    s3_public_endpoint: str = field(default_factory=lambda: _env("S3_PUBLIC_ENDPOINT"))
+    # Endpoint the browser uses for presigned URLs (goes through the gateway/Ingress).
+    # Empty = derive it from the request Host, so it works behind any tunnel port.
+    s3_public_endpoint: str = field(default_factory=lambda: _env("S3_PUBLIC_ENDPOINT", ""))
     s3_access_key: str = field(default_factory=lambda: _env("S3_ACCESS_KEY"))
     s3_secret_key: str = field(default_factory=lambda: _env("S3_SECRET_KEY"))
     bucket_originals: str = field(default_factory=lambda: _env("BUCKET_ORIGINALS", "originals"))
