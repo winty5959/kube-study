@@ -5,7 +5,7 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | M0 완료 (2026-10-14), M1 착수 대기 |
+| 상태 | M1 완료 (2026-10-14), M2 착수 대기 |
 
 ---
 
@@ -96,6 +96,9 @@ PRD는 "VM은 사설망, 인바운드 미개방"을 가정한다. 작업 PC 브�
 | CPU 아키텍처 | amd64 통일 (VM, GitHub 러너 모두 amd64 → 멀티아키 빌드 불필요) |
 | Python 패키지 관리 | uv (`pyproject.toml` + `uv.lock`, Dockerfile에서도 uv 사용) |
 | SSH 키 | 프로젝트 전용 `~/.ssh/kube-study` (ed25519) 신규 생성 |
+| 오브젝트 스토리지 | MinIO 유지. 공식 이미지 배포 중단·저장소 archive로 마지막 릴리스(`RELEASE.2025-10-15T17-29-55Z`)를 `infra/minio/`에서 소스 빌드해 `ghcr.io/winty5959/album-minio`로 사용 (2026-10-14 사용자 결정). SeaweedFS·RustFS는 미채택 |
+| Python 버전 | 3.13 고정 (`.python-version`, Docker 베이스 `python:3.13-slim-bookworm`) |
+| DB 마이그레이션 | Alembic 대신 순번 SQL 파일 + `python -m app.migrate` (테이블 1개라 충분, 학습 시 읽기 쉬움) |
 
 ---
 
@@ -106,7 +109,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | 단계 | 산출물 | 검증 |
 |---|---|---|
 | **M0 기반 준비** (완료) | GitHub 레포 생성, 디렉터리 골격, README, Azure dev VM 생성 스크립트 + 실행, K3S 설치, SSH 터널 스크립트, kubeconfig context 등록 | 작업 PC에서 `kubectl --context k3s-dev get nodes` → Ready |
-| **M1 로컬 동작** | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
+| **M1 로컬 동작** (완료) | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
 | **M2 수동 배포** | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
 | **M3 헬스/리소스/Job** | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 수행 가능 |
 | **M4 관측성** | `infra/` kube-prometheus-stack values, ServiceMonitor, 커스텀 메트릭 5종, 대시보드 1~5 JSON + sidecar ConfigMap | 대시보드에 실데이터 표시 |
@@ -129,8 +132,17 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 
 설치된 버전 (dev VM): K3S v1.36.5+k3s1, Docker 29.9.0, Compose v5.6.0, uv 0.13.1, Helm v3.22.0, kubeseal 0.40.0, argocd v3.5.5, k6 v2.3.0
 
-### 2.2 알려진 한계
+### 2.2 M1 결과
 
+완료 (2026-10-14). 상세 절차와 검증 결과는 [local-compose.md](local-compose.md).
+
+- api(FastAPI), worker(Pillow), frontend(정적 + nginx-unprivileged), MinIO 소스 빌드 이미지, docker-compose(Ingress 역할의 gateway 포함), `scripts/smoke.py`(E2E, PostSync 훅에서 재사용 예정)
+- 검증: compose 전체 기동, smoke 통과, 깨진 파일 → FAILED, worker 강제 종료 후 작업 복구, Postgres 중단 시 readyz 503 / healthz 200, 모든 앱 컨테이너 non-root·read-only root FS
+- M2 이후로 넘긴 것: PROCESSING에 남은 작업 재시도는 M3 cleanup CronJob, MinIO 이미지 GHCR 푸시는 M2(클러스터가 pull해야 하므로) 또는 M7
+
+### 2.3 알려진 한계
+
+- MinIO upstream이 archive되어 보안 패치가 없다. M7 Trivy 스캔(HIGH 이상 실패)에서 걸리면 예외 처리할지 다른 S3 구현으로 바꿀지 다시 결정한다.
 - 단일 노드라 `kubectl drain`으로 PDB를 검증할 수 없다. `kubectl get pdb`와 eviction API 호출로 대체 검증하고 문서에 한계를 적는다.
 - 단일 노드 `local-path` 스토리지는 노드 장애 시 데이터가 보호되지 않는다 (PRD 5.2). Longhorn은 확장 과제.
 - Burstable VM의 CPU 크레딧 영향 (1.3 참고).
