@@ -1,0 +1,32 @@
+[project]
+name = "album-api"
+version = "0.1.0"
+requires-python = "==3.13.*"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "python-multipart>=0.0.12",
+    "psycopg[binary,pool]>=3.2",
+    "redis>=5.2",
+    "boto3>=1.35",
+    "prometheus-client>=0.21",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "httpx>=0.28", "ruff>=0.8"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# FastAPI declares parameters as `File(...)` / `Query(...)` defaults by design
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
