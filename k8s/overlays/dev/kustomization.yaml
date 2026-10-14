@@ -11,9 +11,9 @@ resources:
 # From M7 CI rewrites newTag here with the pushed sha-<commit> tag.
 images:
   - name: ghcr.io/winty5959/album-api
-    newTag: dev-m3
+    newTag: dev-m3b
   - name: ghcr.io/winty5959/album-worker
-    newTag: dev-m3
+    newTag: dev-m3b
   - name: ghcr.io/winty5959/album-frontend
     newTag: dev-m2b
 

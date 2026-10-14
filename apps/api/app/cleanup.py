@@ -89,6 +89,8 @@ def main() -> None:
     if stale_s <= 0 or grace_s <= 0:
         raise RuntimeError("cleanup age thresholds must be positive")
     logging.basicConfig(level=s.log_level)
+    for sdk_logger in ("boto3", "botocore", "urllib3"):
+        logging.getLogger(sdk_logger).setLevel(logging.WARNING)
     with (
         psycopg.connect(s.database_url, row_factory=dict_row, autocommit=True) as conn,
         redis.Redis.from_url(s.redis_url, socket_timeout=5, socket_connect_timeout=3) as queue,

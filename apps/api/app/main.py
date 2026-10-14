@@ -29,6 +29,8 @@ PHOTO_COLUMNS = (
 async def lifespan(app: FastAPI):
     s = Settings()
     logging.basicConfig(level=s.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    for sdk_logger in ("boto3", "botocore", "urllib3"):
+        logging.getLogger(sdk_logger).setLevel(logging.WARNING)
     # open(wait=False): the process starts even if Postgres is down; /readyz reports it instead
     # check=: validate a pooled connection before use, so requests right after a Postgres
     # restart get a fresh connection instead of a 500 from a dead socket (AdminShutdown)

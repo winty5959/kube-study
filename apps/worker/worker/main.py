@@ -190,6 +190,8 @@ class Worker:
 def main() -> None:
     s = Settings()
     logging.basicConfig(level=s.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    for sdk_logger in ("boto3", "botocore", "urllib3"):
+        logging.getLogger(sdk_logger).setLevel(logging.WARNING)
     w = Worker(s)
 
     def stop(signum, _frame):
