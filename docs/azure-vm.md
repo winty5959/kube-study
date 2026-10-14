@@ -2,6 +2,8 @@
 
 dev/prod K3S 노드는 KT Open Tenant의 Azure VM이다. 결정 배경은 [plan.md](plan.md) 1.3을 본다.
 
+> 일상적인 켜기·접속·끄기는 [server-access.md](server-access.md)를 본다. 이 문서는 VM 생성·삭제와 리소스 구성을 다룬다.
+
 ## 구성
 
 | 리소스 | 이름 | 비고 |

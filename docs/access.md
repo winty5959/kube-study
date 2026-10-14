@@ -2,6 +2,8 @@
 
 VM은 SSH(22)만 열려 있다. 앱, ArgoCD/Grafana UI, Kubernetes API는 SSH 터널로 작업 PC에 끌어와서 쓴다. 결정 배경은 [plan.md](plan.md) 1.4를 본다.
 
+> 서버 켜기·접속·터널·끄기 전체 흐름과 문제 해결은 [server-access.md](server-access.md)에 정리되어 있다. 이 문서는 터널 포트 배치와 kubeconfig 등록 상세만 다룬다.
+
 ## 포트 배치
 
 | 대상 (VM 쪽) | dev → 작업 PC | prod → 작업 PC |

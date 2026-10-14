@@ -4,6 +4,7 @@
 서비스 자체보다 Pod 분리, 오토스케일링(HPA/KEDA), 관측성, 장애 대응, GitOps CI/CD를 직접 겪어 보는 것이 목적이다.
 
 - 작업 계획과 확정된 결정 사항: [docs/plan.md](docs/plan.md)
+- 서버 켜기·접속·SSH 터널·끄기: [docs/server-access.md](docs/server-access.md)
 
 ## 구성
 
