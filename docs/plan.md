@@ -5,7 +5,7 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | M1 완료 (2026-10-14), M2 착수 대기 |
+| 상태 | M2 완료 (2026-10-14), M3 착수 대기 |
 
 ---
 
@@ -110,7 +110,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 |---|---|---|
 | **M0 기반 준비** (완료) | GitHub 레포 생성, 디렉터리 골격, README, Azure dev VM 생성 스크립트 + 실행, K3S 설치, SSH 터널 스크립트, kubeconfig context 등록 | 작업 PC에서 `kubectl --context k3s-dev get nodes` → Ready |
 | **M1 로컬 동작** (완료) | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
-| **M2 수동 배포** | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
+| **M2 수동 배포** (완료) | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
 | **M3 헬스/리소스/Job** | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 수행 가능 |
 | **M4 관측성** | `infra/` kube-prometheus-stack values, ServiceMonitor, 커스텀 메트릭 5종, 대시보드 1~5 JSON + sidecar ConfigMap | 대시보드에 실데이터 표시 |
 | **M5 오토스케일링** | HPA(api), KEDA ScaledObject(worker), `loadtest/` k6 스크립트와 대량 업로드 스크립트, `ARTIFICIAL_DELAY_MS` | E-02, E-03 기록 |
@@ -138,9 +138,19 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 
 - api(FastAPI), worker(Pillow), frontend(정적 + nginx-unprivileged), MinIO 소스 빌드 이미지, docker-compose(Ingress 역할의 gateway 포함), `scripts/smoke.py`(E2E, PostSync 훅에서 재사용 예정)
 - 검증: compose 전체 기동, smoke 통과, 깨진 파일 → FAILED, worker 강제 종료 후 작업 복구, Postgres 중단 시 readyz 503 / healthz 200, 모든 앱 컨테이너 non-root·read-only root FS
-- M2 이후로 넘긴 것: PROCESSING에 남은 작업 재시도는 M3 cleanup CronJob, MinIO 이미지 GHCR 푸시는 M2(클러스터가 pull해야 하므로) 또는 M7
+- M2 이후로 넘긴 것: PROCESSING에 남은 작업 재시도는 M3 cleanup CronJob
 
-### 2.3 알려진 한계
+### 2.3 M2 결과
+
+완료 (2026-10-14). 상세 절차와 검증 결과는 [k8s-dev.md](k8s-dev.md).
+
+- `k8s/base`(StatefulSet 3, Deployment 3, Job, Ingress, configMapGenerator) + `k8s/overlays/dev`(namespace, 이미지 태그, DEBUG 로그, secretGenerator, host)
+- 이미지 전달: GHCR 대신 VM에서 빌드해 K3S containerd에 직접 import (`scripts/build-images.sh`). GHCR 푸시는 M7(CI)에서 시작. 이미지 이름은 처음부터 GHCR 이름 사용
+- Secret: VM에만 있는 `k8s/overlays/dev/secrets.env`(gitignore, `scripts/k8s-secrets.sh`로 생성) → M8에서 SealedSecret으로 교체
+- presigned URL을 요청 Host 기준으로 서명하도록 api 변경 (터널 포트와 무관하게 동작)
+- 검증: VM 안 Traefik과 작업 PC 터널 양쪽에서 smoke 통과, Pod 삭제 후 자가 복구, StatefulSet 재기동 후 데이터 유지
+
+### 2.4 알려진 한계
 
 - MinIO upstream이 archive되어 보안 패치가 없다. M7 Trivy 스캔(HIGH 이상 실패)에서 걸리면 예외 처리할지 다른 S3 구현으로 바꿀지 다시 결정한다.
 - 단일 노드라 `kubectl drain`으로 PDB를 검증할 수 없다. `kubectl get pdb`와 eviction API 호출로 대체 검증하고 문서에 한계를 적는다.

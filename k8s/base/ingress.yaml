@@ -1,0 +1,31 @@
+# Path-based routing on K3S' bundled Traefik. The host is patched per overlay.
+#   /api/                       -> api
+#   /originals/, /thumbnails/   -> minio (presigned GETs; Host is forwarded unchanged,
+#                                  which SigV4 signature verification requires)
+#   /                           -> frontend
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: album
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: album.example
+      http:
+        paths:
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service: { name: api, port: { name: http } }
+          - path: /originals/
+            pathType: Prefix
+            backend:
+              service: { name: minio, port: { name: s3 } }
+          - path: /thumbnails/
+            pathType: Prefix
+            backend:
+              service: { name: minio, port: { name: s3 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { name: http } }

@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: album-dev
+
+resources:
+  - namespace.yaml
+  - ../../base
+
+# M2-M6: images are built on the VM and imported into K3S (scripts/build-images.sh).
+# From M7 CI rewrites newTag here with the pushed sha-<commit> tag.
+images:
+  - name: ghcr.io/winty5959/album-api
+    newTag: dev-m2b
+  - name: ghcr.io/winty5959/album-worker
+    newTag: dev-m2b
+  - name: ghcr.io/winty5959/album-frontend
+    newTag: dev-m2b
+
+configMapGenerator:
+  - name: album-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=DEBUG
+
+# secrets.env is created on the VM by scripts/k8s-secrets.sh and is gitignored.
+# M8 replaces this generator with SealedSecrets committed to Git.
+secretGenerator:
+  - name: album-secrets
+    envs:
+      - secrets.env
+
+patches:
+  - target: { kind: Ingress, name: album }
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: album.dev.local
