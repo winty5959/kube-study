@@ -3,7 +3,9 @@
 쿠버네티스 학습용 작은 사진 앨범 서비스. 이미지를 업로드하면 worker가 비동기로 썸네일을 만든다.
 서비스 자체보다 Pod 분리, 오토스케일링(HPA/KEDA), 관측성, 장애 대응, GitOps CI/CD를 직접 겪어 보는 것이 목적이다.
 
+- 요구사항 원문(PRD v1.1): [docs/prd.md](docs/prd.md)
 - 작업 계획과 확정된 결정 사항: [docs/plan.md](docs/plan.md)
+- 학습 실험 E-01~E-15 상세 명세와 기록 템플릿: [docs/experiments/](docs/experiments/README.md)
 - 서버 켜기·접속·SSH 터널·끄기: [docs/server-access.md](docs/server-access.md)
 
 ## 구성

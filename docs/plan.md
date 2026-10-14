@@ -3,7 +3,7 @@
 | 항목 | 내용 |
 |---|---|
 | 작성일 | 2026-10-14 |
-| 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용) |
+| 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용). 원문은 [prd.md](prd.md), 실험 E-01~E-15 상세는 [experiments/README.md](experiments/README.md) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
 | 상태 | M3 완료 (2026-10-15), M4 진행 중 |
 
