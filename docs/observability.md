@@ -1,0 +1,23 @@
+# 관측성 운영과 검증
+
+VM에서 `scripts/install-monitoring.sh dev`를 실행한다. kube-prometheus-stack
+92.7.0에 Prometheus, Alertmanager, Grafana, node-exporter, kube-state-metrics를
+설치한다. K3S 내장 제어 평면의 별도 scrape endpoint는 비활성화한다.
+데이터는 local-path PVC에 저장하며 Prometheus 보존 기간은 2일이다.
+
+Grafana 관리자 계정은 VM에서 생성한 monitoring/grafana-admin Secret을
+사용한다. 비밀번호와 평문 Secret은 Git에 저장하지 않는다. SSH 터널을 통해
+grafana.dev.local에 접근한다.
+
+`dashboards/`의 JSON 5개는 sidecar가 ConfigMap에서 자동으로 읽는다.
+서비스 개요, 큐와 worker 수, API CPU와 replica 수, Pod 리소스와 재시작,
+썸네일 처리 시간을 표시한다. API와 worker는 ServiceMonitor로 15초마다 수집한다.
+필수 알림은 큐 100 초과 5분, API 5xx 비율 5% 초과 2분,
+CrashLoopBackOff 1분이다.
+
+2026-10-15 dev VM에서 `uv run --python 3.13 scripts/check-observability.py dev`가
+종료 코드 0으로 완료됐다. Grafana API로 5개 대시보드의 등록을 확인하고
+20개 패널의 모든 PromQL 대상에서 유한한 실제 표본을 확인했다.
+Prometheus API로 필수 알림 3개의 등록도 확인했다. 업로드부터 삭제까지
+smoke 검증이 통과했다. UI 스크린샷과 부하 중 시계열 증거는 실험 단계에서
+추가한다. 알림 등록 검증만으로 실제 발화를 주장하지 않는다.

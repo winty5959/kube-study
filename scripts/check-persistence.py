@@ -20,11 +20,17 @@ def main() -> None:
     boundary = uuid.uuid4().hex
     original = smoke.png(1200, 600)
     body = (
-        f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
-        'filename="persistence.png"\r\nContent-Type: image/png\r\n\r\n'
-    ).encode() + original + f"\r\n--{boundary}--\r\n".encode()
+        (
+            f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
+            'filename="persistence.png"\r\nContent-Type: image/png\r\n\r\n'
+        ).encode()
+        + original
+        + f"\r\n--{boundary}--\r\n".encode()
+    )
     status, _, response = smoke.request(
-        "POST", "/api/photos", body,
+        "POST",
+        "/api/photos",
+        body,
         {"Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
     assert status == 202
@@ -43,12 +49,30 @@ def main() -> None:
         )
         for name in ("postgres", "redis", "minio"):
             subprocess.run(
-                ["kubectl", "-n", "album-dev", "rollout", "status",
-                 f"statefulset/{name}", "--timeout=180s"], check=True,
+                [
+                    "kubectl",
+                    "-n",
+                    "album-dev",
+                    "rollout",
+                    "status",
+                    f"statefulset/{name}",
+                    "--timeout=180s",
+                ],
+                check=True,
             )
         subprocess.run(
-            ["kubectl", "-n", "album-dev", "wait", "--for=condition=Ready", "pod",
-             "-l", "app.kubernetes.io/name=api", "--timeout=120s"], check=True,
+            [
+                "kubectl",
+                "-n",
+                "album-dev",
+                "wait",
+                "--for=condition=Ready",
+                "pod",
+                "-l",
+                "app.kubernetes.io/name=api",
+                "--timeout=120s",
+            ],
+            check=True,
         )
         recovered = json.loads(smoke.request("GET", f"/api/photos/{photo_id}")[2])
         assert recovered["status"] == "DONE"
@@ -56,7 +80,10 @@ def main() -> None:
         assert smoke.request("GET", f"/api/photos/{photo_id}/original")[2] == original
         for field, size in (("thumb_small_url", (200, 100)), ("thumb_medium_url", (800, 400))):
             assert smoke.webp_size(smoke.request("GET", recovered[field])[2]) == size
-        print("E-08 passed: metadata, original and two thumbnails survived all stateful Pod replacements")
+        print(
+            "E-08 passed: metadata, original and two thumbnails survived "
+            "all stateful Pod replacements"
+        )
     finally:
         smoke.request("DELETE", f"/api/photos/{photo_id}")
 
