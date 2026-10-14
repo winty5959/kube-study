@@ -1,0 +1,26 @@
+# Secrets and credentials (only SealedSecrets may be committed)
+*.secret.yaml
+*-secret.yaml
+!*sealed*.yaml
+.env
+.env.*
+*.pem
+*.key
+kubeconfig*
+sealed-secrets-key*
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Agent artifacts
+graphify-out/
+.codegraph/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

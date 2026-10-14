@@ -1,0 +1,140 @@
+# 작업 계획서: Mini Photo Album on K3S
+
+| 항목 | 내용 |
+|---|---|
+| 작성일 | 2026-10-14 |
+| 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용) |
+| 저장소 | https://github.com/winty5959/kube-study (public) |
+| 상태 | 계획 확정, M0 착수 대기 |
+
+---
+
+## 1. 확정된 결정 사항
+
+### 1.1 PRD 미결 사항(Open Questions) 결정
+
+| # | 질문 | 결정 |
+|---|---|---|
+| Q-01 | Git 호스팅 | GitHub (`winty5959/kube-study`). CI는 GitHub Actions, 레지스트리는 GHCR |
+| Q-02 | GHCR 패키지 공개 여부 | **public**. imagePullSecret 관리 생략 |
+| Q-03 | 작업 PC에서 Ingress/ArgoCD UI 접근 방식 | **SSH 터널(A안)**. 아래 1.4 참고 |
+
+### 1.2 저장소 운영
+
+| 항목 | 결정 |
+|---|---|
+| 구조 | PRD 8장의 디렉터리 구조를 레포 루트에 바로 배치 (`apps/ k8s/ argocd/ infra/ loadtest/ dashboards/ docs/ scripts/ .github/`) |
+| 브랜치 | 학습용이므로 `main` 직접 커밋. M7 이후 prod 승격만 Release PR |
+| 커밋 | 기능 단위로 분리. 비자명한 결정은 Lore 트레일러 사용. 메시지는 영어 |
+| 문서 | 한국어. 실험 결과는 `docs/experiments/E-XX.md` |
+| 보안 | 평문 Secret, kubeconfig, sealed-secrets 개인키, `.venv`는 `.gitignore` |
+| gh 인증 | `gh auth login` 대신 셸 환경변수 `GITHUB_TOKEN`을 `GH_TOKEN`으로 사용. 토큰 값은 어떤 출력/문서에도 남기지 않음 |
+| CI 권한 | GitHub Actions에는 기본 `GITHUB_TOKEN`만 사용. 클러스터 인증 정보는 CI에 두지 않음 |
+
+### 1.3 Azure 인프라
+
+| 항목 | 결정 |
+|---|---|
+| 테넌트 / 구독 | KT Open Tenant / `AX사업부문-인프라아키텍처팀` |
+| 리전 | `koreacentral` |
+| 리소스 그룹 | `rg-seonung-kube-study` (신규) |
+| VM 크기 | `Standard_B4as_v2` (4 vCPU / 16 GiB, amd64, on-demand) |
+| OS / 디스크 | Ubuntu 24.04 LTS, Standard SSD 64 GiB |
+| 네트워크 | VNet 1개, dev/prod 서브넷. NSG는 작업 PC 공인 IP → 22만 허용. 공인 IP는 SSH 용도로만 부여 |
+| auto-shutdown | 매일 KST 18:00 |
+| prod VM | **M9 직전에 생성**. 실험 외 시간에는 `az vm deallocate`로 꺼둠 |
+| 재현성 | VM 생성은 `infra/azure/` 스크립트로 두어 prod VM을 같은 방식으로 재현 |
+
+예상 비용(2026-10-14 조회, Linux on-demand 기준):
+
+| 구성 | 시간당 | 월 (8h × 22일) | 월 (24×7) |
+|---|---|---|---|
+| B4as_v2 VM | $0.187 | 약 $33 | 약 $137 |
+| Standard SSD E6 64 GiB | - | 약 $4.8 | 동일 |
+| 공인 IP (Standard) | - | 약 $3.6 | 동일 |
+| **dev 1대 합계** | - | **약 $41** | 약 $145 |
+
+검토했으나 채택하지 않은 안:
+
+| SKU | 월 (8h × 22일) | 미채택 사유 |
+|---|---|---|
+| B2as_v2 (2 vCPU / 8 GiB) | 약 $16 | ArgoCD + 모니터링 + 앱 + k6 동시 구동 시 CPU 크레딧 소진 위험. HPA/KEDA 실험 왜곡 가능 |
+| D4as_v5 Spot (4 vCPU / 16 GiB) | 약 $7 | 가장 저렴하고 성능도 좋으나 Azure 용량 부족 시 예고 없이 VM이 꺼짐(eviction). 사용자가 중단 가능성을 받아들이지 않아 미채택 |
+| D4as_v5 on-demand | 약 $37 | B4as_v2보다 비싸고 학습용으로는 성능 차이가 의미 없음 |
+
+주의: B4as_v2는 Burstable이라 부하 테스트(M5) 중 CPU 크레딧이 소진되면 성능이 떨어져 HPA 실험 결과가 왜곡될 수 있다. 실험 시 `CPU Credits Remaining` 메트릭을 함께 기록한다.
+
+### 1.4 접근 방식 (SSH 터널)
+
+PRD는 "VM은 사설망, 인바운드 미개방"을 가정한다. 작업 PC 브라우저에서 앱(`album.dev.local`), ArgoCD UI, Grafana UI를 보고 `kubectl`로 6443에 접근해야 하므로 다음과 같이 한다.
+
+- NSG에서 작업 PC 공인 IP → 22만 허용
+- `scripts/tunnel-dev.sh`로 `ssh -L` 포트 포워딩 (80, 6443, ArgoCD, Grafana)
+- 작업 PC `/etc/hosts`에 `127.0.0.1 album.dev.local` 등록 → `http://album.dev.local:<포워딩 포트>` 접속
+- 작업 PC kubeconfig에 `k3s-dev` / `k3s-prod` context 등록, server 주소는 터널 경유 `127.0.0.1:6443`
+- TLS(cert-manager)는 확장 과제
+
+검토했으나 미채택: Tailscale/VPN(외부 서비스 의존), 80/443 공인 IP 개방(PRD 가정 위배).
+
+### 1.5 작업 위치 (작업 PC vs VM)
+
+작업 PC(맥북)는 디스크 용량이 부족하므로 라이브러리와 이미지는 VM에만 둔다.
+
+| 작업 | 위치 |
+|---|---|
+| 코드/매니페스트 편집, `git commit/push` | 작업 PC (`kube-study/`) |
+| Python venv(`uv sync`), pytest, ruff | VM (작업 PC에 `.venv` 생성 금지) |
+| docker build / compose / 이미지 | VM |
+| kubectl, helm, k6, kubeseal, argocd CLI | VM (작업 PC는 터널 경유 `kubectl` 조회 정도만) |
+| 동기화 | `git push` → VM `git pull`. 빠른 반복용 `scripts/sync.sh`(rsync, `.git`·`.venv` 제외) |
+
+### 1.6 기타
+
+| 항목 | 결정 |
+|---|---|
+| CPU 아키텍처 | amd64 통일 (VM, GitHub 러너 모두 amd64 → 멀티아키 빌드 불필요) |
+| Python 패키지 관리 | uv (`pyproject.toml` + `uv.lock`, Dockerfile에서도 uv 사용) |
+| SSH 키 | 프로젝트 전용 `~/.ssh/kube-study` (ed25519) 신규 생성 |
+
+---
+
+## 2. 마일스톤
+
+PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단계는 "검증" 기준을 통과한 뒤 다음 단계로 넘어간다. M2~M6는 PRD 의도대로 `kubectl apply -k`로 수동 배포한다.
+
+| 단계 | 산출물 | 검증 |
+|---|---|---|
+| **M0 기반 준비** | GitHub 레포 생성, 디렉터리 골격, README, `docs/decisions.md`, Azure dev VM 생성 스크립트 + 실행, K3S 설치, SSH 터널 스크립트, kubeconfig context 등록 | 작업 PC에서 `kubectl --context k3s-dev get nodes` → Ready |
+| **M1 로컬 동작** | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
+| **M2 수동 배포** | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
+| **M3 헬스/리소스/Job** | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 수행 가능 |
+| **M4 관측성** | `infra/` kube-prometheus-stack values, ServiceMonitor, 커스텀 메트릭 5종, 대시보드 1~5 JSON + sidecar ConfigMap | 대시보드에 실데이터 표시 |
+| **M5 오토스케일링** | HPA(api), KEDA ScaledObject(worker), `loadtest/` k6 스크립트와 대량 업로드 스크립트, `ARTIFICIAL_DELAY_MS` | E-02, E-03 기록 |
+| **M6 운영 기능/실험** | PDB, NetworkPolicy(default deny), 롤링 업데이트 전략 | E-01, E-04~E-10 기록 |
+| **M7 CI** | `ci.yaml`(ruff/pytest/buildx/Trivy/GHCR push/dev 태그 bot 커밋, path filter), `release.yaml`(imagetools 재태깅 + prod PR) | main push 시 GHCR에 `sha-xxxxxxx` 이미지와 dev overlay 갱신 커밋 생성 |
+| **M8 GitOps dev** | ArgoCD Helm 설치, `argocd/bootstrap` app-of-apps, Sync Wave, Sealed Secrets(평문 Secret 대체), PreSync/PostSync 훅, 키 백업 절차 문서 | E-11, E-12, E-15 기록 |
+| **M9 prod** | prod VM 생성 → "K3S → ArgoCD → root Application" 3단계로 재현, `k8s/overlays/prod`, Release 워크플로 | E-13, E-14 기록. PRD 완료 기준 2·3 충족 |
+
+### 2.1 M0 세부 작업 순서
+
+1. 레포 생성 → 디렉터리 골격, `.gitignore`(secrets, kubeconfig, `.venv`), README, `docs/decisions.md`
+2. SSH 키 생성 → `infra/azure/` VM 생성 스크립트(RG, VNet, NSG, VM, auto-shutdown) 작성·실행 → `docs/azure-vm.md`
+3. VM 초기화 스크립트 `scripts/vm-setup.sh`: docker, uv, k3s, helm, kubectl, kubeseal, argocd CLI, k6
+4. `scripts/tunnel-dev.sh`(80/6443/ArgoCD/Grafana 포워딩), 작업 PC kubeconfig에 `k3s-dev` context 등록
+5. `scripts/sync.sh`(rsync) 작성
+6. 검증: 작업 PC `kubectl --context k3s-dev get nodes` → Ready
+
+### 2.2 알려진 한계
+
+- 단일 노드라 `kubectl drain`으로 PDB를 검증할 수 없다. `kubectl get pdb`와 eviction API 호출로 대체 검증하고 문서에 한계를 적는다.
+- 단일 노드 `local-path` 스토리지는 노드 장애 시 데이터가 보호되지 않는다 (PRD 5.2). Longhorn은 확장 과제.
+- Burstable VM의 CPU 크레딧 영향 (1.3 참고).
+
+---
+
+## 3. 완료 기준 (PRD 10장)
+
+1. E-01~E-15를 모두 수행하고 결과를 `docs/experiments/`에 기록한다.
+2. prod VM을 초기화한 상태에서 "K3S 설치 → ArgoCD 설치 → root Application apply" 세 단계만으로 서비스 전체(모니터링 포함)가 복구된다.
+3. 코드 push부터 prod 반영까지 `kubectl`을 한 번도 직접 실행하지 않는다.
+4. Grafana 대시보드 1~5번이 dev와 prod 양쪽에서 실제 데이터로 동작한다.
