@@ -38,6 +38,19 @@ spec:
           # Built from source (infra/minio); upstream no longer publishes images
           image: ghcr.io/winty5959/album-minio:RELEASE.2025-10-15T17-29-55Z
           imagePullPolicy: IfNotPresent
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          startupProbe:
+            httpGet: {path: /minio/health/live, port: s3}
+            periodSeconds: 2
+            failureThreshold: 60
+          livenessProbe:
+            httpGet: {path: /minio/health/live, port: s3}
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet: {path: /minio/health/ready, port: s3}
+            timeoutSeconds: 3
           args: ["server", "/data", "--console-address", ":9001"]
           ports:
             - name: s3

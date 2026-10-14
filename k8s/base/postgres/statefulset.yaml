@@ -34,6 +34,19 @@ spec:
       containers:
         - name: postgres
           image: postgres:17-alpine
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          startupProbe:
+            exec: {command: [pg_isready, -U, album, -d, album]}
+            periodSeconds: 2
+            failureThreshold: 60
+          livenessProbe:
+            exec: {command: [pg_isready, -U, album, -d, album]}
+            timeoutSeconds: 3
+          readinessProbe:
+            exec: {command: [pg_isready, -U, album, -d, album]}
+            timeoutSeconds: 3
           ports:
             - name: postgres
               containerPort: 5432

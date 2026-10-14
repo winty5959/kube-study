@@ -83,6 +83,9 @@ kubectl -n album-dev rollout status deploy/api
 - **Postgres 재시작 직후 api 500:** 커넥션 풀이 이미 끊긴 연결을 그대로 내줘서 `AdminShutdown` 에러가 났다. api와 worker의 풀에 `check=ConnectionPool.check_connection`을 넣어, 꺼내기 전에 연결을 확인하게 했다. 수정 후 재시작 직후 5회 연속 200.
 - **버킷 생성 시점:** 버킷을 `/readyz`에서만 만들었는데, M2에는 readiness probe가 없어 아무도 `/readyz`를 부르지 않는다. 첫 업로드 때도 만들도록 바꿨다.
 
-## M3로 넘긴 것
+## M3에서 완료한 것 (2026-10-15)
 
-liveness/readiness probe, requests/limits, Job TTL·재시도 정책, cleanup CronJob(PROCESSING에 남은 작업 재시도, 고아 객체 삭제). 지금은 probe가 없어서 Pod가 뜨자마자 트래픽을 받는다. 시작 직후 worker 로그의 Postgres 연결 경고가 그 흔적이다.
+liveness/readiness/startup probe, requests/limits, Job TTL·실행 시간 제한,
+cleanup CronJob(PROCESSING 작업 재시도, 고아 객체 삭제)을 추가했다.
+API는 dependency가 준비된 뒤 트래픽을 받는다. 검증 결과는
+[E-07](experiments/E-07.md), [E-08](experiments/E-08.md), [cleanup.md](cleanup.md)에 있다.

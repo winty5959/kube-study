@@ -35,6 +35,21 @@ spec:
         - name: worker
           image: ghcr.io/winty5959/album-worker:latest   # tag set by the overlay
           imagePullPolicy: IfNotPresent
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          startupProbe:
+            httpGet: {path: /healthz, port: metrics}
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet: {path: /healthz, port: metrics}
+            timeoutSeconds: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /healthz, port: metrics}
+            timeoutSeconds: 3
+            periodSeconds: 10
           ports:
             - name: metrics
               containerPort: 8001
