@@ -9,7 +9,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # protect: --delete must never remove VM-only files such as the compose .env (credentials)
 rsync -az --delete \
-  --filter='protect .env' --filter='protect .env.*' --filter='protect .venv/' \
+  --filter='protect .env' --filter='protect .env.*' --filter='protect secrets.env' \
+  --filter='protect .venv/' \
   --exclude .git/ --exclude .venv/ --exclude __pycache__/ \
   --exclude .pytest_cache/ --exclude .ruff_cache/ \
   --exclude graphify-out/ --exclude .codegraph/ --exclude .DS_Store \

@@ -4,6 +4,7 @@
 !*sealed*.yaml
 .env
 .env.*
+secrets.env
 *.pem
 *.key
 kubeconfig*
