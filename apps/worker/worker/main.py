@@ -10,6 +10,7 @@ that are gone for good stay PROCESSING in the DB; the cleanup CronJob (M3) retri
 import logging
 import signal
 import time
+from datetime import datetime
 
 import boto3
 import redis
@@ -61,7 +62,9 @@ class Worker:
     def _ack(self, photo_id: str) -> None:
         self.redis.lrem(self.s.processing_key, 1, photo_id)
 
-    def _record_failure(self, photo_id: str, error: str) -> None:
+    def _record_failure(
+        self, photo_id: str, error: str, lease_started_at: datetime | None = None
+    ) -> None:
         """Count a failed attempt; requeue it or mark FAILED once attempts are used up."""
         with self.pool.connection(timeout=10) as conn:
             row = conn.execute(
@@ -70,8 +73,17 @@ class Worker:
                 "   THEN 'FAILED'::photo_status ELSE 'PENDING'::photo_status END,"
                 " error = %s"
                 " WHERE id = %s AND status IN ('PENDING', 'PROCESSING')"
+                " AND (status = 'PENDING' OR processed_by = %s)"
+                " AND (%s::timestamptz IS NULL OR processing_started_at = %s)"
                 " RETURNING status, retry_count",
-                (self.s.max_attempts, error[:1000], photo_id),
+                (
+                    self.s.max_attempts,
+                    error[:1000],
+                    photo_id,
+                    self.s.pod_name,
+                    lease_started_at,
+                    lease_started_at,
+                ),
             ).fetchone()
         pipe = self.redis.pipeline()
         if row and row[0] == "PENDING":
@@ -98,9 +110,10 @@ class Worker:
         s = self.s
         with self.pool.connection(timeout=10) as conn:
             row = conn.execute(
-                "UPDATE photos SET status = 'PROCESSING', processed_by = %s"
-                " WHERE id = %s AND status IN ('PENDING', 'PROCESSING')"
-                " RETURNING original_key",
+                "UPDATE photos SET status = 'PROCESSING', processed_by = %s,"
+                " processing_started_at = now()"
+                " WHERE id = %s AND status = 'PENDING'"
+                " RETURNING original_key, processing_started_at",
                 (s.pod_name, photo_id),
             ).fetchone()
         if row is None:  # deleted, or already finished by someone else
@@ -126,17 +139,21 @@ class Worker:
                 updated = conn.execute(
                     "UPDATE photos SET status = 'DONE', thumb_small_key = %s,"
                     " thumb_medium_key = %s, processed_by = %s, processed_at = now(), error = NULL"
-                    " WHERE id = %s",
-                    (keys["s"], keys["m"], s.pod_name, photo_id),
+                    " WHERE id = %s AND status = 'PROCESSING' AND processed_by = %s"
+                    " AND processing_started_at = %s",
+                    (keys["s"], keys["m"], s.pod_name, photo_id, s.pod_name, row[1]),
                 ).rowcount
         except Exception as e:
             log.debug("job %s raised", photo_id, exc_info=True)
-            self._record_failure(photo_id, f"{type(e).__name__}: {e}")
+            self._record_failure(photo_id, f"{type(e).__name__}: {e}", row[1])
             return
 
-        if updated == 0:  # photo deleted while we were working; drop what we wrote
-            for key in keys.values():
-                self.s3.delete_object(Bucket=s.bucket_thumbnails, Key=key)
+        if updated == 0:  # deleted or lease reclaimed; never delete a new owner's thumbnails
+            with self.pool.connection(timeout=10) as conn:
+                exists = conn.execute("SELECT 1 FROM photos WHERE id = %s", (photo_id,)).fetchone()
+            if exists is None:
+                for key in keys.values():
+                    self.s3.delete_object(Bucket=s.bucket_thumbnails, Key=key)
             JOBS.labels("skipped").inc()
         else:
             PROCESSING_SECONDS.observe(time.perf_counter() - started)

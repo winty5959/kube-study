@@ -11,6 +11,7 @@ resources:
   - redis/statefulset.yaml
   - minio/statefulset.yaml
   - migrate/job.yaml
+  - cleanup/cronjob.yaml
   - api/deployment.yaml
   - worker/deployment.yaml
   - frontend/deployment.yaml
