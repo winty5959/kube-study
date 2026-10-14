@@ -5,7 +5,7 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | 계획 확정, M0 착수 대기 |
+| 상태 | M0 완료 (2026-10-14), M1 착수 대기 |
 
 ---
 
@@ -69,9 +69,10 @@
 PRD는 "VM은 사설망, 인바운드 미개방"을 가정한다. 작업 PC 브라우저에서 앱(`album.dev.local`), ArgoCD UI, Grafana UI를 보고 `kubectl`로 6443에 접근해야 하므로 다음과 같이 한다.
 
 - NSG에서 작업 PC 공인 IP → 22만 허용
-- `scripts/tunnel-dev.sh`로 `ssh -L` 포트 포워딩 (80, 6443, ArgoCD, Grafana)
-- 작업 PC `/etc/hosts`에 `127.0.0.1 album.dev.local` 등록 → `http://album.dev.local:<포워딩 포트>` 접속
-- 작업 PC kubeconfig에 `k3s-dev` / `k3s-prod` context 등록, server 주소는 터널 경유 `127.0.0.1:6443`
+- `scripts/tunnel.sh <env>`로 `ssh -L` 포트 포워딩 (Ingress 80, API 6443. ArgoCD/Grafana UI는 Ingress 호스트 이름으로 같은 포트 사용)
+- 작업 PC `/etc/hosts`에 `127.0.0.1 album.dev.local` 등록 → `http://album.dev.local:8080` 접속
+- 작업 PC kubeconfig에 `k3s-dev` / `k3s-prod` context 등록, server 주소는 터널 경유 `127.0.0.1:16443` / `26443`
+- 상세 절차: [access.md](access.md)
 - TLS(cert-manager)는 확장 과제
 
 검토했으나 미채택: Tailscale/VPN(외부 서비스 의존), 80/443 공인 IP 개방(PRD 가정 위배).
@@ -104,7 +105,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 
 | 단계 | 산출물 | 검증 |
 |---|---|---|
-| **M0 기반 준비** | GitHub 레포 생성, 디렉터리 골격, README, `docs/decisions.md`, Azure dev VM 생성 스크립트 + 실행, K3S 설치, SSH 터널 스크립트, kubeconfig context 등록 | 작업 PC에서 `kubectl --context k3s-dev get nodes` → Ready |
+| **M0 기반 준비** (완료) | GitHub 레포 생성, 디렉터리 골격, README, Azure dev VM 생성 스크립트 + 실행, K3S 설치, SSH 터널 스크립트, kubeconfig context 등록 | 작업 PC에서 `kubectl --context k3s-dev get nodes` → Ready |
 | **M1 로컬 동작** | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
 | **M2 수동 배포** | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
 | **M3 헬스/리소스/Job** | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 수행 가능 |
@@ -117,12 +118,16 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 
 ### 2.1 M0 세부 작업 순서
 
-1. 레포 생성 → 디렉터리 골격, `.gitignore`(secrets, kubeconfig, `.venv`), README, `docs/decisions.md`
-2. SSH 키 생성 → `infra/azure/` VM 생성 스크립트(RG, VNet, NSG, VM, auto-shutdown) 작성·실행 → `docs/azure-vm.md`
+모두 완료 (2026-10-14).
+
+1. 레포 생성 → 디렉터리 골격, `.gitignore`(secrets, kubeconfig, `.venv`), README. 결정 사항은 별도 `decisions.md` 없이 이 문서 1장에서 관리
+2. SSH 키 생성 → `infra/azure/create-vm.sh` (RG, VNet, NSG, VM, auto-shutdown) 작성·실행 → [azure-vm.md](azure-vm.md)
 3. VM 초기화 스크립트 `scripts/vm-setup.sh`: docker, uv, k3s, helm, kubectl, kubeseal, argocd CLI, k6
-4. `scripts/tunnel-dev.sh`(80/6443/ArgoCD/Grafana 포워딩), 작업 PC kubeconfig에 `k3s-dev` context 등록
+4. `scripts/tunnel.sh`, `scripts/fetch-kubeconfig.sh` → 작업 PC kubeconfig에 `k3s-dev` context 등록 → [access.md](access.md)
 5. `scripts/sync.sh`(rsync) 작성
-6. 검증: 작업 PC `kubectl --context k3s-dev get nodes` → Ready
+6. 검증: 작업 PC `kubectl --context k3s-dev get nodes` → Ready 확인
+
+설치된 버전 (dev VM): K3S v1.36.5+k3s1, Docker 29.9.0, Compose v5.6.0, uv 0.13.1, Helm v3.22.0, kubeseal 0.40.0, argocd v3.5.5, k6 v2.3.0
 
 ### 2.2 알려진 한계
 
