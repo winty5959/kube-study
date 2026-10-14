@@ -39,7 +39,14 @@ class Worker:
         self.redis = redis.Redis.from_url(
             s.redis_url, socket_connect_timeout=3, socket_timeout=s.poll_timeout_s + 5
         )
-        self.pool = ConnectionPool(s.database_url, min_size=1, max_size=2, open=False)
+        # check=: drop connections killed by a Postgres restart before handing them out
+        self.pool = ConnectionPool(
+            s.database_url,
+            min_size=1,
+            max_size=2,
+            open=False,
+            check=ConnectionPool.check_connection,
+        )
         self.s3 = boto3.client(
             "s3",
             endpoint_url=s.s3_endpoint,

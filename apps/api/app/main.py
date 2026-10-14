@@ -30,8 +30,15 @@ async def lifespan(app: FastAPI):
     s = Settings()
     logging.basicConfig(level=s.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     # open(wait=False): the process starts even if Postgres is down; /readyz reports it instead
+    # check=: validate a pooled connection before use, so requests right after a Postgres
+    # restart get a fresh connection instead of a 500 from a dead socket (AdminShutdown)
     pool = ConnectionPool(
-        s.database_url, min_size=1, max_size=10, open=False, kwargs={"row_factory": dict_row}
+        s.database_url,
+        min_size=1,
+        max_size=10,
+        open=False,
+        kwargs={"row_factory": dict_row},
+        check=ConnectionPool.check_connection,
     )
     pool.open(wait=False)
     rds = redis.Redis.from_url(s.redis_url, socket_timeout=3, socket_connect_timeout=3)
@@ -152,6 +159,7 @@ def upload(request: Request, file: UploadFile = File(...)):
     filename = (file.filename or key)[:255]
     s3 = request.app.state.s3
     try:
+        _ensure_buckets(request)
         s3.put_object(Bucket=s.bucket_originals, Key=key, Body=data, ContentType=content_type)
         with request.app.state.pool.connection(timeout=5) as conn:
             conn.execute(
@@ -235,6 +243,19 @@ def delete_photo(request: Request, photo_id: str):
     return Response(status_code=204)
 
 
+def _ensure_buckets(request: Request) -> bool:
+    """Create the buckets once per process. Returns True if this call created/checked them.
+
+    Called from /readyz and from upload, so buckets exist even without a readiness probe.
+    """
+    if request.app.state.buckets_ready:
+        return False
+    s: Settings = request.app.state.settings
+    storage.ensure_buckets(request.app.state.s3, s.bucket_originals, s.bucket_thumbnails)
+    request.app.state.buckets_ready = True
+    return True
+
+
 @app.get("/healthz")
 def healthz():
     # Liveness: the process is serving requests. Dependencies are deliberately not checked,
@@ -258,10 +279,7 @@ def readyz(request: Request):
     except Exception as e:
         checks["redis"] = f"error: {type(e).__name__}"
     try:
-        if not request.app.state.buckets_ready:
-            storage.ensure_buckets(request.app.state.s3, s.bucket_originals, s.bucket_thumbnails)
-            request.app.state.buckets_ready = True
-        else:
+        if not _ensure_buckets(request):
             request.app.state.s3.head_bucket(Bucket=s.bucket_originals)
         checks["s3"] = "ok"
     except Exception as e:
