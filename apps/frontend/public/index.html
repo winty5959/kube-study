@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Photo Album</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header>
+    <h1>Mini Photo Album</h1>
+    <p class="meta">api <code id="served-by">-</code> · version <code id="app-version">-</code></p>
+  </header>
+
+  <main>
+    <section class="upload">
+      <form id="upload-form">
+        <label class="picker">
+          <input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+          <span>JPG / PNG / WebP, 최대 10MB, 여러 장 선택 가능</span>
+        </label>
+        <button type="submit">업로드</button>
+      </form>
+      <ul id="upload-log" class="log" aria-live="polite"></ul>
+    </section>
+
+    <section>
+      <div class="toolbar">
+        <h2>갤러리</h2>
+        <span id="total" class="meta"></span>
+      </div>
+      <p id="empty" class="meta" hidden>아직 사진이 없습니다.</p>
+      <ul id="grid" class="grid"></ul>
+      <nav class="pager">
+        <button id="prev" type="button">이전</button>
+        <span id="page-label"></span>
+        <button id="next" type="button">다음</button>
+      </nav>
+    </section>
+  </main>
+
+  <dialog id="detail">
+    <form method="dialog" class="close"><button aria-label="닫기">×</button></form>
+    <img id="detail-img" alt="">
+    <dl id="detail-meta"></dl>
+    <div class="actions">
+      <a id="detail-download" href="#">원본 다운로드</a>
+      <button id="detail-delete" type="button" class="danger">삭제</button>
+    </div>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>
