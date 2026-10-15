@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
     rds.close()
 
 
-app = FastAPI(title="album-api", lifespan=lifespan)
+app = FastAPI(title="album-api", description="Photo album API.", lifespan=lifespan)
 
 
 @app.middleware("http")
