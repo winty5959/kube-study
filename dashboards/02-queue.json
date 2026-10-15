@@ -55,7 +55,7 @@
         {
           "refId": "A",
           "expr": "max(album_queue_length{namespace=~\"$namespace\"})",
-          "legendFormat": "Queue length / worker replicas (A)"
+          "legendFormat": "Main queue"
         },
         {
           "refId": "B",
@@ -115,7 +115,7 @@
         {
           "refId": "A",
           "expr": "sum by (result) (album_thumbnail_jobs_total{namespace=~\"$namespace\"})",
-          "legendFormat": "Worker job outcomes (A)"
+          "legendFormat": "{{result}}"
         }
       ],
       "fieldConfig": {
@@ -149,7 +149,7 @@
         {
           "refId": "A",
           "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container=\"worker\",image!=\"\"}[5m]))",
-          "legendFormat": "Worker CPU (A)"
+          "legendFormat": "Worker CPU"
         }
       ],
       "fieldConfig": {
@@ -183,7 +183,7 @@
         {
           "refId": "A",
           "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\",deployment=\"worker\"}",
-          "legendFormat": "Ready worker replicas (A)"
+          "legendFormat": "Ready workers"
         }
       ],
       "fieldConfig": {

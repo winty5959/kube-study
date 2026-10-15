@@ -55,7 +55,7 @@
         {
           "refId": "A",
           "expr": "sum(rate(album_uploads_total{namespace=~\"$namespace\",status=\"accepted\"}[5m]))",
-          "legendFormat": "Upload RPS (A)"
+          "legendFormat": "Accepted uploads/s"
         }
       ],
       "fieldConfig": {
@@ -89,7 +89,7 @@
         {
           "refId": "A",
           "expr": "sum(rate(album_http_request_duration_seconds_count{namespace=~\"$namespace\",route=~\"/api/.*\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(album_http_request_duration_seconds_count{namespace=~\"$namespace\",route=~\"/api/.*\"}[5m])),0.001) or vector(0)",
-          "legendFormat": "API 5xx ratio (A)"
+          "legendFormat": "API 5xx ratio"
         }
       ],
       "fieldConfig": {
@@ -123,7 +123,7 @@
         {
           "refId": "A",
           "expr": "histogram_quantile(0.95, sum by (le) (rate(album_http_request_duration_seconds_bucket{namespace=~\"$namespace\",route=~\"/api/.*\"}[5m])))",
-          "legendFormat": "{{le}} seconds"
+          "legendFormat": "API p95"
         }
       ],
       "fieldConfig": {
@@ -157,7 +157,7 @@
         {
           "refId": "A",
           "expr": "sum(album_uploads_total{namespace=~\"$namespace\",status=\"accepted\"})",
-          "legendFormat": "Accepted uploads (A)"
+          "legendFormat": "Accepted uploads"
         }
       ],
       "fieldConfig": {
