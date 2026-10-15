@@ -19,7 +19,7 @@ images:
     newTag: sha-72655e4
 
   - name: ghcr.io/winty5959/album-minio
-    newTag: sha-f141475
+    newTag: sha-72655e4
 
 configMapGenerator:
   - name: album-config
