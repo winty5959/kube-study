@@ -16,7 +16,7 @@ images:
   - name: ghcr.io/winty5959/album-worker
     newTag: sha-a3e8669
   - name: ghcr.io/winty5959/album-frontend
-    newTag: dev-m7-base
+    newTag: sha-a3e8669
 
 configMapGenerator:
   - name: album-config
