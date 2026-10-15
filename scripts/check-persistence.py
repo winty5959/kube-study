@@ -1,22 +1,50 @@
 #!/usr/bin/env python3
 # /// script
-# requires-python = ">=3.12"
+# requires-python = "==3.13.*"
 # dependencies = []
 # ///
-# Run on the dev VM: python3 scripts/check-persistence.py
+# Run on dev: uv run --python 3.13 scripts/check-persistence.py
 """E-08: keep a photo across PostgreSQL, Redis and MinIO Pod replacement."""
 
 import json
 import subprocess
 import time
+import urllib.error
 import uuid
+from http.client import HTTPMessage
+from pathlib import Path
 
 import smoke
+
+
+def available(method: str, path: str) -> tuple[int, HTTPMessage, bytes]:
+    """Wait for dependencies and Ingress to converge after their deliberate restart."""
+    deadline = time.monotonic() + 60
+    transient = 0
+    while True:
+        try:
+            result = smoke.request(method, path)
+            if transient:
+                print(f"Observed {transient} transient API failures before recovery")
+            return result
+        except urllib.error.HTTPError as error:
+            if method == "DELETE" and error.code == 404:
+                return 404, error.headers, b""
+            if error.code not in (500, 502, 503, 504) or time.monotonic() >= deadline:
+                raise
+        except (urllib.error.URLError, OSError):
+            if time.monotonic() >= deadline:
+                raise
+        transient += 1
+        time.sleep(1)
 
 
 def main() -> None:
     """Create an isolated photo, replace stateful Pods and verify its bytes survive."""
     smoke.BASE = "http://album.dev.local"
+    fixture_file = Path("/tmp/album-e08-id.json")
+    if fixture_file.exists():
+        raise RuntimeError("Clean the saved E08 fixture before starting another run")
     boundary = uuid.uuid4().hex
     original = smoke.png(1200, 600)
     body = (
@@ -35,6 +63,7 @@ def main() -> None:
     )
     assert status == 202
     photo_id = json.loads(response)["id"]
+    fixture_file.write_text(json.dumps([photo_id]))
     try:
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
@@ -44,7 +73,16 @@ def main() -> None:
             time.sleep(1)
         assert photo["status"] == "DONE"
         subprocess.run(
-            ["kubectl", "-n", "album-dev", "delete", "pod", "postgres-0", "redis-0", "minio-0"],
+            [
+                "kubectl",
+                "-n",
+                "album-dev",
+                "delete",
+                "pod",
+                "postgres-0",
+                "redis-0",
+                "minio-0",
+            ],
             check=True,
         )
         for name in ("postgres", "redis", "minio"):
@@ -74,18 +112,22 @@ def main() -> None:
             ],
             check=True,
         )
-        recovered = json.loads(smoke.request("GET", f"/api/photos/{photo_id}")[2])
+        recovered = json.loads(available("GET", f"/api/photos/{photo_id}")[2])
         assert recovered["status"] == "DONE"
         assert recovered["processed_by"] == photo["processed_by"]
-        assert smoke.request("GET", f"/api/photos/{photo_id}/original")[2] == original
-        for field, size in (("thumb_small_url", (200, 100)), ("thumb_medium_url", (800, 400))):
-            assert smoke.webp_size(smoke.request("GET", recovered[field])[2]) == size
+        assert available("GET", f"/api/photos/{photo_id}/original")[2] == original
+        for field, size in (
+            ("thumb_small_url", (200, 100)),
+            ("thumb_medium_url", (800, 400)),
+        ):
+            assert smoke.webp_size(available("GET", recovered[field])[2]) == size
         print(
             "E-08 passed: metadata, original and two thumbnails survived "
             "all stateful Pod replacements"
         )
     finally:
-        smoke.request("DELETE", f"/api/photos/{photo_id}")
+        available("DELETE", f"/api/photos/{photo_id}")
+        fixture_file.unlink()
 
 
 if __name__ == "__main__":
