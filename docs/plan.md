@@ -110,7 +110,7 @@ PRD는 "VM은 사설망, 인바운드 미개방"을 가정한다. 작업 PC 브�
 | Python 패키지 관리 | uv (`pyproject.toml` + `uv.lock`, Dockerfile에서도 uv 사용) |
 | SSH 키 | 프로젝트 전용 `~/.ssh/kube-study` (ed25519) 신규 생성 |
 | 오브젝트 스토리지 | MinIO 유지. 공식 이미지 배포 중단·저장소 archive로 마지막 릴리스(`RELEASE.2025-10-15T17-29-55Z`)를 `infra/minio/`에서 소스 빌드해 `ghcr.io/winty5959/album-minio`로 사용 (2026-10-14 사용자 결정). SeaweedFS·RustFS는 미채택 |
-| Python 버전 | 3.13 고정 (`.python-version`, Docker 베이스 `python:3.13-slim-bookworm`) |
+| Python 버전 | 3.13 고정 (`.python-version`, Docker 베이스 `python:3.13-alpine3.24`; M7 이미지 스캔 결과에 따라 패치된 Alpine과 runtime pip 제거 적용) |
 | DB 마이그레이션 | Alembic 대신 순번 SQL 파일 + `python -m app.migrate` (테이블 1개라 충분, 학습 시 읽기 쉬움) |
 
 ---
