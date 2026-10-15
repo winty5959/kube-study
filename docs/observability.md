@@ -28,3 +28,9 @@ replica 수, 큐와 worker 수는 replica 축을 오른쪽에 분리했다. 화�
 VM의 Grafana Service port-forward를 SSH `localhost:19001` 터널로 연결한다.
 브라우저 로그인 전에 생성된 관리자 비밀번호의 끝 줄바꿈을 제거하고
 Grafana DB와 Secret을 함께 정규화했다. 새 설치에서는 줄바꿈 없이 생성한다.
+
+스크린샷 저장 과정에서 full-page capture가 Grafana canvas를 resize해
+그리기 전 화면을 저장하는 문제를 확인했다. viewport capture로 교체했고,
+E-01~E-10·E-12·E-15는 각 실험 시간의 보존된 Prometheus 시계열을 표시해
+다시 저장했다. 실험이나 부하를 재현한 것으로 취급하지 않고 기존 실제
+측정 데이터의 표시를 바로잡았다. M4 UI 그림은 현재 시계열로 확인한다.
