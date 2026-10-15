@@ -15,7 +15,7 @@ images:
   - name: ghcr.io/winty5959/album-worker
     newTag: v1.1.0
   - name: ghcr.io/winty5959/album-frontend
-    newTag: v1.1.0
+    newTag: sha-a3e8669
 
   - name: ghcr.io/winty5959/album-minio
     newTag: sha-a3e8669
