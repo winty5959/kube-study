@@ -31,3 +31,11 @@ E-04의 첫 실행은 504 한 건으로 실패했다. 종료 대기 추가 후 �
 MinIO로 전달한다. 업로드와 삭제는 API가 내부 MinIO Service에 서명해 수행한다.
 Host 헤더는 그대로 전달되어 presigned SigV4 검증이 유지된다.
 공개 객체 경로의 PUT은 HTTP 405였고 전체 사진 smoke는 통과했다.
+
+## PDB eviction 확인
+
+2026-10-15 dev API Ready Pod가 1개일 때 policy/v1 Eviction API를 호출했다.
+HTTP 429 TooManyRequests로 거절됐고 Pod UID가 유지됐다. minAvailable=1이
+자발적 중단을 막는 것을 확인했다. 직접 Pod DELETE는 PDB를 우회하므로
+E-01의 Pod 삭제 실험과 구분한다. 단일 노드 drain이나 노드 장애 보호를
+검증했다고 주장하지 않는다.

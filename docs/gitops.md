@@ -59,3 +59,8 @@ root 통합 검증에서 StatefulSet 3개의 실제·예측 상태가 동일한�
 controller-owned status만 비교에서 제외하며 저장 크기·class·컨테이너 설정은
 계속 비교한다. 컨트롤러 CRD와 나머지 앱은 server-side apply를 사용한다.
 2026-10-15 root와 7개 child 앱 모두 Synced·Healthy, 각 동기화 Succeeded를 확인했다.
+
+PostSync는 공개 라우팅에 없는 `/readyz`를 내부 API Service로 먼저 확인한다.
+전용 smoke ServiceAccount·Pod만 API 8000 포트에 접근하도록 정책을 추가했다.
+정상 PreSync와 PostSync를 다시 실행해 album-dev Synced·Healthy·Succeeded와
+두 hook Job의 성공을 확인했다.

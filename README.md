@@ -21,7 +21,7 @@
 
 ## 디렉터리
 
-마일스톤이 진행되며 채워진다.
+현재 구현과 준비 상태는 다음과 같다.
 
 ```
 apps/        api, worker, frontend 소스와 Dockerfile
@@ -33,3 +33,19 @@ loadtest/    k6 스크립트, 대량 업로드 스크립트
 dashboards/  Grafana 대시보드 JSON
 docs/        계획, 운영 절차, 실험 기록(experiments/E-XX.md)
 ```
+
+## 현재 상태
+
+| 범위 | 상태 |
+|---|---|
+| M0~M6 | 완료, E-01~E-10 검증·기록 |
+| M7 CI | 3개 이미지 공개 성공. MinIO 미수정 6건의 처리 결정 대기 |
+| M8 dev GitOps | root/7 child 정상 동기화, E-12·E-15 통과. E-11 대기 |
+| M9 prod | VM·독립 봉인 키·overlay·bootstrap 준비. 실제 복구·승격 검증 대기 |
+
+계획 전체가 완료된 상태는 아니다. 남은 gate와 검증은 [계획](docs/plan.md),
+[CI](docs/ci.md), [prod 재현](docs/prod-bootstrap.md)에 기록한다.
+
+dev SSH 터널을 켠 뒤 [앨범](http://album.dev.localhost:8080)과
+[Grafana](http://grafana.dev.localhost:8080)에 접속한다. Chrome에서 hosts 수정 없이
+loopback으로 연결된다.

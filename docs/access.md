@@ -56,3 +56,8 @@ VM 쪽 작업(docker, helm, k6 등)은 `ssh kube-dev`로 접속해서 한다. �
 ## Mac에서 DNS 설정 없이 접속
 
 `scripts/tunnel.sh dev start` 후 Chrome에서 [앨범](http://album.dev.localhost:8080), [Grafana](http://grafana.dev.localhost:8080), [ArgoCD](http://argocd.dev.localhost:8080)를 연다. `.localhost`는 loopback으로 해석되므로 Mac hosts 변경이 필요 없다. VM에서 쓰는 기존 `.dev.local` Host도 유지한다. Grafana 전용 forward `http://localhost:19001`도 사용할 수 있다.
+
+2026-10-15 Chrome에서 album.dev.localhost:8080의 갤러리·버전 헤더 표시를
+확인했고, grafana.dev.localhost:8080에서도 생성한 Secret으로 로그인했다.
+전용 port-forward는 Grafana Pod 교체 시 종료될 수 있으므로 지속적인 접속에는
+공용 Ingress SSH 터널의 localhost hostname을 권장한다.
