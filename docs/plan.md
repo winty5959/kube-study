@@ -128,7 +128,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M4 관측성** | 완료: kube-prometheus-stack 92.7.0, ServiceMonitor, 필수 알림 3개, 대시보드 5개와 sidecar ConfigMap | Grafana UI 시계열 및 20개 패널의 모든 쿼리 표본 검증. [관측성 기록](observability.md) |
 | **M5 오토스케일링** | 완료: HPA CPU 60%, KEDA 2.21.0과 worker 0~2, k6와 격리 batch fixture 도구 | E-02 200 VU 조회 41,809/41,809 성공. E-03 500장 DONE, worker 0→2→0 확인 |
 | **M6 운영 기능/실험** (완료) | PDB, NetworkPolicy(default deny), 개별 ServiceAccount, 롤링 업데이트 전략 | E-01, E-04~E-10 통과. 최초 실패와 수정 후 재검증도 기록 |
-| **M7 CI** (진행 중) | CI·Release 구현, hosted API/worker/frontend 검사와 공개 이미지 push 성공 | MinIO 미수정 6건에서 차단, dev bot 갱신 skipped. [CI 기록](ci.md), [결정 자료](minio-security.md) |
+| **M7 CI** (진행 중) | CI·Release 구현, hosted API/worker/frontend 검사와 공개 이미지 push 성공 | MinIO 자체 6건만 binary 경로에 한정해 2026-11-14까지 예외 승인 (2026-10-15 사용자 결정). 전체 CI·dev 승격 재검증 중. [CI 기록](ci.md), [결정 자료](minio-security.md) |
 | **M8 GitOps dev** (진행 중) | dev root/7 child Synced·Healthy, Sealed Secrets, migration/readiness/smoke 훅과 키 백업 | E-12·E-15 통과. E-11은 M7 전체 이미지 승격 후 수행. [GitOps](gitops.md) |
 | **M9 prod** (준비 중) | prod VM·컨트롤러·독립 봉인 키·overlay/root 준비, cross-cluster 복호화 거절 확인 | 실제 세 단계 복구·Release·E-13·E-14는 미수행. [prod 준비](prod-bootstrap.md) |
 
