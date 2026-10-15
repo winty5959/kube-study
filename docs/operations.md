@@ -24,3 +24,10 @@ eviction을 막을 수 있지만 강제 Pod 삭제나 노드 장애를 막지는
 E-01에서 API 대체 Pod는 약 4초 만에 준비됐고 354건 조회가 모두 성공했다.
 E-04의 첫 실행은 504 한 건으로 실패했다. 종료 대기 추가 후 재실행은
 353건 모두 성공했고 v1·v2 응답이 교체 구간에서 함께 관측됐다.
+
+## 객체 다운로드 경로
+
+공개 `/originals/`, `/thumbnails/`는 Traefik IngressRoute가 GET·HEAD만
+MinIO로 전달한다. 업로드와 삭제는 API가 내부 MinIO Service에 서명해 수행한다.
+Host 헤더는 그대로 전달되어 presigned SigV4 검증이 유지된다.
+공개 객체 경로의 PUT은 HTTP 405였고 전체 사진 smoke는 통과했다.

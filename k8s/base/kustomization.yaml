@@ -10,6 +10,7 @@ resources:
   - postgres/statefulset.yaml
   - redis/statefulset.yaml
   - minio/statefulset.yaml
+  - minio/ingressroute.yaml
   - migrate/job.yaml
   - cleanup/cronjob.yaml
   - api/deployment.yaml

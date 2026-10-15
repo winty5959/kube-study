@@ -36,3 +36,8 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: album.dev.local
+  - target: {kind: IngressRoute, name: album-objects}
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: Host(`album.dev.local`) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))
