@@ -13,7 +13,9 @@ resources:
   - migrate/job.yaml
   - cleanup/cronjob.yaml
   - api/deployment.yaml
+  - api/hpa.yaml
   - worker/deployment.yaml
+  - worker/scaledobject.yaml
   - frontend/deployment.yaml
   - ingress.yaml
 
