@@ -14,7 +14,7 @@ spec:
       labels:
         app.kubernetes.io/name: db-migrate
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
