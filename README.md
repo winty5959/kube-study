@@ -39,9 +39,9 @@ docs/        계획, 운영 절차, 실험 기록(experiments/E-XX.md)
 | 범위 | 상태 |
 |---|---|
 | M0~M6 | 완료, E-01~E-10 검증·기록 |
-| M7 CI | 3개 이미지 공개 성공. MinIO 미수정 6건의 처리 결정 대기 |
-| M8 dev GitOps | root/7 child 정상 동기화, E-12·E-15 통과. E-11 대기 |
-| M9 prod | VM·독립 봉인 키·overlay·bootstrap 준비. 실제 복구·승격 검증 대기 |
+| M7 CI | 완료. 변경된 앱만 재빌드, 네 보안 검사·공개 이미지·dev 승격 성공. MinIO 6건만 2026-11-14까지 승인 예외 |
+| M8 dev GitOps | 완료. root/7 child 정상 동기화, E-11·E-12·E-15 통과 |
+| M9 prod | 승격·E-13·E-14 통과. 빈 OS에서 세 명령 복구 최종 검증 중 |
 
 계획 전체가 완료된 상태는 아니다. 남은 gate와 검증은 [계획](docs/plan.md),
 [CI](docs/ci.md), [prod 재현](docs/prod-bootstrap.md)에 기록한다.

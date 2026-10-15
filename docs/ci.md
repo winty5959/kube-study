@@ -3,10 +3,13 @@
 ## 이미지 CI
 
 `.github/workflows/ci.yaml`은 앱·MinIO 빌드 입력·workflow·태그 도구 변경에
-반응한다. 네 컴포넌트를 병렬로 lint/test/build/scan하고 PR은 push하지 않는다.
+반응한다. Git diff로 변경된 컴포넌트만 lint/test/build한다. 변경되지 않은 컴포넌트는
+dev에 기록된 공개 이미지를 재빌드 없이 다시 scan한다. PR은 push하지 않는다.
 main에서는 승인된 MinIO 예외 6건 외의 HIGH/CRITICAL 0건인 이미지만 GHCR로 push한다. 검사 후 다시
 빌드하지 않는다. 네 작업이 모두 성공해야 dev 태그를 컴포넌트별 bot 커밋으로
-갱신한다. 이 커밋은 k8s 경로만 바꾸므로 빌드 루프가 생기지 않는다.
+갱신한다. 변경된 컴포넌트만 새 sha 태그로 갱신하며 나머지 태그는 유지한다.
+이 커밋은 k8s 경로만 바꾸므로 빌드 루프가 생기지 않는다. workflow·공유 도구·tests
+변경이나 workflow_dispatch는 모든 컴포넌트를 빌드한다.
 
 2026-10-15 [첫 hosted CI](https://github.com/winty5959/kube-study/actions/runs/38665670846):
 
@@ -26,6 +29,16 @@ main에서는 승인된 MinIO 예외 6건 외의 HIGH/CRITICAL 0건인 이미지
 후속 [E-11](experiments/E-11.md)도 새 코드 push의 자동 배포를 확인했다.
 미수정 6건의 정책 결정은 [MinIO 자료](minio-security.md)를 따른다.
 CI에는 클러스터 인증 정보나 VM 자격이 없고 GITHUB_TOKEN만 사용한다.
+
+### 변경된 컴포넌트만 재빌드
+
+scripts 단위 테스트 27개, ruff·actionlint가 VM에서 통과했다.
+[CI 38683096172](https://github.com/winty5959/kube-study/actions/runs/38683096172)는
+workflow 변경으로 네 컴포넌트를 빌드·검사했다. 이어 API 코드만 변경한
+[CI 38683388149](https://github.com/winty5959/kube-study/actions/runs/38683388149)에서는
+API build·push만 실행됐고 worker·frontend·MinIO build·push는 skipped,
+네 Trivy 검사와 dev 갱신은 모두 성공했다. bot 0ebf628은 API 태그만 변경했다.
+변경되지 않은 이미지의 검사 실패도 전체 dev 승격을 차단한다.
 
 ## Release
 

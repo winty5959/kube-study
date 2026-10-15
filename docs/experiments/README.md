@@ -316,18 +316,25 @@ PRD 문구만으로는 판정 기준이 모호하거나, 구현 중 확인된 �
 | 12 | 전체 | E-01은 PRD 마일스톤상 M6이지만 M2에서 이미 미리 확인함 | 수용 기준용 기록은 M6에 새로 수행. M2 결과는 참고(`k8s-dev.md`) |
 | 13 | E-14 | PRD 5.4가 prod를 "수동 Sync, selfHeal"로 적었지만, ArgoCD에서 `selfHeal`은 `syncPolicy.automated` 안의 옵션이다([공식 문서](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/)). 수동 Sync와 selfHeal은 문자 그대로는 함께 설정할 수 없다. E-14 기대 결과("`rollout undo`는 ArgoCD가 덮어쓴다")는 어느 쪽으로 구현하느냐에 따라 시점이 달라진다 | M9 설계 때 결정해 [plan.md](../plan.md)에 기록. 후보: (a) prod도 `automated: {selfHeal: true}`로 두되 승격 승인은 PR merge로만 통제, (b) 순수 수동 Sync로 두고 `rollout undo`는 OutOfSync로 남다가 다음 Sync에서 덮어쓰이는 것을 관찰. PRD의 "prod는 사람이 승인" 원칙(11.3)에는 (b)가 더 가깝다 |
 
-## 수행 현황
+## 수행 현황 (2026-10-15)
 
 | # | 상태 | 비고 |
 |---|---|---|
-| E-01 | 미수행 | M2에서 Pod 삭제 후 복구 미리보기 완료 |
-| E-02 ~ E-05 | 미수행 | |
-| E-06 | 미수행 | M1에서 compose로 worker SIGKILL 후 작업 복구 확인 (실제 OOMKilled 아님) |
-| E-07 | 미수행 | M1에서 compose로 postgres 중단 시 `/readyz` 503, `/healthz` 200 확인 |
-| E-08 | 미수행 | M2에서 postgres/minio/redis Pod 삭제 후 데이터 유지 미리보기 완료 |
-| E-09 | 미수행 | NetworkPolicy 없음, frontend → postgres:5432 연결 성공이 기준선 |
-| E-10 | 미수행 | M2 configMapGenerator 구현 완료 |
-| E-11 ~ E-15 | 미수행 | M7~M9 이후 |
+| [E-01](E-01.md) | 통과 | API Pod 교체와 서비스 유지 |
+| [E-02](E-02.md) | 통과 | 200 VU, API 1→3→1 |
+| [E-03](E-03.md) | 통과 | 500장 DONE, worker 0→2→0 |
+| [E-04](E-04.md) | 통과 | rolling update; 최초 실패와 재검증 기록 |
+| [E-05](E-05.md) | 통과 | 잘못된 readiness에서 기존 서비스 유지 |
+| [E-06](E-06.md) | 통과 | 실제 OOMKilled, 재시도 3회 후 FAILED |
+| [E-07](E-07.md) | 통과 | DB 장애 readiness 분리·복구 |
+| [E-08](E-08.md) | 통과 | 데이터 서비스 교체 후 영속성 |
+| [E-09](E-09.md) | 통과 | frontend → postgres 차단 |
+| [E-10](E-10.md) | 통과 | ConfigMap 변경 후 새 썸네일 크기 |
+| [E-11](E-11.md) | 통과 | 자동 배포 5분 18초 |
+| [E-12](E-12.md) | 통과 | 선언된 frontend replica 자동 복구 |
+| [E-13](E-13.md) | 통과 | 승인된 Release PR·수동 Sync·네 digest 일치 |
+| [E-14](E-14.md) | 통과 | 수동 Sync의 live undo 덮어쓰기와 Git revert 롤백 |
+| [E-15](E-15.md) | 통과 | PreSync 실패가 기존 배포 유지 |
 
 수행하면 이 표와 [plan.md](../plan.md)의 진행 상태를 함께 갱신한다.
 
@@ -347,4 +354,6 @@ E-01~E-10은 통과했다. E-02·E-04·E-06·E-08의 최초 실패 및 수정 �
 - [E-10 결과](E-10.md)
 
 E-11 [자동 배포](E-11.md), E-12 [자동 복구](E-12.md), E-15 [실패 게이트](E-15.md)도 통과했다.
-E-13·E-14는 Release PR #1의 운영 승인·수동 Sync 후 수행한다.
+E-13 [운영 승격](E-13.md)·E-14 [GitOps 롤백](E-14.md)도 사용자 승인 후 통과했다.
+prod는 수동 Sync이므로 live undo의 자동 복구를 주장하지 않으며, 다음 Sync가
+Git 상태로 덮어쓰는 동작을 E-14에 명시했다.
