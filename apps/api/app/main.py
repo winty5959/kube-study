@@ -63,6 +63,7 @@ async def lifespan(app: FastAPI):
     rds.close()
 
 
+# Exercise PR CI publication guards; this verification branch is not merged.
 app = FastAPI(title="album-api", description="Photo uploads and thumbnails.", lifespan=lifespan)
 
 
