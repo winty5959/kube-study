@@ -314,7 +314,7 @@ PRD 문구만으로는 판정 기준이 모호하거나, 구현 중 확인된 �
 | 10 | E-13, E-14 | prod VM은 M9 직전에 만들 예정. 그 전에는 수행 불가 | M9 이후에 수행 |
 | 11 | E-14 | PRD 완료 기준 3("kubectl을 한 번도 직접 실행하지 않는다")과 E-12·E-14의 `kubectl`이 충돌하는 것처럼 읽힘 | 완료 기준 3은 "배포 경로"에 대한 기준이고, 실험의 `kubectl`은 의도된 개입(드리프트·롤백 시도)이므로 예외로 해석. 기록에 명시 |
 | 12 | 전체 | E-01은 PRD 마일스톤상 M6이지만 M2에서 이미 미리 확인함 | 수용 기준용 기록은 M6에 새로 수행. M2 결과는 참고(`k8s-dev.md`) |
-| 13 | E-14 | PRD 5.4가 prod를 "수동 Sync, selfHeal"로 적었지만, ArgoCD에서 `selfHeal`은 `syncPolicy.automated` 안의 옵션이다([공식 문서](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/)). 수동 Sync와 selfHeal은 문자 그대로는 함께 설정할 수 없다. E-14 기대 결과("`rollout undo`는 ArgoCD가 덮어쓴다")는 어느 쪽으로 구현하느냐에 따라 시점이 달라진다 | M9 설계 때 결정해 [plan.md](../plan.md)에 기록. 후보: (a) prod도 `automated: {selfHeal: true}`로 두되 승격 승인은 PR merge로만 통제, (b) 순수 수동 Sync로 두고 `rollout undo`는 OutOfSync로 남다가 다음 Sync에서 덮어쓰이는 것을 관찰. PRD의 "prod는 사람이 승인" 원칙(11.3)에는 (b)가 더 가깝다 |
+| 13 | E-14 | PRD의 prod "수동 Sync, selfHeal"은 ArgoCD의 `syncPolicy.automated.selfHeal` 구조와 양립하지 않는다 | 순수 수동 Sync를 선택해 [plan.md](../plan.md)에 기록했다. 실제 rollout undo는 OutOfSync로 남았고 다음 수동 Sync에서 Git 상태로 복구됐다. [E-14 결과](E-14.md) |
 
 ## 수행 현황 (2026-10-15)
 

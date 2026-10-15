@@ -41,10 +41,14 @@ docs/        계획, 운영 절차, 실험 기록(experiments/E-XX.md)
 | M0~M6 | 완료, E-01~E-10 검증·기록 |
 | M7 CI | 완료. 변경된 앱만 재빌드, 네 보안 검사·공개 이미지·dev 승격 성공. MinIO 6건만 2026-11-14까지 승인 예외 |
 | M8 dev GitOps | 완료. root/7 child 정상 동기화, E-11·E-12·E-15 통과 |
-| M9 prod | 승격·E-13·E-14 통과. 빈 OS에서 세 명령 복구 최종 검증 중 |
+| M9 prod | 완료. 승격·E-13·E-14 및 빈 OS에서 세 명령 복구 통과 |
 
-계획 전체가 완료된 상태는 아니다. 남은 gate와 검증은 [계획](docs/plan.md),
-[CI](docs/ci.md), [prod 재현](docs/prod-bootstrap.md)에 기록한다.
+M0~M9 개발 계획과 E-01~E-15 실험을 모두 완료했다.
+[완료 검증](docs/completion.md), [계획](docs/plan.md), [CI](docs/ci.md),
+[prod 재현](docs/prod-bootstrap.md)에 결과와 운영 한계를 기록했다.
+
+prod 터널에서는 [앨범](http://album.prod.localhost:8090)과
+[Grafana](http://grafana.prod.localhost:8090)에 접속한다.
 
 dev SSH 터널을 켠 뒤 [앨범](http://album.dev.localhost:8080)과
 [Grafana](http://grafana.dev.localhost:8080)에 접속한다. Chrome에서 hosts 수정 없이

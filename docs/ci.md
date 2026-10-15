@@ -49,12 +49,18 @@ API build·push만 실행됐고 worker·frontend·MinIO build·push는 skipped,
 release alias가 다른 digest면 덮어쓰지 않고 실패한다.
 
 컴포넌트별 prod 태그 커밋을 `codex/release-<tag>` 브랜치에 만들고 근거 표가
-포함된 PR을 생성한다. PR merge 후 album-prod의 Sync는 수동이다. 15개 태그·승격
-단위 테스트, ruff와 actionlint는 VM에서 통과했다. 실제 Release 실행·PR merge와
-prod digest 검증은 아직 수행하지 않았다. 실제 v1.1.0 Release 실행
+포함된 PR을 생성한다. PR merge 후 album-prod의 Sync는 수동이다. scripts의 27개
+단위 테스트, ruff와 actionlint는 VM에서 통과했다. 실제 v1.1.0 Release 실행
 [38681497959](https://github.com/winty5959/kube-study/actions/runs/38681497959)은 성공했고
 [PR #1](https://github.com/winty5959/kube-study/pull/1)을 생성했다. 별도 VM 익명 접근으로도
-네 release manifest가 dev sha-f141475와 바이트 단위로 같음을 확인했다. PR은 운영 승인 대기 중이다.
+네 release manifest가 dev sha-f141475와 바이트 단위로 같음을 확인했다.
+사용자 승인 후 PR #1을 merge하고 prod를 수동 Sync했다. 네 실제 Pod imageID도
+dev와 prod에서 일치했다 ([E-13](experiments/E-13.md)). 이후 컴포넌트별 Git revert와
+수동 Sync로 이전 버전을 복원했다 ([E-14](experiments/E-14.md)).
+
+실제 pull_request 실행 [38684726538](https://github.com/winty5959/kube-study/actions/runs/38684726538)도
+성공했다. API 변경만 빌드하고 네 이미지를 검사했으며 registry 로그인·push와 dev 갱신은
+모두 skipped였다. 검증용 PR #2는 merge 없이 닫고 브랜치를 삭제했다.
 
 VM의 익명 registry 접근으로 API manifest를 읽고 raw SHA256과 registry digest가
 같음을 확인했다. `imagetools create --dry-run --prefer-index=false` 결과도 원본의

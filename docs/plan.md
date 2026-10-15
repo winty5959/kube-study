@@ -5,7 +5,7 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용). 원문은 [prd.md](prd.md), 실험 E-01~E-15 상세는 [experiments/README.md](experiments/README.md) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | M5 완료 (2026-10-15), M6 운영 실험 진행 중 |
+| 상태 | M0~M9 및 E-01~E-15 완료 (2026-10-15) |
 
 ---
 
@@ -130,7 +130,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M6 운영 기능/실험** (완료) | PDB, NetworkPolicy(default deny), 개별 ServiceAccount, 롤링 업데이트 전략 | E-01, E-04~E-10 통과. 최초 실패와 수정 후 재검증도 기록 |
 | **M7 CI** (완료) | 네 이미지 검사·공개 push, dev bot 승격과 Release PR 생성 성공 | MinIO 자체 6건만 binary 경로에 한정해 2026-11-14까지 예외 승인 (2026-10-15 사용자 결정). 실제 CI 38680572119·38680948685 성공. [CI 기록](ci.md), [결정 자료](minio-security.md) |
 | **M8 GitOps dev** (완료) | dev root/7 child Synced·Healthy, Sealed Secrets, migration/readiness/smoke 훅과 키 백업 | E-11·E-12·E-15 통과. E-11 push부터 자동 Sync 완료까지 5분 18초. [GitOps](gitops.md) |
-| **M9 prod** (진행 중) | prod 세 명령 복구·전체 smoke·대시보드 5개 검증 완료, root/7 child Synced·Healthy | Release PR #1 생성·manifest 일치 확인. 운영 승인 뒤 merge·수동 Sync·E-13·E-14 수행. [prod 재현](prod-bootstrap.md) |
+| **M9 prod** (완료) | Azure OS 초기화 후 세 명령 복구·전체 smoke·대시보드 5개 검증, root/7 child Synced·Healthy | 승인된 PR #1 merge·수동 Sync·E-13 네 digest 일치·E-14 Git revert 통과. [prod 재현](prod-bootstrap.md), [완료 검증](completion.md) |
 
 ### 2.1 M0 세부 작업 순서
 
@@ -194,3 +194,7 @@ E-14에서는 live undo가 OutOfSync로 남고 다음 수동 Sync가 Git 상태�
 2. prod VM을 초기화한 상태에서 "K3S 설치 → ArgoCD 설치 → root Application apply" 세 단계만으로 서비스 전체(모니터링 포함)가 복구된다.
 3. 코드 push부터 prod 반영까지 `kubectl`을 한 번도 직접 실행하지 않는다.
 4. Grafana 대시보드 1~5번이 dev와 prod 양쪽에서 실제 데이터로 동작한다.
+
+네 기준 모두 2026-10-15 통과했다. 실험 15개 기록, 빈 OS 재현, CI→Release PR→수동
+ArgoCD Sync 경로와 양쪽 20개 패널 검증 근거는 [완료 검증](completion.md)에 연결했다.
+기준 3의 kubectl 제외는 배포 경로에 적용하며 PRD에 명시된 E-12·E-14 실험 개입은 예외다.
