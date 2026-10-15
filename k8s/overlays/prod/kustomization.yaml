@@ -8,8 +8,7 @@ resources:
   - ../../base
   - ../../secrets/prod/album
 
-# M2-M6: images are built on the VM and imported into K3S (scripts/build-images.sh).
-# From M7 CI rewrites newTag here with the pushed sha-<commit> tag.
+# Bootstrap uses CI-published artifacts. Release PRs update these aliases; Sync is manual.
 images:
   - name: ghcr.io/winty5959/album-api
     newTag: sha-a3e8669

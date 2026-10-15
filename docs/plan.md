@@ -130,7 +130,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M6 운영 기능/실험** (완료) | PDB, NetworkPolicy(default deny), 개별 ServiceAccount, 롤링 업데이트 전략 | E-01, E-04~E-10 통과. 최초 실패와 수정 후 재검증도 기록 |
 | **M7 CI** (완료) | 네 이미지 검사·공개 push, dev bot 승격과 Release PR 생성 성공 | MinIO 자체 6건만 binary 경로에 한정해 2026-11-14까지 예외 승인 (2026-10-15 사용자 결정). 실제 CI 38680572119·38680948685 성공. [CI 기록](ci.md), [결정 자료](minio-security.md) |
 | **M8 GitOps dev** (완료) | dev root/7 child Synced·Healthy, Sealed Secrets, migration/readiness/smoke 훅과 키 백업 | E-11·E-12·E-15 통과. E-11 push부터 자동 Sync 완료까지 5분 18초. [GitOps](gitops.md) |
-| **M9 prod** (준비 중) | prod VM·컨트롤러·독립 봉인 키·overlay/root 준비, cross-cluster 복호화 거절 확인 | 실제 세 단계 복구·Release·E-13·E-14는 미수행. [prod 준비](prod-bootstrap.md) |
+| **M9 prod** (진행 중) | prod 세 명령 복구·전체 smoke·대시보드 5개 검증 완료, root/7 child Synced·Healthy | Release PR #1 생성·manifest 일치 확인. 운영 승인 뒤 merge·수동 Sync·E-13·E-14 수행. [prod 재현](prod-bootstrap.md) |
 
 ### 2.1 M0 세부 작업 순서
 
