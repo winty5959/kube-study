@@ -176,6 +176,11 @@ db-migrate Job에 실행 시간 제한과 TTL을 설정했다. cleanup CronJob�
 
 ### 2.5 알려진 한계
 
+prod는 운영 승인 후 수동 Sync를 유지한다. PRD의 수동 Sync와 selfHeal 병기는
+ArgoCD의 `automated.selfHeal` 구조와 양립하지 않아 순수 수동 Sync를 선택했다.
+E-14에서는 live undo가 OutOfSync로 남고 다음 수동 Sync가 Git 상태로 덮어쓰는
+것을 확인했다. 자동 selfHeal 복구로 해석하지 않는다.
+
 - MinIO upstream이 archive되어 보안 패치가 없다. M7 Trivy 스캔(HIGH 이상 실패)에서 걸리면 예외 처리할지 다른 S3 구현으로 바꿀지 다시 결정한다.
 - 단일 노드라 `kubectl drain`으로 PDB를 검증할 수 없다. `kubectl get pdb`와 eviction API 호출로 대체 검증하고 문서에 한계를 적는다.
 - 단일 노드 `local-path` 스토리지는 노드 장애 시 데이터가 보호되지 않는다 (PRD 5.2). Longhorn은 확장 과제.
