@@ -18,6 +18,7 @@ resources:
   - worker/scaledobject.yaml
   - frontend/deployment.yaml
   - ingress.yaml
+  - network-policies.yaml
 
 # Non-secret settings shared by api and worker. The generated name gets a content hash
 # suffix, so changing a value rolls the Deployments that reference it (E-10).
