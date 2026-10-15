@@ -52,3 +52,10 @@ Traefik Pod의 8000 포트로 제한한다. 실패한 Job은 진단을 위해 �
 2026-10-15 dev에서 실제 Job을 실행해 업로드·DONE·WebP 2종·원본·삭제가 통과했다.
 
 기존 Grafana Secret 인수 시에는 `sealedsecrets.bitnami.com/managed=true`를 먼저 지정한다. 처음 root 동기화에서 unmanaged Secret을 덮어쓰지 못해 credentials 앱이 Degraded가 된 것을 확인하고, 자격을 바꾸지 않고 관리 권한을 인수하도록 bootstrap을 보완했다.
+
+root 통합 검증에서 StatefulSet 3개의 실제·예측 상태가 동일한데도 server-side
+비교가 OutOfSync를 반환하는 문제를 확인했다. platform 앱에
+`ServerSideDiff=false`를 명시하고 normal apply를 사용해 해결했다. PVC template의
+controller-owned status만 비교에서 제외하며 저장 크기·class·컨테이너 설정은
+계속 비교한다. 컨트롤러 CRD와 나머지 앱은 server-side apply를 사용한다.
+2026-10-15 root와 7개 child 앱 모두 Synced·Healthy, 각 동기화 Succeeded를 확인했다.
