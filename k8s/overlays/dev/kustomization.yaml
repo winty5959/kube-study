@@ -6,6 +6,7 @@ namespace: album-dev
 resources:
   - namespace.yaml
   - ../../base
+  - ../../secrets/dev/album
 
 # M2-M6: images are built on the VM and imported into K3S (scripts/build-images.sh).
 # From M7 CI rewrites newTag here with the pushed sha-<commit> tag.
@@ -23,13 +24,7 @@ configMapGenerator:
     literals:
       - LOG_LEVEL=DEBUG
 
-# secrets.env is created on the VM by scripts/k8s-secrets.sh and is gitignored.
-# M8 replaces this generator with SealedSecrets committed to Git.
-secretGenerator:
-  - name: album-secrets
-    envs:
-      - secrets.env
-
+# Strict-scope ciphertext; the controller creates the stable album-secrets name.
 patches:
   - target: { kind: Ingress, name: album }
     patch: |-

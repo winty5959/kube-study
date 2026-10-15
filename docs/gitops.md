@@ -26,4 +26,4 @@ Secret을 복원할 수 없다. 키 갱신 후에는 백업도 다시 생성해�
 
 2026-10-15 dev에서 두 컨트롤러 설치가 성공했다. 기존 DB/S3/Grafana 자격으로
 암호화된 Secret을 생성했고, 키 백업을 VM 및 작업 PC의 저장소 밖에 보관했다.
-앱의 평문 generator 교체와 root Application 동기화는 다음 단계에서 검증한다.
+dev 평문 generator를 SealedSecret 참조로 교체했다. 복호화된 세 값이 기존 Secret과 모두 일치함을 값 출력 없이 확인했고, API·PostgreSQL·MinIO 재배포 후 전체 smoke가 통과했다. root Application 동기화는 다음 단계에서 검증한다.
