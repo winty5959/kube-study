@@ -10,7 +10,7 @@ if ! kubectl -n monitoring get secret grafana-admin >/dev/null 2>&1; then
   task_tmp="$(mktemp -d)"
   trap 'rm -rf "$task_tmp"' EXIT
   printf admin > "$task_tmp/admin-user"
-  openssl rand -hex 32 > "$task_tmp/admin-password"
+  openssl rand -hex 32 | tr -d '\n' > "$task_tmp/admin-password"
   kubectl -n monitoring create secret generic grafana-admin \
     --from-file=admin-user="$task_tmp/admin-user" \
     --from-file=admin-password="$task_tmp/admin-password" >/dev/null
