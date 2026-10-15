@@ -21,3 +21,23 @@ spec:
             matchLabels: {app.kubernetes.io/name: traefik}
       ports:
         - {protocol: TCP, port: 8000}
+    - to:
+        - podSelector:
+            matchLabels: {app.kubernetes.io/name: api}
+      ports:
+        - {protocol: TCP, port: 8000}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postsync-api-readiness
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: api}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app.kubernetes.io/name: album-smoke}
+      ports:
+        - {protocol: TCP, port: 8000}

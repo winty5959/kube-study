@@ -24,7 +24,7 @@ spec:
       containers:
         - name: smoke
           image: ghcr.io/winty5959/album-api:latest
-          command: [python, /smoke/smoke.py, http://traefik.kube-system.svc.cluster.local]
+          command: [python, /smoke/smoke.py, http://traefik.kube-system.svc.cluster.local, http://api:8000]
           env:
             - name: SMOKE_HOST
               value: album.dev.local
