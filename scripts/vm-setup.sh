@@ -52,11 +52,13 @@ fi
 
 # Host-based routes used by VM-side checks; Chrome uses *.localhost through SSH.
 api_host="album.$env_name.local"
-[ "$env_name" != prod ] || api_host=album.local
-if ! getent hosts "$api_host" >/dev/null; then
-  printf '127.0.0.1 %s argocd.%s.local grafana.%s.local\n' \
-    "$api_host" "$env_name" "$env_name" | sudo tee -a /etc/hosts >/dev/null
-fi
+grafana_host="grafana.$env_name.local"
+if [ "$env_name" = prod ]; then api_host=album.local; grafana_host=grafana.local; fi
+for route_host in "$api_host" "argocd.$env_name.local" "$grafana_host"; do
+  if ! getent hosts "$route_host" >/dev/null; then
+    printf '127.0.0.1 %s\n' "$route_host" | sudo tee -a /etc/hosts >/dev/null
+  fi
+done
 
 # Helm
 have helm || curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash

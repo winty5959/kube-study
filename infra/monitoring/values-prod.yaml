@@ -2,4 +2,4 @@ grafana:
   ingress:
     enabled: true
     ingressClassName: traefik
-    hosts: [grafana.local]
+    hosts: [grafana.local, grafana.prod.localhost]

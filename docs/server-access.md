@@ -25,13 +25,13 @@ VM을 처음 만드는 절차는 [azure-vm.md](azure-vm.md), 접근 방식을 �
 
 ### 접속 정보 요약
 
-| 항목 | dev | prod (M9에서 생성) |
+| 항목 | dev | prod (VM 준비 완료, 서비스 승격 대기) |
 |---|---|---|
 | Azure 리소스 그룹 | `rg-seonung-kube-study` | 동일 |
 | VM 이름 | `vm-kube-dev` | `vm-kube-prod` |
 | SSH 별칭 | `kube-dev` | `kube-prod` |
 | SSH 사용자 / 키 | `azureuser` / `~/.ssh/kube-study` | 동일 |
-| 앱 주소 (터널 경유) | `http://album.dev.local:8080` | `http://album.local:8090` |
+| 앱 주소 (터널 경유) | `http://album.dev.localhost:8080` | `http://album.prod.localhost:8090` |
 | K8s API (터널 경유) | `https://127.0.0.1:16443` | `https://127.0.0.1:26443` |
 | kubectl context | `k3s-dev` | `k3s-prod` |
 | 자동 종료 | 매일 KST 18:00 | 동일 |
@@ -47,7 +47,7 @@ VM을 처음 만드는 절차는 [azure-vm.md](azure-vm.md), 접근 방식을 �
 | 1 | Azure CLI 로그인: `az login --tenant ktopen.onmicrosoft.com` 후 `az account set --subscription 'AX사업부문-인프라아키텍처팀'` | `az account show --query name -o tsv` |
 | 2 | SSH 키 `~/.ssh/kube-study`(개인키), `.pub`(공개키) 존재 | `ls ~/.ssh/kube-study*` |
 | 3 | `~/.ssh/config`에 별칭 등록 (아래) | `ssh kube-dev hostname` → `vm-kube-dev` |
-| 4 | `/etc/hosts`에 도메인 등록 (아래, sudo 필요) | `ping -c1 album.dev.local` → 127.0.0.1 |
+| 4 | Chrome에서 `.localhost` 주소 사용 (hosts 수정 불필요) | `open http://album.dev.localhost:8080` |
 | 5 | kubeconfig 등록: 터널을 켠 상태에서 `scripts/fetch-kubeconfig.sh dev` | `kubectl config get-contexts k3s-dev` |
 
 ### `~/.ssh/config`
@@ -63,9 +63,9 @@ Host kube-dev
 
 공인 IP는 Static이라 VM을 껐다 켜도 바뀌지 않는다(2026-10-14 확인).
 
-### `/etc/hosts`
+### 선택: 기존 도메인을 위한 `/etc/hosts`
 
-Traefik은 요청의 **Host 이름**을 보고 어느 서비스로 보낼지 정한다. 그래서 IP가 아니라 `album.dev.local` 같은 이름으로 접속해야 하고, 이 이름은 실제 DNS에 없으므로 작업 PC가 직접 알게 한다.
+Chrome의 `.localhost` 접속에는 아래 설정이 필요 없다. Traefik은 Host 이름으로 라우팅하며, 기존 `album.dev.local`과 `album.local`을 CLI에서 쓰려면 선택적으로 등록한다. Grafana는 dev `http://grafana.dev.localhost:8080`, prod `http://grafana.prod.localhost:8090`을 사용한다.
 
 ```bash
 sudo sh -c 'cat >> /etc/hosts <<EOF
@@ -147,7 +147,7 @@ prod는 `scripts/tunnel.sh prod start`이며 포트만 8090 / 26443으로 다르
 터널이 열린 상태에서:
 
 ```bash
-open http://album.dev.local:8080             # 브라우저로 앱 열기
+open http://album.dev.localhost:8080             # 브라우저로 앱 열기
 kubectl --context k3s-dev get pods -n album-dev
 ```
 
@@ -224,12 +224,9 @@ az vm auto-shutdown -g rg-seonung-kube-study -n vm-kube-dev --time 1100
 az vm auto-shutdown -g rg-seonung-kube-study -n vm-kube-dev --off
 ```
 
-### 6.4 앱만 멈추고 VM은 유지
+### 6.4 GitOps 사용 중 정지
 
-```bash
-ssh kube-dev 'kubectl -n album-dev scale deploy --all --replicas=0'   # 앱 Pod만 정지
-ssh kube-dev 'kubectl apply -k ~/kube-study/k8s/overlays/dev'         # 원래 replica로 복구
-```
+M8 이후에는 ArgoCD selfHeal과 HPA/KEDA가 replica를 복원하므로 `scale --replicas=0`을 정지 절차로 사용하지 않는다. 실험을 쉬는 동안에는 위의 VM deallocate 절차를 사용한다.
 
 ---
 
@@ -240,7 +237,7 @@ ssh kube-dev 'kubectl apply -k ~/kube-study/k8s/overlays/dev'         # 원래 r
 az vm start -g rg-seonung-kube-study -n vm-kube-dev
 ssh kube-dev 'kubectl -n album-dev get pods'      # Running 확인 (안 되면 30초 뒤 재시도)
 scripts/tunnel.sh dev start
-open http://album.dev.local:8080
+open http://album.dev.localhost:8080
 
 # 작업: 작업 PC에서 편집 → scripts/sync.sh dev → ssh kube-dev 에서 빌드/배포
 #        (빌드·배포 절차는 k8s-dev.md)
@@ -263,7 +260,7 @@ az vm deallocate -g rg-seonung-kube-study -n vm-kube-dev
 | `bind [127.0.0.1]:8080: Address already in use` | 터널이 이미 열려 있거나 다른 프로그램이 8080 사용 | `scripts/tunnel.sh dev status` / `lsof -nP -iTCP:8080 -sTCP:LISTEN` |
 | 터널은 열렸는데 `Connection reset by peer` | VM을 막 켜서 Traefik이 아직 기동 중 | 30초~1분 뒤 재시도 |
 | 터널이 갑자기 안 됨 (`status`는 running) | 와이파이 변경·절전으로 SSH 연결이 끊김 | `scripts/tunnel.sh dev stop` 후 `start` |
-| 브라우저 404 page not found | 주소를 IP나 `localhost`로 입력함(Host 불일치) | `http://album.dev.local:8080`으로 접속, `/etc/hosts` 확인 |
+| 브라우저 404 page not found | 주소를 IP나 `localhost`로 입력함(Host 불일치) | `http://album.dev.localhost:8080`으로 접속, Chrome `.localhost` 주소와 SSH 터널 상태 확인 |
 | 썸네일 이미지만 깨짐 | presigned URL 유효시간(1시간) 경과 | 새로고침 |
 | `kubectl`: `connection refused` (127.0.0.1:16443) | 터널이 닫혀 있음 | `scripts/tunnel.sh dev start` |
 | `kubectl`: 인증서 오류 | VM/K3S를 새로 설치함 | `scripts/fetch-kubeconfig.sh dev` 재실행 |
