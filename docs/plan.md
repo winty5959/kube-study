@@ -5,7 +5,7 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용). 원문은 [prd.md](prd.md), 실험 E-01~E-15 상세는 [experiments/README.md](experiments/README.md) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | M3 완료 (2026-10-15), M4 진행 중 |
+| 상태 | M4 완료 (2026-10-15), M5 부하·축소 검증 진행 중 |
 
 ---
 
@@ -112,7 +112,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M1 로컬 동작** (완료) | `apps/api`(FastAPI, uv), `apps/worker`(Pillow), `apps/frontend`(정적 + nginx), 멀티스테이지 Dockerfile(non-root), `docker-compose.yaml`(postgres/redis/minio 포함), pytest 최소 테스트 | VM에서 compose 기동 → 업로드 → DONE 상태, 썸네일 2종 확인 |
 | **M2 수동 배포** (완료) | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
 | **M3 헬스/리소스/Job** (완료) | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 통과 |
-| **M4 관측성** | `infra/` kube-prometheus-stack values, ServiceMonitor, 커스텀 메트릭 5종, 대시보드 1~5 JSON + sidecar ConfigMap | 대시보드에 실데이터 표시 |
+| **M4 관측성** | 완료: kube-prometheus-stack 92.7.0, ServiceMonitor, 필수 알림 3개, 대시보드 5개와 sidecar ConfigMap | Grafana UI 시계열 및 20개 패널의 모든 쿼리 표본 검증. [관측성 기록](observability.md) |
 | **M5 오토스케일링** | HPA(api), KEDA ScaledObject(worker), `loadtest/` k6 스크립트와 대량 업로드 스크립트, `ARTIFICIAL_DELAY_MS` | E-02, E-03 기록 |
 | **M6 운영 기능/실험** | PDB, NetworkPolicy(default deny), 롤링 업데이트 전략 | E-01, E-04~E-10 기록 |
 | **M7 CI** | `ci.yaml`(ruff/pytest/buildx/Trivy/GHCR push/dev 태그 bot 커밋, path filter), `release.yaml`(imagetools 재태깅 + prod PR) | main push 시 GHCR에 `sha-xxxxxxx` 이미지와 dev overlay 갱신 커밋 생성 |

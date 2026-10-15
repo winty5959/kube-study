@@ -21,3 +21,10 @@ CrashLoopBackOff 1분이다.
 Prometheus API로 필수 알림 3개의 등록도 확인했다. 업로드부터 삭제까지
 smoke 검증이 통과했다. UI 스크린샷과 부하 중 시계열 증거는 실험 단계에서
 추가한다. 알림 등록 검증만으로 실제 발화를 주장하지 않는다.
+
+같은 날 Grafana 웹 UI에서 실제 시계열과 범례를 확인했다. API CPU와
+replica 수, 큐와 worker 수는 replica 축을 오른쪽에 분리했다. 화면 증거는
+`docs/experiments/screenshots/`에 저장한다. 맥북 DNS 설정이 없을 때에는
+VM의 Grafana Service port-forward를 SSH `localhost:19001` 터널로 연결한다.
+브라우저 로그인 전에 생성된 관리자 비밀번호의 끝 줄바꿈을 제거하고
+Grafana DB와 Secret을 함께 정규화했다. 새 설치에서는 줄바꿈 없이 생성한다.

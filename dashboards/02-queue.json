@@ -54,18 +54,41 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(album_queue_length{namespace=~\"$namespace\"})"
+          "expr": "max(album_queue_length{namespace=~\"$namespace\"})",
+          "legendFormat": "Queue length / worker replicas (A)"
         },
         {
           "refId": "B",
-          "expr": "kube_deployment_status_replicas{namespace=~\"$namespace\",deployment=\"worker\"}"
+          "expr": "kube_deployment_status_replicas{namespace=~\"$namespace\",deployment=\"worker\"}",
+          "legendFormat": "Replicas"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Replicas"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -91,7 +114,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (result) (album_thumbnail_jobs_total{namespace=~\"$namespace\"})"
+          "expr": "sum by (result) (album_thumbnail_jobs_total{namespace=~\"$namespace\"})",
+          "legendFormat": "Worker job outcomes (A)"
         }
       ],
       "fieldConfig": {
@@ -124,7 +148,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container=\"worker\",image!=\"\"}[5m]))"
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container=\"worker\",image!=\"\"}[5m]))",
+          "legendFormat": "Worker CPU (A)"
         }
       ],
       "fieldConfig": {
@@ -157,7 +182,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\",deployment=\"worker\"}"
+          "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\",deployment=\"worker\"}",
+          "legendFormat": "Ready worker replicas (A)"
         }
       ],
       "fieldConfig": {

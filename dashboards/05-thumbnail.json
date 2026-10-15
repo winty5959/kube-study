@@ -54,11 +54,13 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.5, sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m])))"
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m])))",
+          "legendFormat": "{{le}} seconds"
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m])))"
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m])))",
+          "legendFormat": "{{le}} seconds"
         }
       ],
       "fieldConfig": {
@@ -91,7 +93,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(album_thumbnail_processing_seconds_sum{namespace=~\"$namespace\"}[5m])) / clamp_min(sum(rate(album_thumbnail_processing_seconds_count{namespace=~\"$namespace\"}[5m])),0.001)"
+          "expr": "sum(rate(album_thumbnail_processing_seconds_sum{namespace=~\"$namespace\"}[5m])) / clamp_min(sum(rate(album_thumbnail_processing_seconds_count{namespace=~\"$namespace\"}[5m])),0.001)",
+          "legendFormat": "Average processing time (A)"
         }
       ],
       "fieldConfig": {
@@ -124,7 +127,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(album_thumbnail_jobs_total{namespace=~\"$namespace\",result=\"done\"})"
+          "expr": "sum(album_thumbnail_jobs_total{namespace=~\"$namespace\",result=\"done\"})",
+          "legendFormat": "Completed thumbnails (A)"
         }
       ],
       "fieldConfig": {
@@ -157,7 +161,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m]))"
+          "expr": "sum by (le) (rate(album_thumbnail_processing_seconds_bucket{namespace=~\"$namespace\"}[5m]))",
+          "legendFormat": "{{le}} seconds"
         }
       ],
       "fieldConfig": {
