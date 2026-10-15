@@ -14,6 +14,10 @@ spec:
     repoURL: https://github.com/winty5959/kube-study.git
     targetRevision: main
     path: k8s/gitops/dev/platform
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jqPathExpressions: [".spec.volumeClaimTemplates[].status"]
   syncPolicy:
     automated: {prune: true, selfHeal: true}
     syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true]
