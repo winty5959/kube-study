@@ -15,7 +15,7 @@ images:
   - name: ghcr.io/winty5959/album-worker
     newTag: dev-m7-stop
   - name: ghcr.io/winty5959/album-frontend
-    newTag: dev-m2b
+    newTag: dev-m7-base
 
 configMapGenerator:
   - name: album-config
