@@ -61,6 +61,9 @@ controller-owned status만 비교에서 제외하며 저장 크기·class·컨�
 2026-10-15 root와 7개 child 앱 모두 Synced·Healthy, 각 동기화 Succeeded를 확인했다.
 
 PostSync는 공개 라우팅에 없는 `/readyz`를 내부 API Service로 먼저 확인한다.
+원본 다운로드는 업로드한 PNG 전체 바이트와 비교한다. 정상 원본과 다른 유효한 PNG를
+반환하는 회귀 시나리오를 포함해 scripts 테스트 17개가 통과했고, dev 실서비스에서
+원본 3,462바이트 일치·두 썸네일 크기·삭제를 확인했다 (2026-10-15).
 전용 smoke ServiceAccount·Pod만 API 8000 포트에 접근하도록 정책을 추가했다.
 정상 PreSync와 PostSync를 다시 실행해 album-dev Synced·Healthy·Succeeded와
 두 hook Job의 성공을 확인했다.

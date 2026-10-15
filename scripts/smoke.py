@@ -93,12 +93,13 @@ def main() -> None:
 
     name = f"smoke-{uuid.uuid4().hex[:8]}.png"
     boundary = uuid.uuid4().hex
+    original_bytes = png(1200, 600)
     form = (
         (
             f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n'
             "Content-Type: image/png\r\n\r\n"
         ).encode()
-        + png(1200, 600)
+        + original_bytes
         + f"\r\n--{boundary}--\r\n".encode()
     )
     status, headers, body = request(
@@ -130,7 +131,8 @@ def main() -> None:
         step(f"thumbnail {label} {webp_size(data)[0]}x{webp_size(data)[1]} webp")
 
     status, headers, data = request("GET", f"/api/photos/{photo_id}/original")
-    assert status == 200 and data[:8] == b"\x89PNG\r\n\x1a\n", status
+    assert status == 200, status
+    assert data == original_bytes, "original bytes changed"
     step(f"original downloaded ({len(data)} bytes, redirect followed)")
 
     status, _, _ = request("DELETE", f"/api/photos/{photo_id}")
