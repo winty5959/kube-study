@@ -19,6 +19,49 @@ resources:
   - frontend/deployment.yaml
   - ingress.yaml
   - network-policies.yaml
+  - service-accounts.yaml
+
+patches:
+  - target: {kind: Deployment, name: api}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: api
+  - target: {kind: Deployment, name: worker}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: worker
+  - target: {kind: Deployment, name: frontend}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: frontend
+  - target: {kind: StatefulSet, name: postgres}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: postgres
+  - target: {kind: StatefulSet, name: redis}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: redis
+  - target: {kind: StatefulSet, name: minio}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: minio
+  - target: {kind: Job, name: db-migrate}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/serviceAccountName
+        value: db-migrate
+  - target: {kind: CronJob, name: album-cleanup}
+    patch: |-
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/serviceAccountName
+        value: album-cleanup
 
 # Non-secret settings shared by api and worker. The generated name gets a content hash
 # suffix, so changing a value rolls the Deployments that reference it (E-10).
