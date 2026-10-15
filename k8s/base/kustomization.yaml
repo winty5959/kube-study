@@ -19,6 +19,7 @@ resources:
   - frontend/deployment.yaml
   - ingress.yaml
   - network-policies.yaml
+  - pdb.yaml
   - service-accounts.yaml
 
 patches:

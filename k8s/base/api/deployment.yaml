@@ -17,6 +17,10 @@ kind: Deployment
 metadata:
   name: api
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  progressDeadlineSeconds: 180
   selector:
     matchLabels:
       app.kubernetes.io/name: api
@@ -25,6 +29,8 @@ spec:
       labels:
         app.kubernetes.io/name: api
     spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
@@ -34,6 +40,10 @@ spec:
         - name: api
           image: ghcr.io/winty5959/album-api:latest   # tag set by the overlay
           imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command: [python, -c, "import time; time.sleep(10)"]
           resources:
             requests: {cpu: 100m, memory: 128Mi}
             limits: {cpu: "1", memory: 512Mi}

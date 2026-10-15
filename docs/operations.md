@@ -12,3 +12,15 @@ Secret 조회 권한을 줄 필요가 없다.
 `kubectl auth can-i --as=...`로 확인했다. 실행 중인 모든 앨범 Pod의 projected
 volume에 ServiceAccount token이 없었고, 데이터 StatefulSet 3개의 변경
 rollout과 migration Job도 성공했다.
+
+## 배포와 종료
+
+API·frontend·worker는 maxUnavailable=0, maxSurge=1로 교체한다.
+API와 frontend는 preStop 10초 후 종료하고 유예 시간은 45초다.
+worker는 SIGTERM 후 현재 작업을 마치며 종료 유예 60초를 사용한다.
+PDB는 API·frontend 각각 minAvailable=1이다. 단일 replica API의 자발적
+eviction을 막을 수 있지만 강제 Pod 삭제나 노드 장애를 막지는 않는다.
+
+E-01에서 API 대체 Pod는 약 4초 만에 준비됐고 354건 조회가 모두 성공했다.
+E-04의 첫 실행은 504 한 건으로 실패했다. 종료 대기 추가 후 재실행은
+353건 모두 성공했고 v1·v2 응답이 교체 구간에서 함께 관측됐다.
