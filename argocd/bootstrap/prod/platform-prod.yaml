@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/compare-options: ServerSideDiff=false
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: album-prod
+  source:
+    repoURL: https://github.com/winty5959/kube-study.git
+    targetRevision: main
+    path: k8s/gitops/prod/platform
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jqPathExpressions: [".spec.volumeClaimTemplates[].status"]
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [CreateNamespace=true, PruneLast=true]
+    retry:
+      limit: 3
+      backoff: {duration: 5s, factor: 2, maxDuration: 1m}

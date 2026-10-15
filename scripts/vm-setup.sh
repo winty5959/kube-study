@@ -3,6 +3,8 @@
 # Run on the VM as the admin user (uses sudo):  bash scripts/vm-setup.sh
 # Safe to re-run; already-installed tools are skipped.
 set -euo pipefail
+env_name="${1:-dev}"
+case "$env_name" in dev|prod) ;; *) exit 2 ;; esac
 
 ARCH=amd64
 BIN=/usr/local/bin
@@ -40,6 +42,21 @@ sed -i '/^export KUBECONFIG=/d' "$HOME/.bashrc"
 # ~/.bashrc returns early for non-interactive shells, so `ssh host cmd` needs it before that guard
 grep -q 'kubeconfig.sh' "$HOME/.bashrc" || sed -i '1i . /etc/profile.d/kubeconfig.sh' "$HOME/.bashrc"
 export KUBECONFIG="$HOME/.kube/config"
+
+# A rebuilt cluster must load its own sealing keys before controllers start.
+# The backup stays outside Git; this belongs to the first bootstrap command.
+if [ -n "${SEALED_KEY_BACKUP:-}" ]; then
+  [ -r "$SEALED_KEY_BACKUP" ] || { echo "Sealing key backup is unreadable" >&2; exit 1; }
+  kubectl apply -f "$SEALED_KEY_BACKUP" >/dev/null
+fi
+
+# Host-based routes used by VM-side checks; Chrome uses *.localhost through SSH.
+api_host="album.$env_name.local"
+[ "$env_name" != prod ] || api_host=album.local
+if ! getent hosts "$api_host" >/dev/null; then
+  printf '127.0.0.1 %s argocd.%s.local grafana.%s.local\n' \
+    "$api_host" "$env_name" "$env_name" | sudo tee -a /etc/hosts >/dev/null
+fi
 
 # Helm
 have helm || curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
