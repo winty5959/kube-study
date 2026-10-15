@@ -127,7 +127,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M3 헬스/리소스/Job** (완료) | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 통과 |
 | **M4 관측성** | 완료: kube-prometheus-stack 92.7.0, ServiceMonitor, 필수 알림 3개, 대시보드 5개와 sidecar ConfigMap | Grafana UI 시계열 및 20개 패널의 모든 쿼리 표본 검증. [관측성 기록](observability.md) |
 | **M5 오토스케일링** | 완료: HPA CPU 60%, KEDA 2.21.0과 worker 0~2, k6와 격리 batch fixture 도구 | E-02 200 VU 조회 41,809/41,809 성공. E-03 500장 DONE, worker 0→2→0 확인 |
-| **M6 운영 기능/실험** | PDB, NetworkPolicy(default deny), 롤링 업데이트 전략 | E-01, E-04~E-10 기록 |
+| **M6 운영 기능/실험** (완료) | PDB, NetworkPolicy(default deny), 개별 ServiceAccount, 롤링 업데이트 전략 | E-01, E-04~E-10 통과. 최초 실패와 수정 후 재검증도 기록 |
 | **M7 CI** | `ci.yaml`(ruff/pytest/buildx/Trivy/GHCR push/dev 태그 bot 커밋, path filter), `release.yaml`(imagetools 재태깅 + prod PR) | main push 시 GHCR에 `sha-xxxxxxx` 이미지와 dev overlay 갱신 커밋 생성 |
 | **M8 GitOps dev** | ArgoCD Helm 설치, `argocd/bootstrap` app-of-apps, Sync Wave, Sealed Secrets(평문 Secret 대체), PreSync/PostSync 훅, 키 백업 절차 문서 | E-11, E-12, E-15 기록 |
 | **M9 prod** | prod VM 생성 → "K3S → ArgoCD → root Application" 3단계로 재현, `k8s/overlays/prod`, Release 워크플로 | E-13, E-14 기록. PRD 완료 기준 2·3 충족 |
