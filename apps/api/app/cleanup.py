@@ -30,7 +30,8 @@ def recover(conn: psycopg.Connection, queue: redis.Redis, s: Settings, stale_s: 
             "WHERE (status = 'PROCESSING' AND processing_started_at < "
             "now() - make_interval(secs => %s)) OR "
             "(status = 'PENDING' AND created_at < now() - make_interval(secs => %s)) "
-            "ORDER BY created_at LIMIT 100 FOR UPDATE SKIP LOCKED",
+            "ORDER BY CASE WHEN status = 'PROCESSING' THEN 0 ELSE 1 END, created_at "
+            "LIMIT 100 FOR UPDATE SKIP LOCKED",
             (stale_s, stale_s),
         ).fetchall()
         max_attempts = int(os.environ.get("MAX_ATTEMPTS", "3"))

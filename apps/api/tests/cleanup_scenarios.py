@@ -88,7 +88,21 @@ def main() -> None:
             # Then the referenced original remains downloadable.
             body = s3.get_object(Bucket=s.bucket_originals, Key=str(live))["Body"].read()
             assert body == b"original"
-            print("cleanup scenarios passed (6 real-service outcomes)")
+            # A healthy backlog must not hide an expired lease behind the batch limit.
+            for _ in range(100):
+                queued_id = uuid.uuid4()
+                conn.execute(
+                    "INSERT INTO photos (id, filename, content_type, size_bytes, original_key, "
+                    "created_at) VALUES (%s, 'queued.png', 'image/png', 1, %s, %s)",
+                    (queued_id, str(queued_id), now - timedelta(days=1)),
+                )
+                queue.lpush(s.queue_key, str(queued_id))
+            conn.execute(
+                "UPDATE photos SET status='PROCESSING', processing_started_at=%s WHERE id=%s",
+                (now - timedelta(minutes=20), expired),
+            )
+            assert recover(conn, queue, s, 600) == 1
+            print("cleanup scenarios passed (7 real-service outcomes)")
         finally:
             queue.delete(s.queue_key)
             for bucket in (s.bucket_originals, s.bucket_thumbnails):
