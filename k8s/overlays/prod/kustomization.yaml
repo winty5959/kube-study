@@ -11,7 +11,7 @@ resources:
 # Bootstrap uses CI-published artifacts. Release PRs update these aliases; Sync is manual.
 images:
   - name: ghcr.io/winty5959/album-api
-    newTag: v1.1.0
+    newTag: sha-a3e8669
   - name: ghcr.io/winty5959/album-worker
     newTag: sha-a3e8669
   - name: ghcr.io/winty5959/album-frontend
