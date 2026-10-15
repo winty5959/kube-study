@@ -5,17 +5,19 @@
 #   docker build -t ghcr.io/winty5959/album-minio:RELEASE.2025-10-15T17-29-55Z infra/minio
 ARG MINIO_TAG=RELEASE.2025-10-15T17-29-55Z
 
-FROM golang:1.25-alpine AS build
+FROM golang:1.27.2-alpine3.24 AS build
 ARG MINIO_TAG
-# Use the newer local Go (patched stdlib) instead of the go1.24 toolchain pinned in go.mod
+# Keep a patched local toolchain instead of downloading the archived go.mod toolchain.
 ENV CGO_ENABLED=0 GOTOOLCHAIN=local
 RUN apk add --no-cache git
 WORKDIR /src
 RUN git clone --depth 1 --branch "${MINIO_TAG}" https://github.com/minio/minio.git .
-RUN LDFLAGS="$(MINIO_RELEASE=RELEASE go run buildscripts/gen-ldflags.go)" \
- && go build -tags kqueue -trimpath -ldflags "${LDFLAGS}" -o /out/minio .
+# Freeze the patched module graph and checksums, including build-tool dependencies.
+COPY go.mod go.sum ./
+RUN LDFLAGS="$(MINIO_RELEASE=RELEASE go run -mod=readonly buildscripts/gen-ldflags.go)" \
+ && go build -mod=readonly -tags kqueue -trimpath -ldflags "${LDFLAGS}" -o /out/minio .
 
-FROM alpine:3.22
+FROM alpine:3.24
 ARG MINIO_TAG
 LABEL org.opencontainers.image.source="https://github.com/winty5959/kube-study" \
       org.opencontainers.image.description="MinIO ${MINIO_TAG} built from archived upstream source (AGPL-3.0)" \
