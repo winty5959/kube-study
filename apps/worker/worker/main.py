@@ -176,6 +176,11 @@ class Worker:
                     self.s.queue_key, self.s.processing_key, self.s.poll_timeout_s, "RIGHT", "LEFT"
                 )
                 if job is not None:
+                    if self.stopping:
+                        # SIGTERM may arrive while BLMOVE is blocked. Return the unclaimed
+                        # item atomically so the replacement Pod can take it immediately.
+                        self.redis.lmove(self.s.processing_key, self.s.queue_key, "LEFT", "RIGHT")
+                        break
                     self.process(job.decode())
             except (redis.ConnectionError, redis.TimeoutError, OSError) as e:
                 log.warning("dependency unavailable (%s); retrying in 2s", type(e).__name__)
