@@ -10,6 +10,7 @@ kubectl -n "album-$env_name" create secret generic album-secrets \
   --from-env-file="k8s/overlays/$env_name/secrets.env" --dry-run=client -o json \
   | kubeseal --controller-name sealed-secrets-controller --controller-namespace kube-system \
       --format yaml > "k8s/secrets/$env_name/album/album-sealed.yaml"
+kubectl -n monitoring annotate secret grafana-admin sealedsecrets.bitnami.com/managed=true --overwrite >/dev/null
 kubectl -n monitoring get secret grafana-admin -o json \
   | kubeseal --controller-name sealed-secrets-controller --controller-namespace kube-system \
       --format yaml > "k8s/secrets/$env_name/monitoring/grafana-sealed.yaml"

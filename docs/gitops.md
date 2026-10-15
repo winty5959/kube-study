@@ -50,3 +50,5 @@ smoke는 내부 Traefik Service를 사용하며 공개 Host를 유지해 presign
 검증한다. 별도 ServiceAccount는 API 권한과 토큰이 없고, egress는 DNS와
 Traefik Pod의 8000 포트로 제한한다. 실패한 Job은 진단을 위해 보존한다.
 2026-10-15 dev에서 실제 Job을 실행해 업로드·DONE·WebP 2종·원본·삭제가 통과했다.
+
+기존 Grafana Secret 인수 시에는 `sealedsecrets.bitnami.com/managed=true`를 먼저 지정한다. 처음 root 동기화에서 unmanaged Secret을 덮어쓰지 못해 credentials 앱이 Degraded가 된 것을 확인하고, 자격을 바꾸지 않고 관리 권한을 인수하도록 bootstrap을 보완했다.
