@@ -18,6 +18,9 @@ images:
   - name: ghcr.io/winty5959/album-frontend
     newTag: sha-a3e8669
 
+  - name: ghcr.io/winty5959/album-minio
+    newTag: sha-a3e8669
+
 configMapGenerator:
   - name: album-config
     behavior: merge
