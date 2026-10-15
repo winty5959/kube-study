@@ -52,3 +52,7 @@ VM 쪽 작업(docker, helm, k6 등)은 `ssh kube-dev`로 접속해서 한다. �
 | `bind: Address already in use` | 터널이 이미 켜져 있음 → `scripts/tunnel.sh dev status` |
 | Traefik 404 | 해당 Host의 Ingress가 아직 없음 (M2 이전에는 정상) |
 | `kubectl` 인증서 오류 | VM 재설치 후 kubeconfig가 바뀜 → `fetch-kubeconfig.sh` 재실행 |
+
+## Mac에서 DNS 설정 없이 접속
+
+`scripts/tunnel.sh dev start` 후 Chrome에서 [앨범](http://album.dev.localhost:8080), [Grafana](http://grafana.dev.localhost:8080), [ArgoCD](http://argocd.dev.localhost:8080)를 연다. `.localhost`는 loopback으로 해석되므로 Mac hosts 변경이 필요 없다. VM에서 쓰는 기존 `.dev.local` Host도 유지한다. Grafana 전용 forward `http://localhost:19001`도 사용할 수 있다.
