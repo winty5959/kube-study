@@ -27,3 +27,26 @@ Secret을 복원할 수 없다. 키 갱신 후에는 백업도 다시 생성해�
 2026-10-15 dev에서 두 컨트롤러 설치가 성공했다. 기존 DB/S3/Grafana 자격으로
 암호화된 Secret을 생성했고, 키 백업을 VM 및 작업 PC의 저장소 밖에 보관했다.
 dev 평문 generator를 SealedSecret 참조로 교체했다. 복호화된 세 값이 기존 Secret과 모두 일치함을 값 출력 없이 확인했고, API·PostgreSQL·MinIO 재배포 후 전체 smoke가 통과했다. root Application 동기화는 다음 단계에서 검증한다.
+
+## 배포 순서와 훅
+
+root-dev는 child Application의 health 및 sync 상태를 기다린다.
+
+| Wave | 앱 |
+|---|---|
+| -3 | Sealed Secrets, KEDA 컨트롤러 |
+| -2 | monitoring namespace와 Grafana SealedSecret |
+| -1 | album namespace, DB·Redis·MinIO, ServiceAccount, NetworkPolicy, album SealedSecret |
+| 0 | 모니터링 Helm 앱, album 애플리케이션 |
+| 1 | Grafana dashboards, ServiceMonitor, PrometheusRule |
+
+platform과 application은 같은 dev overlay를 가져와 필요한 리소스만 선택하므로
+CI가 수정하는 이미지 태그의 원본이 하나다. 마이그레이션은 application의
+PreSync Job이다. 최초 설치에서 필요한 DB·Secret·ServiceAccount는 앞선
+platform 앱에서 준비한다. PostSync는 같은 API 이미지를 사용하는 smoke Job이고,
+ConfigMap에 저장된 `scripts/smoke.py`를 그대로 실행한다.
+
+smoke는 내부 Traefik Service를 사용하며 공개 Host를 유지해 presigned URL도
+검증한다. 별도 ServiceAccount는 API 권한과 토큰이 없고, egress는 DNS와
+Traefik Pod의 8000 포트로 제한한다. 실패한 Job은 진단을 위해 보존한다.
+2026-10-15 dev에서 실제 Job을 실행해 업로드·DONE·WebP 2종·원본·삭제가 통과했다.

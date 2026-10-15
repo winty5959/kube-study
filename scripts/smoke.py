@@ -11,17 +11,42 @@ Standard library only, so it runs anywhere Python 3 exists.
 """
 
 import json
+import os
 import struct
 import sys
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 import uuid
 import zlib
 
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8088").rstrip("/")
 API_URL = (sys.argv[2] if len(sys.argv) > 2 else "").rstrip("/")
 TIMEOUT_S = 60
+
+# PostSync connects to the private Traefik Service but preserves the signed public Host.
+SMOKE_HOST = os.environ.get("SMOKE_HOST", "")
+
+
+class IngressTransport(urllib.request.BaseHandler):
+    handler_order = 400
+
+    def http_request(self, req):
+        if SMOKE_HOST:
+            target = urllib.parse.urlsplit(req.full_url)
+            transport = urllib.parse.urlsplit(BASE)
+            if target.netloc in (SMOKE_HOST, transport.netloc):
+                req.full_url = urllib.parse.urlunsplit(
+                    (transport.scheme, transport.netloc, target.path, target.query, target.fragment)
+                )
+                req.add_unredirected_header("Host", SMOKE_HOST)
+        return req
+
+    https_request = http_request
+
+
+OPENER = urllib.request.build_opener(IngressTransport())
 
 
 def png(width: int, height: int) -> bytes:
@@ -39,7 +64,7 @@ def png(width: int, height: int) -> bytes:
 def request(method: str, path: str, body: bytes | None = None, headers: dict | None = None):
     url = path if path.startswith("http") else BASE + path
     req = urllib.request.Request(url, data=body, method=method, headers=headers or {})
-    with urllib.request.urlopen(req, timeout=10) as res:
+    with OPENER.open(req, timeout=10) as res:
         return res.status, res.headers, res.read()  # headers lookup is case-insensitive
 
 
