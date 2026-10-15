@@ -5,11 +5,24 @@
 | 작성일 | 2026-10-14 |
 | 기준 문서 | PRD v1.1 (Mini Photo Album on K3S, 쿠버네티스 학습용). 원문은 [prd.md](prd.md), 실험 E-01~E-15 상세는 [experiments/README.md](experiments/README.md) |
 | 저장소 | https://github.com/winty5959/kube-study (public) |
-| 상태 | M4 완료 (2026-10-15), M5 부하·축소 검증 진행 중 |
+| 상태 | M5 완료 (2026-10-15), M6 운영 실험 진행 중 |
 
 ---
 
 ## 1. 확정된 결정 사항
+
+### 구현 과정에서 확인한 운영 결정
+
+- cleanup은 매일 03:00 대신 5분마다 실행한다. 만료된 PROCESSING lease와
+  enqueue가 누락된 PENDING을 복구하고, 3회 시도 후 FAILED는 종료 상태로 둔다.
+  FAILED를 무한 재시도하지 않으며 24시간 이상 된 DB 미참조 객체만 지운다.
+  짧은 주기는 단일 노드 학습 환경에서 장애 회복을 관찰하기 위한 결정이다.
+- M3 리소스는 PRD의 초기 가이드와 달리 API·worker 최대 메모리 512Mi,
+  API CPU limit 1, MinIO 512Mi를 사용한다. 실제 이미지 처리와 통합 검증을
+  통과한 설정이며 requests는 HPA 계산과 노드 예산에 포함한다.
+- prod ArgoCD는 순수 수동 Sync로 운영한다. selfHeal은 automated 하위 설정이므로
+  수동 Sync와 자동 selfHeal을 동시에 보장할 수 없다. E-14에서는 rollout undo가
+  OutOfSync를 만들고 다음 수동 Sync가 Git 상태를 복원함을 비교한다.
 
 ### 1.1 PRD 미결 사항(Open Questions) 결정
 
@@ -113,7 +126,7 @@ PRD의 M1~M9를 유지하고 앞에 M0(기반 준비)를 추가한다. 각 단�
 | **M2 수동 배포** (완료) | `k8s/base/` 전 컴포넌트, `k8s/overlays/dev`, Ingress 경로 라우팅, ConfigMap/Secret (이 단계는 평문 Secret을 `.gitignore`로 제외) | `kubectl apply -k k8s/overlays/dev` 후 터널 경유 브라우저에서 업로드 동작 |
 | **M3 헬스/리소스/Job** (완료) | liveness/readiness probe, requests/limits, db-migrate Job, cleanup CronJob, `X-Served-By`/`X-App-Version` 헤더 | E-07, E-08 통과 |
 | **M4 관측성** | 완료: kube-prometheus-stack 92.7.0, ServiceMonitor, 필수 알림 3개, 대시보드 5개와 sidecar ConfigMap | Grafana UI 시계열 및 20개 패널의 모든 쿼리 표본 검증. [관측성 기록](observability.md) |
-| **M5 오토스케일링** | HPA(api), KEDA ScaledObject(worker), `loadtest/` k6 스크립트와 대량 업로드 스크립트, `ARTIFICIAL_DELAY_MS` | E-02, E-03 기록 |
+| **M5 오토스케일링** | 완료: HPA CPU 60%, KEDA 2.21.0과 worker 0~2, k6와 격리 batch fixture 도구 | E-02 200 VU 조회 41,809/41,809 성공. E-03 500장 DONE, worker 0→2→0 확인 |
 | **M6 운영 기능/실험** | PDB, NetworkPolicy(default deny), 롤링 업데이트 전략 | E-01, E-04~E-10 기록 |
 | **M7 CI** | `ci.yaml`(ruff/pytest/buildx/Trivy/GHCR push/dev 태그 bot 커밋, path filter), `release.yaml`(imagetools 재태깅 + prod PR) | main push 시 GHCR에 `sha-xxxxxxx` 이미지와 dev overlay 갱신 커밋 생성 |
 | **M8 GitOps dev** | ArgoCD Helm 설치, `argocd/bootstrap` app-of-apps, Sync Wave, Sealed Secrets(평문 Secret 대체), PreSync/PostSync 훅, 키 백업 절차 문서 | E-11, E-12, E-15 기록 |
