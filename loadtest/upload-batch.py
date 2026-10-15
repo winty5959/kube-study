@@ -22,15 +22,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--count", type=int, default=500)
     parser.add_argument("--concurrency", type=int, default=8)
+    parser.add_argument("--width", type=int, default=1600)
+    parser.add_argument("--height", type=int, default=1200)
     parser.add_argument("--base", default="http://album.dev.local")
     parser.add_argument(
         "--output", type=Path, default=Path("/tmp/album-batch-ids.json")
     )
     parser.add_argument("--cleanup", action="store_true")
     parser.add_argument("--status", action="store_true")
+    parser.add_argument("--expect", choices=["DONE", "FAILED"], default="DONE")
     args = parser.parse_args()
     if args.count < 1 or args.concurrency < 1:
         parser.error("count and concurrency must be positive")
+    if not (0 < args.width <= 10000 and 0 < args.height <= 10000):
+        parser.error("dimensions must be between 1 and 10000 pixels")
     transport = httpx2.HTTPTransport(
         http2=True,
         retries=3,
@@ -53,8 +58,8 @@ def main() -> None:
                 status = response.json()["status"]
                 counts[status] = counts.get(status, 0) + 1
             print(json.dumps(counts, sort_keys=True))
-            if set(counts) != {"DONE"}:
-                raise RuntimeError("Batch has unfinished or failed photos")
+            if set(counts) != {args.expect}:
+                raise RuntimeError("Batch has unexpected photo statuses")
             return
         if args.cleanup:
             ids = json.loads(args.output.read_text())
@@ -67,7 +72,7 @@ def main() -> None:
             return
         if args.output.exists():
             parser.error("output already exists; clean the previous batch first")
-        image = png(1600, 1200)
+        image = png(args.width, args.height)
         ids: list[str] = []
 
         def upload(number: int) -> str:
