@@ -14,7 +14,7 @@ images:
   - name: ghcr.io/winty5959/album-api
     newTag: sha-72655e4
   - name: ghcr.io/winty5959/album-worker
-    newTag: sha-f141475
+    newTag: sha-72655e4
   - name: ghcr.io/winty5959/album-frontend
     newTag: sha-f141475
 
