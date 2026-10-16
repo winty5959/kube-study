@@ -1,0 +1,49 @@
+AKS A9 data backup and restore rehearsal (2026-10-16 KST)
+
+Target: AKS dev, namespace album-dev, API image sha-b7122b7.
+Source: K3S dev. Source remained online; K3S prod remained deallocated.
+This is a dev restore rehearsal, not a final cutover consistency test.
+
+Source preflight (read-only):
+- 1 photo row, status DONE, size 1,064 bytes.
+- originals: 1 object / 1,064 bytes; thumbnails: 2 objects / 446 bytes total.
+- main queue: 0; processing queues: 0.
+- Destination before restore: 0 rows and 0 objects in the app buckets.
+
+Snapshot storage and integrity:
+- Private AKS MinIO bucket migration-backups, prefix k3s-dev/2026-10-16/.
+- database.sql.gz: 679 bytes, SHA-256 50c601ed5031dadc9989ce7eff6defa98cba9a7b6303e68cc5ae8d3b7c91fbca.
+- objects.json.gz: 895 bytes, SHA-256 93d385d7a0c77e5124f08cad29b17ad0ab4338e0d85f8911ef6c46e997a0cb9b.
+- manifest.json: 1,111 bytes, SHA-256 e444845ec142973bf8e1d11d09986012739769147ea55e1b3e6efa310244e09b.
+- External workstation copy: ~/.local/share/kube-study/aks-backups/k3s-dev/2026-10-16/.
+  FileVault was On; backup directory mode 700 and files mode 600. The two compressed-artifact
+  hashes matched the AKS snapshot. Payloads were not added to Git.
+- Source and destination object byte lengths and SHA-256 values matched for all 3 objects.
+  ETag was not interpreted as MD5.
+
+Controlled restore:
+- Disabled album-dev automated sync; suspended album-cleanup; paused the KEDA ScaledObject;
+  scaled worker and API to 0; temporarily removed the API HPA. No cleanup job was active.
+- Kept destination schema and PVCs. Destination began with 0 rows; no Redis flush or PV reset.
+- Initial dry-run verification query failed after pg_dump cleared search_path; public.photos was
+  then used. The failed transaction rolled back and a follow-up count remained 0.
+- Corrected dry-run passed: one expected DONE row, three SHA-256-matched objects, rollback
+  verified. The actual transaction then committed the same validated row.
+- Final target: 1 DONE photo / 1,064 bytes; originals 1 / 1,064 bytes; thumbnails 2 / 446 bytes;
+  hashes matched; main and processing queues 0.
+
+Application checks:
+- Restored photo API GET: 200, status DONE. Original download: 200 and byte count matched.
+  Both existing thumbnail URLs: 200 image/webp.
+- aks/scripts/smoke.py: generated upload accepted; worker reached DONE; thumbnails 200x100 and
+  800x400 image/webp; generated original download 3,462 bytes; API deletion 204; subsequent
+  lookup 404.
+- API /readyz: Postgres, Redis, and S3 healthy. API HPA recovered a 4m CPU sample against its
+  60% target. After refreshing Argo status, album-dev was Synced/Healthy.
+- Restored API HPA, KEDA, cleanup CronJob, and Argo automated sync. API remained Ready,
+  frontend 2/2 Ready, worker 0 after queue processing. Restore Jobs and generated smoke row
+  were removed.
+
+Source data and service were not modified. The source remained online during capture, so this
+snapshot is not a final cutover proof. Live traffic was not redirected; no K3S resource was
+deleted.

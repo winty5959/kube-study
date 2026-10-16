@@ -398,7 +398,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A9. 실제 데이터 백업·복원 리허설
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/docs/data-migration.md`, `aks/docs/experiments/AKS-DATA.md`,
   필요한 경우 기존 도구를 호출하는 작은 backup/restore 스크립트. 백업 payload는 Git에 넣지 않는다.
 - **순서:** (9a) 이전 대상으로 선택한 K3S 환경의 실제 rows·객체·bytes·queue 상태 확인 →
