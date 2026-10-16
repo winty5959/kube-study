@@ -1,0 +1,39 @@
+A11 node drain, CSI reattachment, and AKS stop/start
+Target: Enterprise부문-아키텍처강화TF / rg-seonung-aks-test / aks-kube-study
+
+Node drain
+- Baseline before drain: one album-dev row, DONE, 1,064 bytes. Original SHA-256:
+  3507bf4bee26d19fc9eb7ff6e98e8063e822e1f5e87a6fc558c115da8452115e.
+- API PDB minAvailable=1 initially allowed zero disruptions at one replica. Paused root-dev and
+  album-dev auto sync, raised API HPA minReplicas to 2, confirmed 2 Ready and one allowed
+  disruption, then drained the node carrying PostgreSQL/Redis/MinIO.
+- `kubectl drain` started at 2026-10-16T16:17:38Z and completed without `--force`. PDB delayed
+  metrics-server and CoreDNS eviction until replacements were Ready. No PDB was removed.
+- PostgreSQL, Redis, and MinIO PVCs stayed Bound/Retain. Azure Disk briefly reported the old RWO
+  attachment; CSI detach and attach completed, the three Pods ran Ready on the remaining node, and
+  API readiness recovered in about 40 seconds. The second node peaked at 58% CPU requests / 21%
+  memory requests; the drained node fell to 13% / 5% while evictions completed.
+- While the node remained drained: Postgres/Redis/S3 readiness passed; synthetic upload reached
+  DONE; 200x100 and 800x400 WebP thumbnails, original download, and delete passed. Existing row
+  count stayed one and original SHA-256 matched the baseline. Node was uncordoned, API HPA min1 and
+  Argo auto sync were restored; both Argo apps returned Synced/Healthy.
+
+Stop/start
+- Before stop, Redis job and processing lists were both length 0. API, frontend, and worker desired
+  replicas were 0; API HPA was absent; root-dev and album-dev auto sync was paused. Data PVCs were
+  Bound and the restored row/checksum were recorded.
+- `bash aks/scripts/aks-power.sh stop` was Accepted at 2026-10-16T16:27:19Z and Succeeded at
+  16:29:28Z. Azure reported `Stopped / Succeeded`.
+- `bash aks/scripts/aks-power.sh start` was accepted at 16:30:17Z and Succeeded at 16:34:42Z.
+  The helper confirmed `Running / Succeeded` and 2/2 Ready nodes. Azure recreated the VMSS node
+  instances. PVCs remained Bound and all three data pods reattached and returned Ready.
+- Metrics Server had a brief post-start warmup with no CPU sample for the API HPA. The metrics API
+  recovered, the API HPA read 3% / 60%, and root-dev/album-dev became Synced/Healthy again.
+- Post-start smoke passed readiness, synthetic upload to DONE, both thumbnails, original download,
+  and cleanup. The only remaining photo row was the restored 1,064-byte record; its original SHA-
+  256 matched the pre-drain/pre-stop value. No fixture was left behind.
+- The cluster is Running with two Ready nodes. K3S service/data and live user traffic were not
+  changed. Actual posted Azure charges remain for A15.
+
+Checks: `bash -n aks/scripts/aks-power.sh`; real guarded stop and start through the script; two
+node-drain CSI/smoke validations; `kubectl` Ready/PVC/HPA/Argo checks. No disk, PVC, or VMSS deletion.

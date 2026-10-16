@@ -37,13 +37,13 @@ Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with eviden
 selected AX사업부문-인프라아키텍처팀, then explicitly changed the AKS target to the
 Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0 found
 Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
-AKS cluster RBAC roles were assigned. A1-A10 are implemented. Evidence is in
-`.omo/evidence/aks-implementation/`. A11-A15 remain in progress.
+AKS cluster RBAC roles were assigned. A0-A11 are implemented. Evidence is in
+`.omo/evidence/aks-implementation/`. A12-A15 remain in progress.
 K3S traffic/data migration and source-environment deletion remain outside this goal.
 
 ---
 
-> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A10 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; A11-A15 remain in progress; live K3S cutover/deletion is excluded.
+> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A11 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; A12-A15 remain in progress; live K3S cutover/deletion is excluded.
 
 ## Scope
 ### Affected user and ideal state
@@ -90,7 +90,7 @@ K3S traffic/data migration and source-environment deletion remain outside this g
 ### 실행 순서
 준비/구조 작업: 1 → 2; 로드맵 3은 작업 2와 독립 문서로 준비할 수 있으나 같은 파일을 동시 수정하지 않는다.
 게시/전환 작업: 2·3 → 4 → 5 → 6. live dev와 prod 전환은 반드시 순차적이다.
-최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 먼저 AX사업부문-인프라아키텍처팀을 골랐고 이후 Enterprise부문-아키텍처강화TF와 `rg-seonung-aks-test`로 정정했다. A0-A10은 실제 Azure 검증과 증거를 완료했고 A11-A15를 이 goal에서 계속한다.
+최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 먼저 AX사업부문-인프라아키텍처팀을 골랐고 이후 Enterprise부문-아키텍처강화TF와 `rg-seonung-aks-test`로 정정했다. A0-A11은 실제 Azure 검증과 증거를 완료했고 A12-A15를 이 goal에서 계속한다.
 
 ### Dependency matrix
 | Todo | Depends on | Blocks | Can parallelize with |
