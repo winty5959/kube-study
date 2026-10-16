@@ -1,0 +1,37 @@
+A12 release preparation
+Observed: 2026-10-17 01:49 KST
+Git baseline: 77105e3 (A11), main
+Azure target: Enterprise부문-아키텍처강화TF / rg-seonung-aks-test / aks-kube-study
+Cluster at start: Kubernetes 1.36, two Standard_D4as_v5 nodes, Running
+
+Changes prepared
+- Prod has an independent `album-prod` SealedSecret. `seal-environment.sh prod` generated the
+  local credential file with mode 0600, sealed it with strict namespace/name scope, applied it,
+  and verified the controller produced all required album keys. No credential values were logged.
+- Prod bootstrap contains only credentials-prod, platform-prod, and album-prod. Cluster-wide
+  KEDA, Sealed Secrets, monitoring, and observability remain single instances managed by dev.
+- root-prod, platform-prod, and album-prod have manual sync boundaries. Prod application
+  workloads are split from data services and credentials; rendered resource identities do not
+  overlap between platform-prod and album-prod.
+- Prod album host is `album.aks.prod.localhost`.
+
+Verification
+- `python3 -m pytest aks/scripts/tests -q`: 34 passed.
+- `ruff check aks/scripts`: passed.
+- `bash -n` and ShellCheck for the sealing and AKS power scripts: passed.
+- `actionlint .github/workflows/aks-release.yaml`: passed.
+- `git diff --check`: passed.
+- Kustomize rendered prod bootstrap, prerequisites, platform, and application. Bootstrap has
+  three child Applications; platform has three StatefulSets and three Services, without the
+  namespace or SealedSecret that credentials-prod owns.
+- Release dry-run `aks-v1.0.0` resolved API `sha-b7122b7` and worker/frontend/MinIO
+  `sha-4486b3b`; the prod overlay SHA256 remained unchanged.
+- Live `album-prod/album-secrets` SealedSecret condition was True. Dev Applications remained
+  Synced/Healthy and dev PVCs remained Bound.
+
+Pending before A12 acceptance
+- root-prod has not yet been bootstrapped and the three prod PVCs have not yet been provisioned.
+- No `aks-v1.0.0` tag or release PR exists yet; manifest digest alias verification and prod image
+  sync/smoke are pending.
+- A12 remains incomplete until the release PR is reviewed/merged, the prod application is
+  manually synced, and image digests and smoke behavior are verified.

@@ -7,12 +7,15 @@ kubeconfig="${KUBECONFIG:-$project_dir/infra/azure/local/kubeconfig}"
 kube_context="${KUBE_CONTEXT:-aks-study}"
 kubectl_cmd=(kubectl --kubeconfig "$kubeconfig" --context "$kube_context")
 secure_dir="${HOME}/.local/share/kube-study"
-credential_file="$secure_dir/aks-dev-secrets.env"
 key_backup="$secure_dir/sealed-secrets-key-aks-dev.yaml"
 key_selector='sealedsecrets.bitnami.com/sealed-secrets-key'
 
-environment="${1:?usage: seal-environment.sh dev}"
-[[ "$environment" == dev ]] || { echo 'AKS currently supports dev secrets only' >&2; exit 2; }
+environment="${1:?usage: seal-environment.sh dev|prod}"
+[[ "$environment" == dev || "$environment" == prod ]] || {
+  echo 'AKS environment must be dev or prod' >&2
+  exit 2
+}
+credential_file="$secure_dir/aks-${environment}-secrets.env"
 
 umask 077
 mkdir -p "$secure_dir"
@@ -25,7 +28,9 @@ if [[ ! -f "$credential_file" ]]; then
     printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
     printf 'S3_ACCESS_KEY=%s\n' "$(openssl rand -hex 10)"
     printf 'S3_SECRET_KEY=%s\n' "$(openssl rand -hex 32)"
-    printf 'GRAFANA_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+    if [[ "$environment" == dev ]]; then
+      printf 'GRAFANA_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+    fi
   } > "$credential_tmp"
   chmod 600 "$credential_tmp"
   mv "$credential_tmp" "$credential_file"
@@ -45,9 +50,15 @@ while IFS='=' read -r key value; do
     *) echo 'AKS secret file contains an unsupported key' >&2; exit 1 ;;
   esac
 done < "$credential_file"
-for value in "$POSTGRES_PASSWORD" "$S3_ACCESS_KEY" "$S3_SECRET_KEY" "$GRAFANA_ADMIN_PASSWORD"; do
+for value in "$POSTGRES_PASSWORD" "$S3_ACCESS_KEY" "$S3_SECRET_KEY"; do
   [[ "$value" =~ ^[0-9a-f]+$ ]] || { echo 'AKS secret file has an invalid value format' >&2; exit 1; }
 done
+if [[ "$environment" == dev ]]; then
+  [[ "$GRAFANA_ADMIN_PASSWORD" =~ ^[0-9a-f]+$ ]] || {
+    echo 'AKS secret file has an invalid Grafana password format' >&2
+    exit 1
+  }
+fi
 
 task_tmp="$(mktemp -d)"
 trap 'rm -rf "$task_tmp"' EXIT
@@ -72,34 +83,38 @@ else
   install -m 600 "$task_tmp/key-bundle.yaml" "$key_backup"
 fi
 
-"${kubectl_cmd[@]}" create namespace album-dev --dry-run=client -o yaml | "${kubectl_cmd[@]}" apply -f - >/dev/null
-"${kubectl_cmd[@]}" create namespace monitoring --dry-run=client -o yaml | "${kubectl_cmd[@]}" apply -f - >/dev/null
+"${kubectl_cmd[@]}" create namespace "album-${environment}" --dry-run=client -o yaml | "${kubectl_cmd[@]}" apply -f - >/dev/null
 
-"${kubectl_cmd[@]}" create secret generic album-secrets -n album-dev \
+"${kubectl_cmd[@]}" create secret generic album-secrets -n "album-${environment}" \
   --from-literal="POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
   --from-literal="S3_ACCESS_KEY=$S3_ACCESS_KEY" \
   --from-literal="S3_SECRET_KEY=$S3_SECRET_KEY" --dry-run=client -o yaml \
   | kubeseal --cert "$task_tmp/controller.crt" --scope strict --format yaml \
-      > "$project_dir/k8s/secrets/dev/album/album-sealed.yaml"
+      > "$project_dir/k8s/secrets/${environment}/album/album-sealed.yaml"
 
-"${kubectl_cmd[@]}" create secret generic grafana-admin -n monitoring \
-  --from-literal=admin-user=admin --from-literal="admin-password=$GRAFANA_ADMIN_PASSWORD" \
-  --dry-run=client -o yaml \
-  | kubeseal --cert "$task_tmp/controller.crt" --scope strict --format yaml \
-      > "$project_dir/k8s/secrets/dev/monitoring/grafana-sealed.yaml"
+if [[ "$environment" == dev ]]; then
+  "${kubectl_cmd[@]}" create namespace monitoring --dry-run=client -o yaml | "${kubectl_cmd[@]}" apply -f - >/dev/null
+  "${kubectl_cmd[@]}" create secret generic grafana-admin -n monitoring \
+    --from-literal=admin-user=admin --from-literal="admin-password=$GRAFANA_ADMIN_PASSWORD" \
+    --dry-run=client -o yaml \
+    | kubeseal --cert "$task_tmp/controller.crt" --scope strict --format yaml \
+        > "$project_dir/k8s/secrets/dev/monitoring/grafana-sealed.yaml"
+fi
 
-"${kubectl_cmd[@]}" apply -k "$project_dir/k8s/secrets/dev/album" >/dev/null
-"${kubectl_cmd[@]}" apply -k "$project_dir/k8s/secrets/dev/monitoring" >/dev/null
-"${kubectl_cmd[@]}" wait --for=condition=Synced sealedsecret/album-secrets -n album-dev --timeout=120s >/dev/null
-"${kubectl_cmd[@]}" wait --for=condition=Synced sealedsecret/grafana-admin -n monitoring --timeout=120s >/dev/null
+"${kubectl_cmd[@]}" apply -k "$project_dir/k8s/secrets/${environment}/album" >/dev/null
+"${kubectl_cmd[@]}" wait --for=condition=Synced sealedsecret/album-secrets -n "album-${environment}" --timeout=120s >/dev/null
 
 for secret_key in POSTGRES_PASSWORD S3_ACCESS_KEY S3_SECRET_KEY; do
-  encoded="$("${kubectl_cmd[@]}" get secret album-secrets -n album-dev -o "jsonpath={.data.$secret_key}")"
+  encoded="$("${kubectl_cmd[@]}" get secret album-secrets -n "album-${environment}" -o "jsonpath={.data.$secret_key}")"
   [[ -n "$encoded" ]] || { echo "Required album key is missing: $secret_key" >&2; exit 1; }
 done
-for secret_key in admin-user admin-password; do
-  encoded="$("${kubectl_cmd[@]}" get secret grafana-admin -n monitoring -o "jsonpath={.data.$secret_key}")"
-  [[ -n "$encoded" ]] || { echo "Required Grafana key is missing: $secret_key" >&2; exit 1; }
-done
+if [[ "$environment" == dev ]]; then
+  "${kubectl_cmd[@]}" apply -k "$project_dir/k8s/secrets/dev/monitoring" >/dev/null
+  "${kubectl_cmd[@]}" wait --for=condition=Synced sealedsecret/grafana-admin -n monitoring --timeout=120s >/dev/null
+  for secret_key in admin-user admin-password; do
+    encoded="$("${kubectl_cmd[@]}" get secret grafana-admin -n monitoring -o "jsonpath={.data.$secret_key}")"
+    [[ -n "$encoded" ]] || { echo "Required Grafana key is missing: $secret_key" >&2; exit 1; }
+  done
+fi
 
-printf '%s\n' 'AKS dev credentials sealed and decrypted; AKS-only key backup verified outside the repository.'
+printf 'AKS %s credentials sealed and decrypted; AKS-only key backup verified outside the repository.\n' "$environment"

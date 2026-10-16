@@ -19,7 +19,6 @@ spec:
       kind: Application
       jsonPointers: [/operation]
   syncPolicy:
-    automated: {prune: true, selfHeal: true}
     syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true, RespectIgnoreDifferences=true]
     retry:
       limit: 3

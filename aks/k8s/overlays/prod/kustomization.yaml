@@ -38,12 +38,12 @@ patches:
         path: /spec/rules/-
       - op: replace
         path: /spec/rules/1/host
-        value: album.prod.localhost
+        value: album.aks.prod.localhost
   - target: {kind: IngressRoute, name: album-objects}
     patch: |-
       - op: replace
         path: /spec/routes/0/match
-        value: (Host(`album.local`) || Host(`album.prod.localhost`)) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))
+        value: (Host(`album.local`) || Host(`album.aks.prod.localhost`)) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))
   - target: {kind: HorizontalPodAutoscaler, name: api}
     patch: |-
       - {op: replace, path: /spec/minReplicas, value: 2}

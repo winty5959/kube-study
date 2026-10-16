@@ -103,3 +103,17 @@ patches:
       metadata:
         name: album-config
       $patch: delete
+  - target: {kind: SealedSecret, name: album-secrets}
+    patch: |-
+      apiVersion: bitnami.com/v1alpha1
+      kind: SealedSecret
+      metadata:
+        name: album-secrets
+      $patch: delete
+  - target: {kind: Namespace, name: album-prod}
+    patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: album-prod
+      $patch: delete
