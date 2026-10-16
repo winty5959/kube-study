@@ -13,6 +13,25 @@ configs:
         hs.status = "Progressing"
       end
       return hs
+    resource.customizations.health.bitnami.com_SealedSecret: |
+      hs = {status = "Progressing", message = "Waiting for the SealedSecrets controller"}
+      if obj.status ~= nil and obj.status.conditions ~= nil then
+        for _, condition in ipairs(obj.status.conditions) do
+          if condition.type == "Synced" then
+            if condition.status == "True" then
+              hs.status = "Healthy"
+              hs.message = "Secret decrypted by the controller"
+              return hs
+            end
+            if condition.status == "False" then
+              hs.status = "Degraded"
+              hs.message = condition.message or "The controller could not decrypt the secret"
+              return hs
+            end
+          end
+        end
+      end
+      return hs
 controller:
   resources:
     requests: {cpu: 100m, memory: 256Mi}

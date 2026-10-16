@@ -152,7 +152,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A0. 기준 상태와 Azure 실행 전제 확정
 
-- [ ] 완료
+- [x] 완료
 - **읽기:** 상위 계획 완료 기록, 비용 문서, `k3s/docs/{completion,azure-vm,operations}.md`,
   Azure Open Tenant 스킬 `/Users/seonung/.codex/skills/azure-open-tenant-subscription/SKILL.md`.
 - **산출물:** `aks/docs/decisions.md`의 원본 SHA·사양·접근·주소 계획,
@@ -298,7 +298,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A6. 시크릿·데이터 서비스·필수 도구 bootstrap
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/scripts/{seal-environment,install-gitops,install-keda,install-monitoring}.sh`,
   `aks/k8s/secrets/dev/{album,monitoring}/**`, `aks/argocd/prerequisites/dev/**`,
   `aks/infra/{argocd,keda,sealed-secrets,monitoring}/values*.yaml`, `aks/docs/bootstrap.md`.
@@ -319,6 +319,13 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 - **실패 검증·복구:** 잘못된 namespace의 ciphertext는 복호화 실패해야 한다.
   key backup 부재면 데이터 이전 단계로 진행하지 않는다. CRD나 Secret이 준비되지 않은
   상태에서 app을 자동 Sync하지 않는다. 기존 PVC를 uninstall/delete하여 복구하지 않는다.
+- **실행 결과 (2026-10-16):** 차트 `kubeVersion` 제약과 Helm lint/template이 모두 통과해
+  계획 버전을 유지했다. SealedSecrets, KEDA, Prometheus stack, Argo CD가 AKS 1.36.4에서
+  Ready이며 각 CRD가 Established다. 독립 키 백업은 외부 경로에 mode `0600`, 상위 디렉터리는
+  `0700`이고, 두 SealedSecret 모두 Synced다. namespace 오용 검사는 복호화 실패를 확인했다.
+  세 데이터 StatefulSet과 모니터링 세 Pod가 Ready, PVC 6개가 모두 Bound다. 실측 requests와
+  node allocatable/사용량은 비용 기준 문서에 기록했다. 자세한 출력은
+  `.omo/evidence/aks-implementation/A6-bootstrap.txt`에 있다.
 - **커밋 단위:** `platform(aks): bootstrap tools and independent sealed credentials`.
 
 ### A7. AKS ArgoCD와 platform 소유권 전환

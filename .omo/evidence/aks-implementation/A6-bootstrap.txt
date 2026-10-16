@@ -1,0 +1,75 @@
+A6 bootstrap verification (2026-10-16)
+========================================
+
+Scope
+-----
+Azure context: Enterprise부문-아키텍처강화TF subscription, rg-seonung-aks-test/aks-kube-study.
+Kubernetes context aks-study, AKS 1.36.4, two Standard_D4as_v5 nodes Ready.
+The live K3S cluster and data were not modified.
+
+Pinned Helm releases
+--------------------
+sealed-secrets 2.20.0 (app 0.40.0): deployed, controller Ready.
+keda 2.21.0: Helm revision 4 deployed; operator, metrics API, and admission webhooks Ready.
+kube-prometheus-stack 92.7.0 (app 0.94.1): deployed; Prometheus, Alertmanager, Grafana,
+  operator, kube-state-metrics, and both node-exporter Pods Ready.
+argo-cd 10.10.3 (app 3.5.5): deployed; server, repo-server, application controller, and Redis Ready.
+All four chart kubeVersion constraints include Kubernetes 1.36.4. Helm template and lint succeeded
+with the repository values; chart versions were not changed. Argo CD's SealedSecret health check
+was rendered and the chart upgraded with it. The root Application is reserved for A7.
+
+KEDA's Helm 4 server-side upgrade and rollback conflicted with the six namespaceSelector fields
+managed by AKS's admissionsenforcer. Reapplying the pinned chart with Helm client-side apply
+completed revision 4. All six selectors remain present and admissionsenforcer ownership is intact.
+The bootstrap script checks both chart version and deployed status before skipping a release.
+
+AKS-only credentials
+--------------------
+AKS SealedSecrets key bundle exists outside Git at
+~/.local/share/kube-study/sealed-secrets-key-aks-dev.yaml, mode 0600; parent directory mode 0700.
+The matching AKS dev plaintext credential input is outside Git at
+~/.local/share/kube-study/aks-dev-secrets.env, mode 0600.
+album-dev/album-secrets and monitoring/grafana-admin report Synced=True. Required key names were
+checked without reading or printing their values. The strict-scope album ciphertext copied into a
+temporary different namespace did not produce a Secret; the temporary namespace was removed.
+Anonymous GHCR manifest requests for the four AKS images returned HTTP 200, so no pull Secret is used.
+
+Rendered pod-template request totals (regular containers, sidecars, init container scheduling
+requests, and per-node DaemonSet replicas; operator-created pods are noted separately):
+  sealed-secrets: 1 replica, 25m CPU / 32Mi memory.
+  KEDA: 3 replicas, 125m CPU / 160Mi memory.
+  Argo CD: 5 replicas, 275m CPU / 480Mi memory; repo-server has one init container and ApplicationSet
+    has zero replicas.
+  kube-prometheus-stack rendered templates: 7 replicas including two node exporters, 240m CPU /
+    384Mi memory; Grafana has three containers and one init container. Prometheus and Alertmanager
+    CRs create additional runtime pods, included in the live monitoring namespace totals below.
+
+Data and storage
+----------------
+PostgreSQL, Redis, and MinIO StatefulSets each report Ready 1/1.
+Monitoring Prometheus, Grafana, and Alertmanager workloads are Ready.
+All six PVCs are Bound to album-standard-ssd-retain / StandardSSD_LRS:
+  PostgreSQL 2Gi, Redis 1Gi, MinIO 10Gi, Prometheus 5Gi, Grafana 1Gi, Alertmanager 1Gi.
+KEDA ScaledObject, SealedSecrets, and Prometheus CRDs report Established.
+No album application Pods or Argo Applications have been started by bootstrap.
+
+Requests and measured idle usage
+-------------------------------
+Node allocatable per node: 3860m CPU and 15194844Ki memory (~14.49Gi).
+Live scheduler requests including regular/init containers and node-exporter DaemonSet Pods:
+  node 1: 1330m CPU / 2.28Gi memory (34.5% CPU / 15.7% memory).
+  node 2: 1147m CPU / 1.34Gi memory (29.7% CPU / 9.2% memory).
+  total: 2477m CPU / 3.62Gi memory across 41 Pods.
+  namespace totals include 490m CPU / 0.94Gi memory for the complete monitoring runtime.
+kubectl top nodes sample: node 1 180m CPU / 1951Mi memory; node 2 187m CPU / 1962Mi memory.
+These are idle platform measurements. A10 repeats capacity checks with app replicas and load.
+After an AKS stop/start, the API endpoint required an additional DNS propagation interval. The new
+workstation source was added as a second IPv4 /32 authorized range while retaining the previous
+range; node access was reverified. Neither literal source address is recorded here.
+
+Helm lint results
+-----------------
+sealed-secrets 2.20.0: 1 chart linted, 0 failed.
+keda 2.21.0: 1 chart linted, 0 failed.
+argo-cd 10.10.3: 1 chart linted, 0 failed.
+kube-prometheus-stack 92.7.0: 1 chart linted, 0 failed.

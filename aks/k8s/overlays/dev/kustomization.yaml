@@ -6,7 +6,6 @@ namespace: album-dev
 resources:
   - namespace.yaml
   - ../../base
-  - ../../secrets/dev/album
 
 # M2-M6: images are built on the VM and imported into K3S (scripts/build-images.sh).
 # From M7 CI rewrites newTag here with the pushed sha-<commit> tag.

@@ -6,7 +6,8 @@
 
 현재 소스의 요청 자원을 기준으로 산정한 최소안은 AKS Standard 구성 방식의
 **Free 관리 tier, 시스템 풀 1개, Standard_D4as_v5 2대(각 4 vCPU·16 GiB)**다.
-클러스터 합계는 8 vCPU·16 GiB다. 앱·PostgreSQL·Redis·MinIO와 기존 ArgoCD,
+VM 합계는 8 vCPU·32 GiB이고, Kubernetes에서 확인한 allocatable은 7,720m CPU·약 28.98 GiB다.
+앱·PostgreSQL·Redis·MinIO와 기존 ArgoCD,
 KEDA, SealedSecrets, Prometheus/Grafana를 함께 실행하는 학습 환경을 가정한다.
 사용자가 최종 선택한 Enterprise부문-아키텍처강화TF 구독에 `rg-seonung-aks-test`를 만들고
 두 D4as_v5 노드의 AKS를 배포했다. `Standard_F4s_v2`는 선택 구독에서 사용할 수 없었다.
@@ -20,6 +21,16 @@ KEDA, SealedSecrets, Prometheus/Grafana를 함께 실행하는 학습 환경을 
 
 위 D4as_v5 금액은 공개 소매가격을 사용한 비교 추정이다. 실제 청구액은 기업 계약 가격,
 세금, 디스크 I/O·전송·백업·실험 자원에 따라 다르다. 실제 VM OS disk는 Premium_LRS 64 GiB로 확인했다.
+
+### A6 idle platform measurement (2026-10-16)
+
+AKS uses 2,477m CPU and 3.62Gi memory requests across system and platform Pods at rest. Per-node
+requests are 1,330m/2.28Gi and 1,147m/1.34Gi versus 3,860m/about 14.49Gi allocatable per node.
+`kubectl top nodes` measured 180m/1,951Mi and 187m/1,962Mi at the sample time. The six
+`StandardSSD_LRS` PVCs are the planned 2Gi, 1Gi, 10Gi, 5Gi, 1Gi, and 1Gi claims; public Azure
+Standard SSD tiers bill them as E1/E1/E3/E2/E1/E1, or 40Gi of tier capacity and about $3.00/month
+at the prices in section 5. This is an estimate rather than billing data. A10 must add application
+replicas, rollout surge, and the load scenario before judging minimum size.
 
 이 표는 예산 약속이나 청구 상한이 아니다. 디스크 I/O·네트워크 전송·백업·실험 중 추가
 노드·업그레이드 surge 비용은 별도다. 88/176시간은 사용자의 사용시간 결정이 아닌 비교 예시다.
