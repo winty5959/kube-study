@@ -1,4 +1,4 @@
-A0 Azure preflight (2026-10-16 KST)
+Historical A0 Azure preflight (2026-10-16 KST; superseded target)
 
 Selected destination
 - User selected AX사업부문-인프라아키텍처팀.

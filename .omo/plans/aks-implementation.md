@@ -11,10 +11,11 @@
 2026-10-16 이 계획을 기준으로 goal을 수립하고 프로젝트 구현을 요청해 실행에 들어갔다.
 사용자 합의는 저장소 `winty5959/kube-study` 하나를 유지하고 기존 프로젝트를 `k3s/`,
 새 AKS 전환 프로젝트를 `aks/`에 두는 것이다. 사용자가 AKS를 처음 사용하므로 임의 예산을
-정하지 않고 현재 프로젝트를 실행할 최소 구성부터 검증한다. 사용자는 AX사업부문-인프라아키텍처팀
-구독을 선택했다. K3S 정리와 live 상태 확인은 완료했고 A1/A2도 구현·게시했다. A0에서는
-계획 SKU F4s_v2가 해당 구독의 Korea Central에서 제한되고, 현재 계정에 Azure RBAC 역할
-부여 권한이 확인되지 않았다. 이 두 전제와 비용을 기록한 뒤에만 A3 인프라 생성으로 진행한다.
+정하지 않고 현재 프로젝트를 실행할 최소 구성부터 검증한다. 사용자는 먼저 AX사업부문-인프라아키텍처팀
+구독을 골랐으나, 이후 이를 정정해 Enterprise부문-아키텍처강화TF 구독과
+`rg-seonung-aks-test`를 대상으로 선택했다. 계획 SKU F4s_v2는 사용할 수 없어 사용자가
+최종 선택한 D4as_v5 두 대로 A3를 완료했다. 필요한 AKS Azure RBAC 역할은 사용자가 제공한
+Owner 권한 경로로 부여했고, 결과와 비용은 증거 파일에 갱신했다.
 
 ## 1. 목표와 전환 경계
 
@@ -42,10 +43,10 @@
 
 | 항목 | 계획 기본값 | 선택 이유·검증 조건 |
 |---|---|---|
-| Azure 대상 | AX사업부문-인프라아키텍처팀, 구독에 등록된 tenant | 사용자가 이 구독을 선택했고 CLI에서 Enabled 확인; 기존 KT Open 계획 tenant와 다름 |
+| Azure 대상 | Enterprise부문-아키텍처강화TF, `rg-seonung-aks-test` | 사용자가 최종 선택; RG와 AKS가 `koreacentral`에 생성됨 |
 | 리전 | `koreacentral` | 기존 환경과 비용 문서 기준; 정책·SKU 가용성은 A0 확인 |
 | 구성 방식 / 관리 tier | AKS Standard 구성 방식 / Free 관리 tier | 고정 작은 풀과 수동 stop/start; 유료 Standard tier와 구분 |
-| 노드 | Linux x86_64, System 풀 1개; `Standard_F4s_v2` 2대는 계획 후보 | 각 4 vCPU·8 GiB지만 선택 구독에서 Korea Central 사용 불가; `Standard_D4as_v5`는 대안 후보이며 승인 전 미선택 |
+| 노드 | Linux x86_64, System 풀 1개; `Standard_D4as_v5` 2대 | 각 4 vCPU·16 GiB; 두 노드 Ready. F4s_v2는 선택 구독에서 Korea Central 사용 불가 |
 | OS / OS disk | 지원되는 Ubuntu 이미지, Managed OS 64 GiB | 견적은 Premium SSD P6 2개; 실제 생성 SKU·크기를 확인 |
 | 노드 확장 | 고정 2대, upgrade `maxSurge=1` | 자동 증설 없이 시작; 일반 가동 8 vCPU, surge 포함 12 vCPU quota 확인 |
 | 네트워크 | Azure CNI Overlay + Cilium, Standard LB outbound | 기존 NetworkPolicy 유지, GHCR/Git/Helm outbound 확보 |
@@ -63,20 +64,19 @@ System 풀에는 앱도 배치하므로 `CriticalAddonsOnly:NoSchedule` taint를
 노드당 4 vCPU·B 계열 미지원은 [시스템 풀 공식 문서](https://learn.microsoft.com/en-us/azure/aks/use-system-pools)를
 기준으로 했다. 실제 생성 가능성과 앱 부하 수용은 아직 확인하지 않았다.
 
-네트워크 계획 후보는 VNet `10.240.0.0/16`, node subnet `10.240.0.0/22`,
-pod CIDR `10.244.0.0/16`, service CIDR `10.250.0.0/16`, DNS `10.250.0.10`,
-`maxPods=50`이다. A0에서 기존 VNet·VPN·사내 주소와 겹치지 않는지 확인한 뒤 확정한다.
-이는 기존 네트워크를 조회한 결과가 아니다. 조직이 private API 또는 다른 망을 요구하면
-연결 방법·추가 비용을 먼저 수정하고 A3 생성으로 진행한다.
+네트워크는 VNet `10.240.0.0/16`, node subnet `10.240.0.0/22`, pod CIDR
+`10.244.0.0/16`, service CIDR `10.250.0.0/16`, DNS `10.250.0.10`, `maxPods=50`으로
+생성했다. Enterprise 구독의 기존 VNet·subnet 범위와 겹치지 않는 것을 확인했다.
+구독 밖의 조직/VPN 경로는 확인할 수 없었다. public API는 관리 출발지 하나의 `/32`만
+허용하며 literal 주소는 증거와 Git에 남기지 않는다.
 
-제안 리소스 이름은 AKS RG `rg-seonung-kube-study-aks`, cluster `aks-kube-study`,
-node RG `rg-seonung-kube-study-aks-nodes`다. A0에서 소유·이름 충돌·정책을 확인하고
-새 AKS 전용 범위를 확정한다. 스킬의 예시 RG나 기존 K3S RG를 AKS 대상으로 재사용하지 않는다.
+AKS RG는 `rg-seonung-aks-test`, cluster는 `aks-kube-study`다. Azure가 node RG
+`MC_rg-seonung-aks-test_aks-kube-study_koreacentral`을 만들었다. 기존 K3S RG는 재사용하지 않았다.
 
-비용 문서의 최소 후보는 월 730시간 **$325.63**, 예시 88시간 **$79.11**이며
+선택한 D4as_v5 비용 기준은 월 730시간 **약 $354.83**, 예시 88시간 **약 $82.63**이며
 I/O·전송·백업·surge·기존 VM은 별도다. 중지 상태에도 디스크·네트워크의 고정항목을
 보수적으로 **$45.31/월** 반영했다. 사용 시간은 아직 정해지지 않았다.
-F4s_v2의 메모리가 실제 부족하면 `D4as_v5` 2대로 변경하고 비용을 함께 갱신한다.
+F4s_v2를 구독에서 사용할 수 없어 D4as_v5를 선택했으며 비용 기준도 갱신했다.
 간헐 사용의 `D4ads_v5` + ephemeral OS 대안은 지원·가동 시간을 확인한 뒤 별도로 비교한다.
 
 ## 3. 저장소·CI/CD 계약
@@ -221,7 +221,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A3. 작은 Bicep 명세로 AKS 생성·상태 확인
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/infra/azure/main.bicep`, `main.example.bicepparam`, `aks/docs/bootstrap.md`.
   실제 구독·관리 CIDR·identity를 포함한 로컬 parameter 파일은 ignore한다.
 - **순서:** (3a) 확정 Day-0 값으로 VNet/subnet과 cluster 선언 → (3b) Bicep build/validate/what-if →

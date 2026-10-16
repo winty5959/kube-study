@@ -9,6 +9,7 @@ secrets.env
 *.key
 kubeconfig*
 sealed-secrets-key*
+aks/infra/azure/main.local.bicepparam
 
 # Python
 .venv/

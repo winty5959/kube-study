@@ -33,13 +33,13 @@ goal을 세우고 구현을 진행하도록 요청했다. 실행 중 live 상태
 **Risk:** Medium - 자동 감시 중인 GitOps 경로와 삭제 옵션이 있는 VM 동기화를 순서대로 전환해야 한다.
 **Decisions to sanity-check:** 단일 기존 저장소, 기존 K3S와 미래 AKS의 폴더 분리, 기존 CI의 dev 자동 승격과 prod 수동 승격 유지. AKS 기본안은 단일 학습 클러스터이며 상세 사양·비용·접근 방식은 연결된 AKS 명세를 따른다.
 
-Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with evidence. The user
-selected the enabled AX사업부문-인프라아키텍처팀 subscription; its registered tenant differs
-from the originally planned KT Open tenant. AKS A1 and A2 are committed and pushed. A0 found
-that Standard_F4s_v2 is unavailable to this subscription in Korea Central and that the current
-identity has Contributor but no role-assignment administrator role. No AKS resources have been
-created. A3 waits for the SKU and Azure RBAC access decisions; K3S traffic/data migration and
-source-environment deletion remain outside this goal.
+Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with evidence. The user first
+selected AX사업부문-인프라아키텍처팀, then explicitly changed the AKS target to the
+Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0 found
+Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
+AKS cluster RBAC roles were assigned. AKS A1-A3 are implemented; A3 created two Ready D4as_v5
+nodes and its evidence is in `.omo/evidence/aks-implementation/A3-provision.txt`. A4-A15 remain
+in progress. K3S traffic/data migration and source-environment deletion remain outside this goal.
 
 ---
 
@@ -90,7 +90,7 @@ source-environment deletion remain outside this goal.
 ### 실행 순서
 준비/구조 작업: 1 → 2; 로드맵 3은 작업 2와 독립 문서로 준비할 수 있으나 같은 파일을 동시 수정하지 않는다.
 게시/전환 작업: 2·3 → 4 → 5 → 6. live dev와 prod 전환은 반드시 순차적이다.
-최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 AX사업부문-인프라아키텍처팀 구독을 선택했다. A0 제약을 해소한 뒤 A1-A15를 이 goal에서 계속한다.
+최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 먼저 AX사업부문-인프라아키텍처팀을 골랐고 이후 Enterprise부문-아키텍처강화TF와 `rg-seonung-aks-test`로 정정했다. A1-A3 완료 후 A4-A15를 이 goal에서 계속한다.
 
 ### Dependency matrix
 | Todo | Depends on | Blocks | Can parallelize with |

@@ -1,0 +1,22 @@
+A0 Enterprise subscription recheck (2026-10-16 KST)
+
+Target and decision
+- The user superseded the earlier AX subscription choice and selected Enterprise부문-아키텍처강화TF.
+- The user identified Owner access on this subscription and authorized granting required AKS cluster RBAC roles.
+- Target region: koreacentral. Dedicated resource group: rg-seonung-aks-test.
+- The original F4s_v2 plan was not deployable: Azure returned NotAvailableForSubscription in the selected subscription across the nine queried regions, including Korea Central.
+- Standard_D4as_v5 is available in Korea Central: 4 vCPU and 16 GiB per node. The user selected this SKU for two nodes.
+- Kubernetes 1.36 was the default version at the time of the query; the cluster was created at 1.36.
+
+Capacity and network
+- Reported quota had 60 of 402 regional vCPUs in use and Standard DASv5 family usage 0 of 350. The planned steady 8 vCPU and temporary 12 vCPU upgrade surge fit the displayed limits.
+- ContainerService, Compute, Network, ManagedIdentity, and Storage providers were already Registered.
+- The subscription inventory contained 10 VNets, 10 VNet prefixes, 13 subnet prefixes, and two peering records representing a peering pair.
+- No overlap was found with the proposed VNet 10.240.0.0/16, node subnet 10.240.0.0/22, pod range 10.244.0.0/16, or service range 10.250.0.0/16.
+- Routes and address plans outside the selected subscription, including corporate VPN routes, were not inspected.
+- The deployment used the current management workstation source as one authorized /32 for the public API endpoint. Its literal address is intentionally not recorded. The source passed the authorized-range check at deployment time.
+
+Cost baseline
+- Azure Retail Prices API reported USD 0.212 per D4as_v5 VM-hour in Korea Central.
+- Two nodes for 730 hours are USD 309.52 compute/month. Adding the previously estimated USD 45.314 fixed items gives about USD 354.83/month.
+- Estimates exclude Enterprise agreement pricing, tax, disk I/O, traffic, backup, and actual usage. The chosen Enterprise subscription's billed rate was not inspected.
