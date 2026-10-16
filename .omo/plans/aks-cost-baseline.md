@@ -42,8 +42,8 @@ F4s_v2는 4 vCPU·8 GiB인 x86_64 SKU다. 이번에 비교한 후보 중 컴퓨�
 
 ## 3. 현재 저장소에서 확인한 requests
 
-근거는 현재 `k8s/base/**`, `infra/{argocd,keda,sealed-secrets,monitoring}/values.yaml`이다.
-폴더 이동 후에는 같은 파일이 `k3s/` 아래에 있다. requests는 스케줄링 예약량이며
+근거는 `k3s/k8s/base/**`, `k3s/infra/{argocd,keda,sealed-secrets,monitoring}/values.yaml`이다.
+requests는 스케줄링 예약량이며
 실측 사용량·안전한 최대 사용량이 아니다. 아래는 컨테이너 requests 합계로, chart가
 추가하는 sidecar/initContainer 및 AKS 시스템 구성 요소는 별도로 계산해야 한다.
 

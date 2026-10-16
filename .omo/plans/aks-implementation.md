@@ -32,10 +32,10 @@
 - Mac에서는 Python venv와 컨테이너 이미지를 만들지 않는다. 기존 개발 VM 또는 hosted CI에서
   테스트·이미지 빌드를 수행한다. 부하 도구도 기존 VM에서 실행하고 그 VM 비용은 별도 기록한다.
 
-현재 확인 가능한 원본: [PRD](../../docs/prd.md), [기존 완료 증거](../../docs/completion.md),
-[실험 명세](../../docs/experiments/README.md), [MinIO 보안 기준](../../docs/minio-security.md).
-원본 파일은 아직 루트에 있다. 아래 `k3s/...`는 이동 후 원본, `aks/...`는 **후속 구현 산출물**이며
-현재 존재하는 구현으로 취급하지 않는다. 폴더 이동 후 이 네 참고 링크도 갱신한다.
+현재 확인 가능한 원본: [PRD](../../k3s/docs/prd.md), [기존 완료 증거](../../k3s/docs/completion.md),
+[실험 명세](../../k3s/docs/experiments/README.md), [MinIO 보안 기준](../../k3s/docs/minio-security.md).
+아래 `k3s/...`는 기존 프로젝트 원본, `aks/...`는 **후속 구현 산출물**이며
+현재 존재하는 구현으로 취급하지 않는다.
 
 ## 2. 최소 구성과 확정 방법
 
@@ -177,8 +177,9 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 - [ ] 완료
 - **수정:** `aks/README.md`, `.gitignore`, `aks/.gitignore`, 위 구조의 AKS 디렉터리.
-- **복사 원본:** 완료 SHA의 `k3s/apps`, `k8s`, `argocd`, `dashboards`, `infra/{argocd,keda,
-  sealed-secrets,monitoring,minio,compose}`, `loadtest`, 필요한 `scripts`, `docker-compose.yaml`.
+- **복사 원본:** 완료 SHA의 `k3s/apps`, `k3s/k8s`, `k3s/argocd`, `k3s/dashboards`,
+  `k3s/infra/{argocd,keda,sealed-secrets,monitoring,minio,compose}`, `k3s/loadtest`,
+  필요한 `k3s/scripts`, `k3s/docker-compose.yaml`.
   K3S 설치·VM 생성·containerd import·K3S kubeconfig 수집 스크립트는 복사 대상에서 제외한다.
 - **순서:** (1a) 추적 파일 allowlist 확보 → (1b) 앱·lockfile·필요한 설정 복사 →
   (1c) 문서에 원본 SHA와 AKS 미배포 상태 표시 → (1d) 원본 프로젝트와 경로 경계 확인.
