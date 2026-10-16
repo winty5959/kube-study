@@ -15,7 +15,7 @@ for scenario acceptance criteria and recovery boundaries.
 | E-07 database dependency failure | Pass | [E-07](E-07.md) |
 | E-08 persistence after restore | Pass | [AKS-DATA](AKS-DATA.md) |
 | E-09 NetworkPolicy | Pass | [E-09](E-09.md) |
-| E-10 ConfigMap rollout | Not run | |
+| E-10 ConfigMap rollout | Pass | [E-10](E-10.md) |
 | E-11 CI-triggered API deployment | Not run | |
 | E-12 self-heal drift | Not run | |
 | E-13 release promotion | Pending release PR review, merge, and manual sync | [release workflow](../release.md) |
