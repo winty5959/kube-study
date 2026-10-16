@@ -41,7 +41,8 @@ Renderer and live GitOps verification:
   under $values/k3s/infra/, and 3 pathless chart sources.
 
 Not performed:
-- No pull request CI run was needed for the approved main push. No AKS resources were created.
+- Validation PR #3 run 38845528592 passed; API build/test/scan ran while registry login, push,
+  and dev promotion were skipped. The PR was closed without merging. No AKS resources were created.
 - Local macOS Python could not run dependency tests; VM Python checks above replaced that run.
 
 Disposition: task 2 acceptance is complete. Live old/new rendering succeeded on Argo's v5.8.1

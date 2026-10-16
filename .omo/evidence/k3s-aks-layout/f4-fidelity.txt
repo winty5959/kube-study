@@ -1,0 +1,15 @@
+F4 ideal-state fidelity audit
+Date: 2026-10-16 KST
+
+| Ideal state | Result | Evidence |
+|---|---|---|
+| IS-1: one repository with `k3s/` and `aks/`, existing commands work from new K3S path | PASS | `task-2-checks.txt`, `task-3-docs.txt`, `task-5-cleanup.txt`; both VMs ran the new path and `aks/`/`k3s/` share one Git root |
+| IS-2: CI, Release and GitOps resolve the moved paths correctly | PASS | Main run 38842930641, validation PR run 38845528592, all live Applications healthy, new source/value prefixes, and both VM release dry-runs |
+| IS-3: resources, data, keys and manual prod promotion are preserved | PASS | Baseline and cutover evidence; all PVC fingerprints unchanged, prod image/operation/manual-sync state retained, sync protection checked |
+| IS-4: AKS implementation order and minimum-cost basis are documented separately | PASS WITH OWNER DECISION PENDING | `task-3-docs.txt`, `aks/README.md`, detailed A0-A15 and cost plan; target tenant/subscription is unresolved and no AKS resource is claimed |
+| IS-5: feature commits and actual verification evidence are on existing origin | PASS FOR K3S SCOPE | Lore commits, main/PR workflow results, and task 1-6 plus F1-F4 evidence; see final `origin/main` |
+
+Failure-to-task mapping: there are no unresolved K3S path or runtime failures. The first prod
+observability attempt lacked a finite histogram sample because KEDA had scaled the worker to
+zero; a second QA job produced the required Prometheus sample and the full check passed. The
+remaining project blocker is the user's target tenant/subscription choice for AKS A0.

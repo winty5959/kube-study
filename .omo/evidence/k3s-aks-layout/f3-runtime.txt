@@ -1,0 +1,22 @@
+F3 real manual QA
+Date: 2026-10-16 KST
+
+- Dev and prod root cutovers were performed sequentially. Both clusters finished with 8/8
+  Applications Synced/Healthy. Each has 5 Git source paths under `k3s/`, 4 Helm value files
+  under `$values/k3s/infra/`, and 3 unchanged pathless chart sources.
+- All 6 PVCs per cluster remained Bound and matched the before/after UID fingerprints in
+  `task-4-cutover.txt`. Prod `album-prod` remained manual-sync, with no active operation and
+  its `sha-a3e8669` application tags unchanged.
+- Dev CLI smoke and browser UI upload reached DONE, displayed the worker and photo detail, and
+  checked the test item was deleted through the UI confirm. Refreshed gallery retained the
+  pre-existing item. Both UI captures are stored beside this evidence.
+- Prod CLI smoke reached DONE and verified both WebP thumbnails, the 3,462-byte original and
+  deletion. Its KEDA worker was kept active long enough to scrape a new processing histogram.
+- Dev and prod observability checks each passed 5 dashboards, 20 panels with finite samples,
+  and 3 required alerts. The first prod attempt found no percentile sample while worker was
+  scaled to zero; the repeat passed after a disposable QA job.
+- Both VM working paths passed helper/API/worker tests, Ruff, and release helper dry-run.
+  The dry-run selected `sha-d8f3a38` for API, worker, frontend and MinIO and left the prod
+  overlay byte-identical.
+
+No K3S user traffic or application data was moved. Neither K3S environment was deleted.

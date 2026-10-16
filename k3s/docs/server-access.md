@@ -164,8 +164,8 @@ ssh kube-dev 'kubectl -n album-dev port-forward svc/minio 9001:9001'
 # 터미널 2: 작업 PC 9001 → VM 127.0.0.1:9001
 ssh -N -L 9001:127.0.0.1:9001 kube-dev
 # 브라우저: http://localhost:9001
-#   로그인: VM의 ~/kube-study/k3s/k8s/overlays/dev/secrets.env 에 있는 S3_ACCESS_KEY / S3_SECRET_KEY
-#   (ssh kube-dev 'cat ~/kube-study/k3s/k8s/overlays/dev/secrets.env' 로 직접 확인. 다른 곳에 복사하지 않는다)
+#   로그인 자격 증명은 VM 전용 secrets.env에서 사용한다. 파일 내용을 터미널 출력,
+#   채팅, 티켓, CI 로그에 복사하지 않는다.
 ```
 
 끝나면 두 터미널에서 `Ctrl+C`.

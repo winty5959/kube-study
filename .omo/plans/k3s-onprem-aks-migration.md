@@ -1,6 +1,6 @@
 # K3S 폴더 정리와 AKS 전환 개발 계획
 
-갱신: 2026-10-16 KST · 기준 HEAD `a64cdb3` · **구현 진행 중**.
+갱신: 2026-10-16 KST · 계획 시작 HEAD `a64cdb3` · K3S 작업 1~6 및 F1~F4 완료.
 참고: [Plan k3s to AKS migration](codex://threads/01a141ef-9600-7db3-9856-ecefa17822f2).
 
 이번 요청으로 AKS를 로드맵에서 상세 개발 명세로 확장했다. 저장소는 기존
@@ -27,19 +27,20 @@ goal을 세우고 구현을 진행하도록 요청했다. 실행 중 live 상태
 
 **Why this approach:** 저장소와 기존 이력을 유지하고 임시 호환 경로로 감시 중인 배포를 보호한 뒤 개발 환경부터 전환한다.
 
-**What it will NOT do:** 현재는 계획만 작성한다. 이후 구조 작업에도 새 저장소 생성·AKS 구축·데이터 서비스 교체·운영 버전 승격을 끼워 넣지 않는다.
+**What it will NOT do:** 이 K3S 구조 정리에서 새 저장소 생성, AKS 리소스 구축, 데이터 서비스 교체, 실제 사용자 트래픽·데이터 이전, 기존 K3S 환경 삭제를 수행하지 않는다. AKS 작업은 별도 A0~A15 명세를 따르며 target tenant/subscription 확인 뒤 진행한다.
 
 **Effort:** Large
 **Risk:** Medium - 자동 감시 중인 GitOps 경로와 삭제 옵션이 있는 VM 동기화를 순서대로 전환해야 한다.
 **Decisions to sanity-check:** 단일 기존 저장소, 기존 K3S와 미래 AKS의 폴더 분리, 기존 CI의 dev 자동 승격과 prod 수동 승격 유지. AKS 기본안은 단일 학습 클러스터이며 상세 사양·비용·접근 방식은 연결된 AKS 명세를 따른다.
 
-Current execution: task 1 live baseline is partial because both K3S VMs are deallocated;
-continue local tasks without claiming a live cutover, then complete the remaining cards
-and record external prerequisites with evidence.
+Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with evidence. The
+remaining project work is AKS A0-A15; its target tenant/subscription selection is awaiting the
+user's answer. No AKS resources have been created. K3S traffic/data migration and source
+environment deletion remain outside this goal.
 
 ---
 
-> TL;DR (machine): Large / Medium risk / same repository; K3S relocation with six tasks and four final checks; detailed AKS plan in companion documents; execution is in progress under the user's goal.
+> TL;DR (machine): Large / Medium risk / same repository; K3S relocation with six tasks and four final checks complete; detailed AKS plan awaits target tenant/subscription selection.
 
 ## Scope
 ### Affected user and ideal state
@@ -86,7 +87,7 @@ and record external prerequisites with evidence.
 ### 실행 순서
 준비/구조 작업: 1 → 2; 로드맵 3은 작업 2와 독립 문서로 준비할 수 있으나 같은 파일을 동시 수정하지 않는다.
 게시/전환 작업: 2·3 → 4 → 5 → 6. live dev와 prod 전환은 반드시 순차적이다.
-최종 검증은 F1~F4. 구현 시작은 사용자의 별도 요청이 있어야 한다.
+최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. AKS A0-A15는 target tenant/subscription 확인 뒤 이 goal에서 계속한다.
 
 ### Dependency matrix
 | Todo | Depends on | Blocks | Can parallelize with |
@@ -159,7 +160,7 @@ and record external prerequisites with evidence.
   QA failure: 옛 경로 소비자가 하나라도 있거나 context 확인이 안 되면 제거를 보류하고 작업 4에서 해소한다. 제거 diff에 비호환 파일이 있으면 staged diff에서 제외한다.
   Commit: Y — chore(gitops): remove compatibility paths after the K3S cutover. Lore에 두 환경 live source 확인 근거 포함, 검증 후 같은 origin에 push.
 
-- [ ] 6. 기능·Release 계약 확인과 완료 기록 게시
+- [x] 6. 기능·Release 계약 확인과 완료 기록 게시
   Recommended task executor category: writing — 실제 검증을 문서와 기능별 이력으로 연결.
   What to do / Must NOT do: 새 VM 작업 경로에서 기존 smoke/관측성 검사 실행, 브라우저 업로드→썸네일→원본 바이트 비교→삭제 확인. 회귀 테스트/CI 근거와 실제 실행 개수 기록. Release helper dry-run 및 기존 script tests로 k3s prod overlay 대상·동일 digest 별칭·수동 Sync 계약 검증, 별도 prod release 배포나 새 v* 태그는 이 구조 작업에서 만들지 않는다. 기존 실험 결과는 삭제/재작성하지 않고 이동 검증 문서를 k3s/docs/layout-migration.md에 추가한다. root README와 기존 운영 문서의 현재 구조가 일치하는지 확인한다.
   Closes: GAP-5. Blocked by: 5. Blocks: F1~F4.
@@ -171,13 +172,13 @@ and record external prerequisites with evidence.
 
 ## 최종 확인 항목
 아래는 한 번의 자체 검토 체크리스트다. 별도 병렬 에이전트·다중 승인 보고서를 의무화하지 않는다. 실패가 없고 증거가 갖춰지면 완료를 보고한다.
-- [ ] F1. Plan compliance audit
+- [x] F1. Plan compliance audit
   작업 1~6 및 Must have/NOT를 실제 git diff·원격 SHA와 대조. 근거: .omo/evidence/k3s-aks-layout/f1-compliance.txt.
-- [ ] F2. Code quality review
+- [x] F2. Code quality review
   prefix/cwd 혼동, action 입력, rsync 보호, GitOps root/child 정책을 리뷰하고 VM 테스트·lint 결과 확인. 근거: .omo/evidence/k3s-aks-layout/f2-review.txt.
-- [ ] F3. Real manual QA
+- [x] F3. Real manual QA
   dev/prod 실제 기능과 기존 20개 관측성 패널 표본, 새 경로 개발 루프 및 live source·PVC·prod operation 보존 확인. 근거: .omo/evidence/k3s-aks-layout/f3-runtime.txt.
-- [ ] F4. Ideal-state fidelity
+- [x] F4. Ideal-state fidelity
   아래 IS-1~5를 1:1 증거와 매핑. 실패는 누락 작업으로 환원, 완료로 포장하지 않음. 근거: .omo/evidence/k3s-aks-layout/f4-fidelity.txt.
 
 ## Commit strategy
@@ -191,7 +192,7 @@ and record external prerequisites with evidence.
 | IS-3 | 1,2,4,5 | PVC·키·prod digest/operation 보존 및 sync 보호 실패 사례 | task-1-baseline.txt, task-4-cutover.txt, task-5-cleanup.txt |
 | IS-4 | 3 | aks roadmap와 미확정 owner decision 경계 | task-3-docs.txt |
 | IS-5 | 6,F1~F4 | 실제 실행 증거와 origin commit SHA | task-6-acceptance.txt, f1~f4 자료 |
-증거 상대 파일명은 모두 .omo/evidence/k3s-aks-layout/ 아래다. 이번 계획 세션에서는 해당 제품 QA를 실행하지 않았다.
+증거 상대 파일명은 모두 .omo/evidence/k3s-aks-layout/ 아래다. 계획 작성 시점에는 제품 QA가 없었으며, 구현 goal에서 실행한 결과만 해당 증거 파일에 기록했다.
 
 ## 가벼운 LLM을 위한 작업 방법
 

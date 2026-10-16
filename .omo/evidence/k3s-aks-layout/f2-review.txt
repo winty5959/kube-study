@@ -1,22 +1,30 @@
-F2 local code-quality review (partial)
+F2 final code-quality review
 Date: 2026-10-16 KST
-Reviewed commit range: a64cdb3e4adc..HEAD
+Reviewed commit range: a64cdb3e4adc..2d8e8c4 plus final documentation.
 
-Scope reviewed:
-- K3S selective-build helper and its path-selection tests.
-- K3S CI and Release workflow path, working-directory, image-context and manifest inputs.
-- K3S VM sync root, destination, environment guard, and rsync protection/exclusion rules.
-- New K3S ArgoCD source/value paths and retained legacy root content.
+Review scope:
+- K3S path selector, repo-root/project-root handling, workflow contexts and action inputs.
+- VM `sync.sh` destination, environment guard, ignore/protect filters and deletion boundary.
+- Root/child Application source paths, Helm `valueFiles`, prod sync policy and migration order.
+- README and operating instructions after removing the root compatibility tree.
 
-Local evidence:
-- actionlint 1.7.12 passed for ci.yaml and release.yaml.
-- K3S helper test suite passed (31 tests); Ruff and shell syntax checks passed.
-- YAML parse and Kustomize/Helm render results are recorded in task-2-checks.txt.
-- No issue was found in the reviewed local path-selection or sync-filter logic.
+Findings and changes:
+- No code or workflow defect found in the reviewed migration diff.
+- Removed an operating-doc command that printed the VM-only Secret source file. The updated
+  text keeps the credential handling boundary without printing values.
+- Rsync filter dry-runs reported no secret/venv transfer or deletion; rerunning after the
+  CI tag promotion found only the intended dev overlay update.
 
-Not complete:
-- F2 remains incomplete because VM-backed app tests/lint and live ArgoCD renderer
-  behavior could not be checked while both K3S VMs were deallocated.
-- Actual live source paths, sync policy, PVC/image/operation state remain unknown.
-- Legacy root content is retained as compatibility state; its exact completeness against
-  live consumers cannot be confirmed until task 1 can reach both clusters.
+Verification evidence:
+- Both VMs: 31 helper tests, 12 API tests, 8 worker tests, and Ruff passed for API/worker.
+- actionlint 1.7.12, shell syntax, JavaScript syntax, YAML parsing, 9 Kustomize entrypoints,
+  and Git/Markdown checks passed.
+- GitHub main run 38842930641 passed. Validation PR run 38845528592 passed API tests/build/
+  scan and skipped registry login, image push and `update-dev`; PR #3 was closed unmerged.
+- Argo Kustomize v5.8.1 rendered all 16 Apps before and after root transition. All 16 remain
+  Synced/Healthy with 10/10 Git source paths under `k3s/` and 8/8 Helm values under the new
+  prefix.
+
+Residual note: API pytest emits one existing Starlette/httpx deprecation warning; all 12 API
+tests pass. This was a migration-focused quality review, not a repository-wide security audit.
+AKS implementation is pending target tenant/subscription confirmation.

@@ -1,0 +1,49 @@
+K3S migration feature and release-contract acceptance
+Date: 2026-10-16 KST
+
+Code and VM verification:
+- Both VM worktrees use `~/kube-study/k3s/`. The post-CI sync updated their dev overlay to
+  the four promoted `sha-d8f3a38` tags while preserving dev `.env` mode and the per-app venvs.
+- On both VMs: 31 helper tests, 12 API tests, 8 worker tests, and API/worker Ruff passed.
+  Python was 3.13.16. The API pytest run emitted one Starlette/httpx deprecation warning.
+- `k3s/docs/layout-migration.md` records the final path map, cutover sequence, recovery order,
+  and scope boundary. Operational docs no longer instruct operators to print secret files.
+
+Hosted CI and registry:
+- Main run 38842930641 succeeded for all four images and dev update. The resulting four dev
+  tags are `sha-d8f3a38`.
+- Validation PR [#3](https://github.com/winty5959/kube-study/pull/3) run 38845528592 passed.
+  The API job ran lint, tests, helper tests, image build, and scan. Registry login, image push,
+  and `update-dev` were skipped. The PR was closed without merging and its branch was deleted.
+- Anonymous GHCR manifest requests for the API, worker, frontend, and MinIO `sha-d8f3a38` tags
+  returned HTTP 200. No credentials were used or recorded.
+
+Live application verification:
+- Dev and prod CLI smoke each uploaded one generated PNG, reached `DONE`, retrieved the
+  200x100 and 800x400 WebP thumbnails and the original 3,462-byte PNG, then deleted the test.
+- Dev browser UI upload reached `DONE`; the detail view showed filename, worker, status and
+  download action. The UI delete confirmation was accepted. After reload, the QA file was
+  absent and the pre-existing gallery item remained. Captures are
+  `task-6-dev-ui.png` and `task-6-dev-ui-clean.png` in this evidence directory.
+- Dev observability passed 5 dashboards, 20 panels with finite samples, and 3 required alerts.
+  Prod passed the same checks after a second disposable job kept KEDA's worker available for
+  Prometheus scrapes; the first attempt correctly found no finite processing percentile while
+  the worker was scaled to zero.
+- After source migration, both clusters had 8/8 Applications Synced/Healthy, 5/5 Git paths
+  under `k3s/`, and 4/4 Helm values under `$values/k3s/infra/`. All 6 PVC UIDs per cluster
+  matched their pre-transition fingerprints. Prod `album-prod` is still manual-sync with no
+  active operation and remains on its original `sha-a3e8669` application image tags.
+
+Release contract:
+- On both VMs, `python3 scripts/prepare-release.py --release v0.0.0 --dry-run` selected
+  `sha-d8f3a38` for all four components.
+- Prod overlay SHA-256 stayed `f508d653d901ff816217146ff4b8f45b2333441f87409b83d5509a353f147c50`
+  before and after the dry-run. No release alias, tag, registry write, or prod rollout occurred.
+- Final documentation check covered 40 Markdown files and 158 local links with zero missing
+  targets. `git diff --check` passed. `graphify update .` exited 0; sensitive files skipped: 8.
+
+Scope and remaining decisions:
+- Existing experiment records were preserved. Root README and current operation docs point to
+  the final k3s/ layout.
+- This work did not transfer user traffic or application data, delete a K3S environment, or
+  create AKS resources. The tenant/subscription choice required for AKS A0 remains pending.

@@ -1,0 +1,37 @@
+F1 plan compliance audit
+Date: 2026-10-16 KST
+
+Tasks 1-6 were checked against the plan requirements and their task evidence:
+- Task 1: dev/prod source, policy, workload, digest, PVC and rollback baseline is recorded in
+  `task-1-baseline.txt`; no Secret data or key body was read.
+- Task 2: K3S paths, CI, helpers, GitOps paths, VM sync protection and local/VM checks are in
+  `task-2-checks.txt`.
+- Task 3: root index, AKS roadmap, E-01..E-15 mapping, additional AKS experiments, cost,
+  isolation, access and data decisions are in `task-3-docs.txt`.
+- Task 4: existing main was pushed normally; dev then prod roots were switched in order; CI,
+  VM tests, application status, PVC fingerprints and smoke/observability are in
+  `task-4-cutover.txt`.
+- Task 5: old root files were removed only after both clusters had zero old path consumers;
+  cleanup and root layout checks are in `task-5-cleanup.txt`.
+- Task 6: current K3S path map, recovery boundary, main/PR CI, browser app flow, observability,
+  release dry-run and public image access are in `task-6-acceptance.txt` and
+  `k3s/docs/layout-migration.md`.
+
+Must-have and Must-not audit:
+- One existing Git repository and origin were preserved. No force-push, new repository, tag
+  recreation, K3S VM deletion, user traffic move, application data migration, managed database
+  conversion, or prod image release occurred.
+- Final tracked root keeps repository controls, root README, `k3s/` and `aks/`; all migrated
+  project content is under `k3s/`. No nested Git repository was added.
+- Dev was changed before prod. Existing root Applications were updated in place; prod
+  `album-prod` remains manual-sync and retained image tags, PVC identities and operation state.
+- VM sync used only `~/kube-study/k3s/`. Dry-run reported no sensitive path transfer/deletion;
+  existing dev environment permissions and VM key backups were preserved.
+- No credential or key contents were printed, committed, or fed to Graphify. Existing
+  experiment records were preserved.
+- AKS A0-A15 and all AKS resource creation remain pending because the target tenant and
+  subscription have not been confirmed. Actual K3S traffic/data cutover and environment
+  deletion were outside the approved plan.
+
+Verdict: K3S layout and live GitOps migration requirements are complete. The larger K3S-to-AKS
+project is not complete until the target selection is answered and AKS acceptance is executed.
