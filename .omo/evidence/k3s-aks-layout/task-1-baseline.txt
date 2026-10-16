@@ -1,31 +1,110 @@
-K3S to AKS layout baseline (partial)
+K3S to AKS layout baseline (dev captured, prod pending)
 Date: 2026-10-16 KST
 Repository root: kube-study
-Rollback Git HEAD: a64cdb3e4adc (main, origin/main)
+Rollback Git HEAD: a64cdb3e4adc844e50cb44e43757b03f7159be58 (main, origin/main)
 Origin: https://github.com/winty5959/kube-study.git
 Tags: v1.1.0
 
-Available local facts:
-- Azure CLI selected subscription display name matches AX사업부문-인프라아키텍처팀 and is Enabled.
-- Exactly one enabled subscription with that display name is visible.
-- Public tenant metadata for ktopen.onmicrosoft.com resolved successfully. The unique
-  enabled AX사업부문-인프라아키텍처팀 subscription belongs to a different tenant, and
-  the current Azure CLI cache has no enabled subscription for KT Open.
-- `az account get-access-token --tenant ktopen.onmicrosoft.com` succeeded, but explicit
-  interactive `az login` opened a browser and was interrupted before account selection.
-  No Azure resource write was performed.
-- vm-kube-dev and vm-kube-prod are both VM deallocated in RG-SEONUNG-KUBE-STUDY.
-- Both configured contexts exist, but their local API endpoints at
-  127.0.0.1:16443 (dev) and 127.0.0.1:26443 (prod) refused connections.
-- Documented SSH tunnel starts for dev and prod did not return within 25 seconds;
-  both were interrupted. No VM was started and no cluster state was changed.
-- The proposed AKS resource group rg-seonung-kube-study-aks does not currently exist.
+Azure scope:
+- The selected enabled subscription is AX사업부문-인프라아키텍처팀; exactly one enabled
+  subscription with that name is cached locally.
+- Public tenant metadata for ktopen.onmicrosoft.com resolved successfully. That AX
+  subscription has a different tenant ID; the current CLI cache has no enabled subscription
+  in KT Open. Explicit interactive login opened a browser but was stopped before selection.
+- The AKS resource group rg-seonung-kube-study-aks does not exist. No AKS resource was created.
 
-Not captured because the source clusters were unreachable:
-- Live ArgoCD Application source paths, Helm values, sync policies, sync/health/
-  operation states, workloads, PVCs, image tags/digests and root/child ownership.
-- External SealedSecrets key backup availability.
+K3S VM access:
+- Both VMs initially reported VM deallocated in RG-SEONUNG-KUBE-STUDY.
+- Started vm-kube-dev in the selected AX subscription for baseline collection; it reports
+  VM running. vm-kube-prod remains deallocated.
+- SSH initially timed out because the dev NSG SSH rule did not include the current
+  workstation address. Updated only that rule to the current address /32. `ssh kube-dev
+  hostname` returned `vm-kube-dev`; the dev tunnel is up. No public address was recorded.
+- Daily 18:00 KST auto-shutdown is documented. The dev VM is left running for the
+  current baseline work and should be deallocated when that work is complete.
 
-Disposition: task 1 remains incomplete. Keep K3S path bridges and do not perform
-the live GitOps path cutover until the exact live source state and recovery material
-have been checked. Local repository work may proceed.
+K3S dev live baseline:
+- `k3s-dev` node is Ready; kubelet version v1.36.5+k3s1.
+- ArgoCD has 8 Applications: root-dev and seven children. All 8 are Synced, Healthy,
+  with Succeeded last operations. All current dev Applications use automated sync.
+- Existing source paths: root-dev `argocd/bootstrap/dev`; album-dev
+  `k8s/gitops/dev/application`; credentials-dev `argocd/prerequisites/dev`;
+  observability-dev `argocd/observability`; platform-dev `k8s/gitops/dev/platform`.
+  KEDA, monitoring and SealedSecrets use multi-source Helm charts with no path on the
+  chart source. Their current value files are respectively `$values/infra/keda/values.yaml`,
+  `$values/infra/monitoring/values.yaml` plus `$values/infra/monitoring/values-dev.yaml`,
+  and `$values/infra/sealed-secrets/values.yaml`.
+- Chart versions: KEDA 2.21.0, kube-prometheus-stack 92.7.0, SealedSecrets 2.20.0.
+  ArgoCD is v3.5.5; repo-server Kustomize is v5.8.1; `argocd-cm` has no custom
+  `kustomize.buildOptions` value.
+- Dev app images: API `sha-f9fd24a` (digest
+  `sha256:b49f3472463e96f8e46a8e5de3d195278482841390d0851ddd2aa6445440819f`),
+  frontend `sha-72655e4` (digest
+  `sha256:572bc01fcd3a2d536a223486b3dc384d72e08df78616af1b7e29e9f0fba17284`),
+  MinIO `sha-72655e4` (digest
+  `sha256:d04ce6a94325ec08181157c7a554f0397ece516f60e91901b862cf3302a0890c`).
+  Worker desired image is `sha-72655e4`; its deployment is 0/0, so no running-pod digest
+  was available. Database images are postgres:17-alpine and redis:7.4-alpine.
+- Dev API is 3/3 Ready, frontend 2/2, worker 0/0, and MinIO/PostgreSQL/Redis are each
+  1/1. Current album-cleanup and two K3S Traefik installation Jobs have succeeded; the
+  album-cleanup CronJob has no active execution.
+- Six dev PVCs are Bound on `local-path`: MinIO 10Gi UID
+  `6617adb0-43d2-494c-89ce-7b9d81c133f9`; PostgreSQL 2Gi UID
+  `7f9b6a2c-8b2a-484d-9f24-1c6cdfe376ff`; Redis 1Gi UID
+  `3b8ea9a6-0ac9-48c4-b0ea-91deb63412f1`; Alertmanager 1Gi UID
+  `adc88059-d387-4a55-b1be-ba1f31b74414`; Grafana 1Gi UID
+  `04bdc7e4-e3d7-470c-9380-fdc0ed27c994`; Prometheus 5Gi UID
+  `c34cb435-f268-44ed-8466-8d93ee82af3d`.
+- One SealedSecrets controller key Secret exists in dev. Local dev and prod external
+  key-backup files both exist with mode 0600; key contents were not read.
+- The old root Application manifests remain available in rollback commit a64cdb3e4adc;
+  the live dev root still points to the old bootstrap path.
+
+K3S prod live baseline:
+- `k3s-prod` node is Ready; kubelet version v1.36.5+k3s1.
+- ArgoCD has 8 Applications: root-prod and seven children. All 8 are Synced, Healthy,
+  with Succeeded last operations.
+- Existing source paths: root-prod `argocd/bootstrap/prod`; album-prod
+  `k8s/gitops/prod/application`; credentials-prod `argocd/prerequisites/prod`;
+  observability-prod `argocd/observability`; platform-prod `k8s/gitops/prod/platform`.
+  KEDA, monitoring and SealedSecrets use the same pathless multi-source Helm chart
+  pattern as dev, with value files `$values/infra/keda/values.yaml`,
+  `$values/infra/monitoring/values.yaml` plus `$values/infra/monitoring/values-prod.yaml`,
+  and `$values/infra/sealed-secrets/values.yaml`.
+- Root-prod uses automated sync and has `ignoreDifferences` for Application `/operation`
+  with `RespectIgnoreDifferences=true`. Album-prod sync is manual. This preserves the
+  existing separation between automatic root reconciliation and manual workload release.
+- All six prod PVCs are Bound on `local-path`: MinIO 10Gi UID
+  `1af545a9-fa75-48fb-9e9f-b973d25152a4`; PostgreSQL 2Gi UID
+  `7f15a325-b30e-4fd8-9e0b-559582083207`; Redis 1Gi UID
+  `da0ae0a5-2a9d-453a-8de6-641401afb4ce`; Alertmanager 1Gi UID
+  `15d53957-b7cb-4bfa-a3b0-bba986542a72`; Grafana 1Gi UID
+  `bab69ddb-1867-4ab8-8167-f6cd029d096e`; Prometheus 5Gi UID
+  `c774dacd-c645-4924-a4c4-217b6deb07c2`.
+- Prod app images: API `sha-a3e8669` (digest
+  `sha256:d8b5528cbc354016df981f26cd7b27a609ab02b9f142b7b998bef209b07b377f`),
+  frontend `sha-a3e8669` (digest
+  `sha256:572bc01fcd3a2d536a223486b3dc384d72e08df78616af1b7e29e9f0fba17284`),
+  MinIO `sha-a3e8669` (digest
+  `sha256:d04ce6a94325ec08181157c7a554f0397ece516f60e91901b862cf3302a0890c`).
+  Worker desired image is `sha-a3e8669`; its deployment is 0/0, so no running-pod digest
+  was available. Database images are postgres:17-alpine and redis:7.4-alpine. API is
+  6/6 Ready, frontend 2/2, and MinIO/PostgreSQL/Redis are each 1/1.
+- Current album-cleanup and two K3S Traefik installation Jobs have succeeded; the
+  album-cleanup CronJob has no active execution.
+- The six paths with filesystem Kustomize sources per environment plus the two roots
+  account for the expected 10 Git source paths across 16 Applications. The three Helm
+  chart sources per environment have no path. There are 8 Helm value files across both
+  clusters, all still under the old `$values/infra/` prefix.
+- The old root Application manifests remain available in rollback commit a64cdb3e4adc;
+  the live prod root still points to the old bootstrap path.
+
+Remaining for later acceptance:
+- Whether the external key backups match their corresponding live controller keys.
+- Actual photo/object counts and application behavior; no data or photo content was read.
+
+Disposition: task 1 acceptance inventory is complete for both clusters. Keep both root
+paths, prod manual-sync policy, PVC identities and image digests as the rollback baseline.
+External key backup files are present with restrictive mode; their contents and match to
+the live controller keys were not read. Do not switch live GitOps paths until task 2's
+bridge/renders and VM checks pass.

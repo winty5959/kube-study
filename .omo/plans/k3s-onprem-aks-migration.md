@@ -100,7 +100,7 @@ and record external prerequisites with evidence.
 
 ## Todos
 > Implementation + Test = ONE todo. Never separate.
-- [ ] 1. 기준 상태와 경로 전환 복구 자료 확보
+- [x] 1. 기준 상태와 경로 전환 복구 자료 확보
   Recommended task executor category: quick — 기존 상태 조회와 보존 목록 정리.
   What to do / Must NOT do: git status/log/remotes/tags와 추적 파일 목록을 확보한다. k3s-dev/prod context에서 root/child 16개 source.path, values 경로, syncPolicy, operation 상태, workloads/Jobs, PVC, 이미지 tag/digest를 비밀 없는 필드로 기록한다. 원본 root manifest와 child specs 및 외부 봉인 키 백업 존재를 확인한다. 자동 Sync root-prod와 수동 album-prod를 구분한다.
   Closes: GAP-3. Blocked by: 없음. Blocks: 2,4.
