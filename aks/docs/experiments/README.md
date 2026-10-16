@@ -16,7 +16,7 @@ for scenario acceptance criteria and recovery boundaries.
 | E-08 persistence after restore | Pass | [AKS-DATA](AKS-DATA.md) |
 | E-09 NetworkPolicy | Pass | [E-09](E-09.md) |
 | E-10 ConfigMap rollout | Pass | [E-10](E-10.md) |
-| E-11 CI-triggered API deployment | Not run | |
+| E-11 CI-triggered API deployment | Pass; reuses A8 API-only run | [E-11](E-11.md) |
 | E-12 self-heal drift | Pass for image drift; annotation drift not detected | [E-12](E-12.md) |
 | E-13 release promotion | Pending release PR review, merge, and manual sync | [release workflow](../release.md) |
 | E-14 GitOps rollback | Not run; requires E-13 | |
