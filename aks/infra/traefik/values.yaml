@@ -1,0 +1,38 @@
+deployment:
+  replicas: 1
+  podLabels:
+    app.kubernetes.io/name: traefik
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+  name: traefik
+providers:
+  kubernetesCRD:
+    enabled: true
+    ingressClass: traefik
+    allowCrossNamespace: false
+    allowExternalNameServices: false
+  kubernetesIngress:
+    enabled: true
+    ingressClass: traefik
+service:
+  enabled: true
+  spec:
+    type: ClusterIP
+ports:
+  traefik:
+    expose:
+      default: false
+  web:
+    expose:
+      default: true
+  websecure:
+    expose:
+      default: false
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

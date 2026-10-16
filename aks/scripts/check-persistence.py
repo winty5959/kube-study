@@ -41,7 +41,7 @@ def available(method: str, path: str) -> tuple[int, HTTPMessage, bytes]:
 
 def main() -> None:
     """Create an isolated photo, replace stateful Pods and verify its bytes survive."""
-    smoke.BASE = "http://album.dev.local"
+    smoke.BASE = "http://album.aks.localhost"
     fixture_file = Path("/tmp/album-e08-id.json")
     if fixture_file.exists():
         raise RuntimeError("Clean the saved E08 fixture before starting another run")

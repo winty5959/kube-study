@@ -1,0 +1,19 @@
+A5 Traefik and access evidence (2026-10-16 KST)
+
+Controller
+- Pinned Traefik Helm chart 42.0.0 (Traefik 3.7.14); chart metadata requires Kubernetes >=1.30 and the AKS cluster is 1.36.4.
+- Helm lint passed with 0 failed charts. Rendered manifests contain one replica, 100m CPU / 128Mi memory requests, a non-default Traefik IngressClass, the IngressRoute CRD, and one ClusterIP Service on port 80.
+- Release `traefik` in namespace `ingress-system` installed successfully. Deployment reached 1/1 Ready; the live Service is ClusterIP and the class controller is `traefik.io/ingress-controller` with default-class=false.
+- Cluster-wide Service query for type LoadBalancer returned no Service. The AKS outbound Load Balancer remains separate from Kubernetes ingress.
+
+Policies and route verification
+- Updated `ingress-traefik` and PostSync smoke policy selectors from kube-system to ingress-system. DNS continues to allow UDP/TCP 53 to kube-dns in kube-system.
+- Applied the dev namespace, planned base NetworkPolicies, and PostSync access policies. No database, MinIO, API, or persistent application workloads were deployed.
+- Pulled the existing frontend image tag sha-4486b3b into a temporary one-replica frontend Service/Ingress. The allowed `album-smoke` probe resolved cluster DNS and fetched the route through Traefik. The blocked probe resolved DNS but its TCP request to Traefik was denied by the default egress policy.
+- A workstation loopback port-forward returned HTTP 200 for `Host: album.aks.localhost` and HTTP 404 for a wrong Host. It bound only 127.0.0.1.
+- Removed the temporary frontend Deployment, Service, Ingress, probe Pods, and stopped port-forward. `album-dev` and its seven planned NetworkPolicies plus the smoke ServiceAccount remain ready for later GitOps adoption.
+
+Not yet verified
+- API/data/KEDA/Prometheus connectivity and signed object GET/HEAD behavior require the A6/A8/A10 workloads. The Traefik controller was installed with Helm for later ArgoCD adoption in A7.
+- LSP diagnostics surfaced existing unresolved imports/type issues in copied Python helpers and tests after the host default updates; no test was run or type warning suppressed in this A5 change.
+- Graphify update . completed with exit status 0.

@@ -268,11 +268,11 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A5. Traefik·네트워크 정책·localhost 접근
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/infra/traefik/values.yaml`, `aks/k8s/base/{application,minio,policy}/**`,
   `aks/k8s/overlays/dev/kustomization.yaml`, `aks/k8s/gitops/{dev/platform,hooks}/**`,
   `aks/scripts/tunnel.sh`, `aks/docs/access.md`.
-- **순서:** (5a) 지원 Traefik chart/CRD 버전 고정·1 replica·100m/128Mi requests →
+- **순서:** (5a) Traefik chart 42.0.0 / app 3.7.14 및 CRD 고정·1 replica·100m/128Mi requests →
   (5b) `ingress-system` ClusterIP Service와 Ingress/IngressRoute 적용 →
   (5c) Cilium 정책의 namespace/Pod selector 적응 → (5d) localhost 경로 확인.
 - K3S `traefik.kube-system` 주소와 정책의 kube-system selector를 `ingress-system`으로 바꾼다.

@@ -85,7 +85,7 @@ spec:
   ingress:
     - from:
         - namespaceSelector:
-            matchLabels: {kubernetes.io/metadata.name: kube-system}
+            matchLabels: {kubernetes.io/metadata.name: ingress-system}
           podSelector:
             matchLabels: {app.kubernetes.io/name: traefik}
       ports:

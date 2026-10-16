@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--width", type=int, default=1600)
     parser.add_argument("--height", type=int, default=1200)
-    parser.add_argument("--base", default="http://album.dev.local")
+    parser.add_argument("--base", default="http://album.aks.localhost")
     parser.add_argument(
         "--output", type=Path, default=Path("/tmp/album-batch-ids.json")
     )

@@ -39,7 +39,8 @@ Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0
 Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
 AKS cluster RBAC roles were assigned. AKS A1-A4 are implemented; A3 created two Ready D4as_v5
 nodes and A4 verified Azure Disk provisioning/reattachment. Evidence is in `.omo/evidence/aks-implementation/`.
-A5-A15 remain in progress. K3S traffic/data migration and source-environment deletion remain outside this goal.
+A1-A5 are implemented. Evidence is in `.omo/evidence/aks-implementation/`. A6-A15 remain in progress.
+K3S traffic/data migration and source-environment deletion remain outside this goal.
 
 ---
 

@@ -105,8 +105,8 @@ def test_public_endpoint_follows_request_host():
         }
         return Request(scope)
 
-    assert _public_endpoint(request("", {"host": "album.dev.local:8080"})) == (
-        "http://album.dev.local:8080"
+    assert _public_endpoint(request("", {"host": "album.aks.localhost:8080"})) == (
+        "http://album.aks.localhost:8080"
     )
     assert (
         _public_endpoint(request("", {"host": "album.local", "x-forwarded-proto": "https"}))

@@ -10,6 +10,7 @@
 - `Standard_F4s_v2`는 선택 구독에서 사용할 수 없어 `Standard_D4as_v5` 두 대를 사용합니다. `aks-kube-study`는 `koreacentral`, Kubernetes 1.36, AKS Base/Free 관리 tier이며 두 노드가 Ready입니다.
 - 관리 API는 배포 당시 관리 출발지의 단일 `/32`만 허용합니다. 로컬 kubeconfig는 `aks/infra/azure/local/kubeconfig`에 분리해 두고 context 이름은 `aks-study`입니다.
 - A4에서 Azure Disk CSI `StandardSSD_LRS`의 5Gi 비루트 PVC 프로비저닝과 Pod 재생성 후 파일 보존을 확인했습니다. 애플리케이션 PVC는 A6에서 생성합니다. A0/A4 결과와 이후 결정을 [결정 기록](docs/decisions.md)에 남깁니다.
+- A5에서는 Traefik을 `ingress-system`의 ClusterIP로 설치하고, dev 접근을 loopback port-forward로 확인했습니다. 실행 방법은 [접근 가이드](docs/access.md)에 있습니다.
 
 ## 전환 순서
 

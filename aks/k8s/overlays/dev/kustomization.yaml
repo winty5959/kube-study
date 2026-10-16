@@ -33,15 +33,9 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: album.dev.local
-      - op: copy
-        from: /spec/rules/0
-        path: /spec/rules/-
-      - op: replace
-        path: /spec/rules/1/host
-        value: album.dev.localhost
+        value: album.aks.localhost
   - target: {kind: IngressRoute, name: album-objects}
     patch: |-
       - op: replace
         path: /spec/routes/0/match
-        value: (Host(`album.dev.local`) || Host(`album.dev.localhost`)) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))
+        value: Host(`album.aks.localhost`) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))

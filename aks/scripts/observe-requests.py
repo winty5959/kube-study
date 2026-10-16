@@ -15,7 +15,7 @@ import httpx2
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base", default="http://album.dev.local")
+    parser.add_argument("--base", default="http://album.aks.localhost")
     parser.add_argument("--duration", type=float, default=90)
     parser.add_argument("--interval", type=float, default=0.25)
     args = parser.parse_args()
