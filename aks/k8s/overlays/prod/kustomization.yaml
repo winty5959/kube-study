@@ -18,7 +18,7 @@ images:
     newTag: sha-a3e8669
 
   - name: ghcr.io/winty5959/album-aks-minio
-    newTag: sha-a3e8669
+    newTag: sha-4486b3b
 
 configMapGenerator:
   - name: album-config

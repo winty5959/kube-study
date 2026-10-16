@@ -40,3 +40,9 @@ Prod album credentials are generated separately from dev at
 AKS Sealed Secrets private key backup stay outside Git; only strict-scope
 ciphertext is committed. The shared Grafana credential remains managed once
 in the `monitoring` namespace.
+
+Initial platform provisioning uses the CI-published dev MinIO tag already
+recorded in the prod overlay. The release PR replaces it with the verified
+release alias along with the other three application images. A missing or
+unpublished bootstrap tag must be corrected to a successful CI tag before
+manually syncing `platform-prod`.
