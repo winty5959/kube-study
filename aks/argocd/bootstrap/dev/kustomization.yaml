@@ -7,3 +7,4 @@ resources:
   - platform-dev.yaml
   - monitoring-dev.yaml
   - observability-dev.yaml
+  - album-dev.yaml
