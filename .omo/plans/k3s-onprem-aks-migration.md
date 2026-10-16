@@ -37,13 +37,14 @@ Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with eviden
 selected AX사업부문-인프라아키텍처팀, then explicitly changed the AKS target to the
 Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0 found
 Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
-AKS cluster RBAC roles were assigned. A0-A11 are implemented. Evidence is in
-`.omo/evidence/aks-implementation/`. A12-A15 remain in progress.
+AKS cluster RBAC roles were assigned. A0-A11 and A14 have implementation evidence in
+`.omo/evidence/aks-implementation/`. A12 awaits user review/approval of release PR #4; A13
+awaits E-13/E-14; A15 awaits posted Azure cost data. These cards remain in progress.
 K3S traffic/data migration and source-environment deletion remain outside this goal.
 
 ---
 
-> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A11 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; A12-A15 remain in progress; live K3S cutover/deletion is excluded.
+> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A11 and A14 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; A12/A13/A15 remain in progress; live K3S cutover/deletion is excluded.
 
 ## Scope
 ### Affected user and ideal state

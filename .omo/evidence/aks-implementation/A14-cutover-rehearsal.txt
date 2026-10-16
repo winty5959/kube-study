@@ -1,37 +1,65 @@
-A14 K3S dev to AKS dev cutover rehearsal status
+A14 K3S dev to AKS dev cutover rehearsal
 
-Check time: 2026-10-17 03:01 KST (approximate)
+Check time: 2026-10-17 03:27 KST
 Source: K3S dev context `k3s-dev`
 Target: Enterprise부문-아키텍처강화TF / rg-seonung-aks-test / aks-kube-study / album-dev
-Result: Partial; source write freeze, final copy, and route rollback not run
+Result: Dev-only rehearsal passed; live user traffic was not switched
 
-Source access:
-- The configured k3s-dev API endpoint was unreachable (`connection refused`) before a tunnel was open.
-- Ran the documented local command `k3s/scripts/tunnel.sh dev start`.
-- SSH connection to the K3S dev VM timed out; the documented tunnel status command reported no
-  active control socket.
-- No VM start, K3S workload patch, queue operation, database/object operation, or client route
-  change was performed. The K3S VM power state and service state were not established by this check.
+Source access and baseline:
+- Restored the documented `k3s/scripts/tunnel.sh dev` SSH path. K3S dev node `vm-kube-dev` was
+  Ready at Kubernetes `v1.36.5+k3s1`; `root-dev` and `album-dev` were Synced/Healthy with
+  auto-sync enabled after recovery.
+- Before freeze, K3S dev had one `DONE` photo row of 1,064 bytes, one 1,064-byte original, and two
+  thumbnails totaling 446 bytes. `thumbnail:jobs` and `thumbnail:processing` were both empty.
+- Source original SHA-256: `3507bf4bee26d19fc9eb7ff6e98e8063e822e1f5e87a6fc558c115da8452115e`.
+- Source small-thumbnail SHA-256: `fe3137f85dd472e5e29f93b9dfbf7771abd710abb54d20473ccc32e355ca73b6`.
+- Source medium-thumbnail SHA-256: `251806eae088a30621d377ffdda7b89b2bfa49389583bd9375d2097f957a7101`.
 
-Target-side evidence already available:
-- AKS dev's loopback Traefik endpoint was exercised in E10 with the generated PostSync photo.
-- The upload reached `DONE`; the original and thumbnails were read by the smoke path. The failed
-  640-pixel smoke fixture was deleted through the API (HTTP 204), and the next lookup returned 404.
-- After restoring the standard ConfigMap, the PostSync smoke succeeded, queues were empty, and
-  root-dev / album-dev were Synced/Healthy. See `aks/docs/experiments/E-10.md`.
+Observed source write freeze and snapshot:
+- Paused `root-dev` and `album-dev` auto-sync; suspended `album-cleanup`; paused KEDA worker
+  scaling; removed the API HPA and confirmed no HPA remained; scaled API and worker deployments
+  to zero.
+- Confirmed API/worker at zero replicas, no active Jobs, no non-read database activity, no
+  `PROCESSING` rows, and both Redis queues at zero before capture.
+- Captured the fresh data-only PostgreSQL dump at 2026-10-17 03:18:11 KST. `database.sql.gz` is
+  746 bytes, SHA-256 `5c8fc54631d580c78fa77df4a94c2e8df243b301dde7a6b757fbd86f20e01274`.
+- Captured the matching object manifest. It is 1,078 bytes, SHA-256
+  `2b090cbd2bad330506f9f3b14834b92b4c882d6e53460b565cbe44c78bc39449`.
+- Both artifacts are outside Git at `~/.local/share/kube-study/aks-backups/k3s-dev/2026-10-17-cutover/`.
+  The directory is mode 700 and files are mode 600. No photo payload or database dump was added
+  to the repository.
 
-Source baseline and backup:
-- A9 contains a K3S dev online snapshot from 2026-10-16: one DONE row (1,064 bytes), one original,
-  two thumbnails, empty main and processing queues, and verified backup hashes.
-- A9 explicitly states that source writes were not frozen during that snapshot. It is not a
-  consistent final cutover copy and was not reused as one.
+AKS target comparison and local test-client selection:
+- AKS cluster was Running in the approved Enterprise subscription, with two Ready
+  `Standard_D4as_v5` nodes. `album-dev` was Synced/Healthy.
+- AKS dev contained the same single `DONE` row, object keys, sizes, and all three SHA-256 values.
+  Both queues were empty and no `PROCESSING` rows existed. Since the destination already exactly
+  matched the frozen source, no duplicate row was restored and no existing object was overwritten.
+- Selected AKS only in the generated smoke invocation:
+  `SMOKE_HOST=album.aks.localhost python3 aks/scripts/smoke.py http://127.0.0.1:18080`.
+  This used the AKS loopback Traefik forward; no DNS, public IP, or persistent client route changed.
+- Smoke uploaded a generated photo, reached `DONE` on API image `sha-b7122b7`, read the 200x100
+  and 800x400 WebP thumbnails, downloaded the 3,462-byte original, and deleted the fixture.
+  The subsequent API lookup returned HTTP 404; AKS row count returned to one and both queues were
+  empty.
 
-Not performed:
-- No fresh source row/object/queue inspection through K3S API access.
-- No source write freeze, fresh dump/object copy, AKS restore from a frozen source, test-client URL
-  selection change, K3S route restoration, or post-rollback source write check.
-- No DNS, public IP, or K3S production changes. No source resource or data was deleted.
+Source recovery and rollback check:
+- Restored KEDA, cleanup, and both Argo auto-sync policies. The source API pod reported Ready at
+  `2026-10-16T18:19:57Z`; `album-dev` auto-sync completed successfully at `2026-10-16T18:21:05Z`.
+- The first Argo PostSync smoke attempt started while the API was still at zero and failed its
+  readiness connection before uploading anything. Argo retried after API recovery; the retry
+  succeeded, root-dev and album-dev returned to Synced/Healthy, and the photo table remained at
+  one `DONE` row with the same size and keys.
+- After recovery, both Redis queues remained empty, no `PROCESSING` rows were present, API
+  `/readyz` reported PostgreSQL/Redis/S3 healthy, and source original/thumbnail sizes and
+  SHA-256 values still matched the frozen manifest.
+- After the five-minute KEDA cooldown, both K3S and AKS workers returned to zero replicas while
+  their queues remained empty; both clusters' `root-dev` and `album-dev` applications were
+  Synced/Healthy at final check.
+- K3S dev remained the source route and its data was preserved. K3S prod was not modified or
+  started. No source resource or data was deleted.
 
-Follow-up prerequisite: restore a working, user-controlled SSH path to K3S dev and schedule the
-short development write-freeze window before repeating A14. Do not treat the old online A9 snapshot
-as proof of final consistency.
+Boundary:
+- This passed rehearsal covers K3S dev to AKS dev only. It did not switch real user traffic,
+  change DNS, modify K3S prod, or authorize source retirement. A live production cutover and
+  source-retirement decision remain separate work.

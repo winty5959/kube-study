@@ -15,6 +15,26 @@ queues. The source was not paused and was not modified. AKS dev had no photo row
 objects before restore. The source and target facts, dump hashes, and execution results are in
 `.omo/evidence/aks-implementation/A9-data-restore.txt`.
 
+## Frozen A14 snapshot (2026-10-17 KST)
+
+A14 paused K3S dev API and worker writes, cleanup, autoscaling, and Argo auto-sync after
+confirming there were no active jobs, `PROCESSING` rows, or queued items. At the snapshot,
+K3S dev held one `DONE` row (1,064 bytes), one original object (1,064 bytes), and two
+thumbnail objects (446 bytes total). The PostgreSQL data dump is 746 bytes with SHA-256
+`5c8fc54631d580c78fa77df4a94c2e8df243b301dde7a6b757fbd86f20e01274`. Its object manifest is
+1,078 bytes with SHA-256
+`2b090cbd2bad330506f9f3b14834b92b4c882d6e53460b565cbe44c78bc39449`. Both files are stored
+outside the repository under
+`~/.local/share/kube-study/aks-backups/k3s-dev/2026-10-17-cutover/`, in a mode-700 directory
+with mode-600 files.
+
+The original and both thumbnails were read from K3S dev and AKS dev. Each target body matched
+the frozen source by key, byte length, and SHA-256. AKS dev already contained the same `DONE`
+row and objects, so the rehearsal recorded a no-op restore and did not apply duplicate rows or
+overwrite objects. The source was reopened after the snapshot; its API later reported ready
+with PostgreSQL, Redis, and S3 checks passing. The full freeze, test, and recovery record is in
+`.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt`.
+
 The private AKS `migration-backups` bucket holds the transfer copy at
 `k3s-dev/2026-10-16/`. A second copy of `database.sql.gz`, `objects.json.gz`, and `manifest.json`
 is stored outside the repository at:
@@ -51,7 +71,7 @@ must match the evidence record before use.
    Argo is Synced/Healthy, readiness checks pass, queues are empty, and the worker returns to
    zero replicas after processing.
 8. Read and download a restored photo through the application. Then run
-   `SMOKE_HOST=album.aks.localhost python3 aks/scripts/smoke.py http://127.0.0.1:8080` through
+   `SMOKE_HOST=album.aks.localhost python3 aks/scripts/smoke.py http://127.0.0.1:18080` through
    the loopback Traefik tunnel. The smoke must upload, reach `DONE`, read both thumbnails and
    the original, delete the fixture, and confirm the deleted row returns 404.
 

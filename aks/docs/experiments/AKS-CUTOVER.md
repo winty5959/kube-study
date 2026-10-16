@@ -14,18 +14,21 @@ write freeze, both Redis queues drained, and all `PROCESSING` rows resolved.
 
 ## Current rehearsal status
 
-**Partial; source-side freeze and final snapshot were not performed.** The
-configured K3S dev kube context could not reach its local API endpoint. The
-documented `k3s/scripts/tunnel.sh dev start` attempt timed out while connecting
-to the K3S dev VM on SSH. The tunnel status check found no active control
-socket. No K3S VM, workload, traffic route, database, queue, or object was
-changed. See [A14 evidence](../../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt).
+**The dev-only source snapshot, target comparison, AKS test-client selection,
+generated-photo smoke, and K3S recovery passed on 2026-10-17 KST.** The K3S
+write path was frozen by pausing `root-dev` and `album-dev` auto-sync, suspending
+`album-cleanup`, pausing the worker ScaledObject, deleting the API and worker
+HPAs, and scaling the API and worker to zero. With no active jobs, no
+`PROCESSING` rows, and both Redis queues empty, a fresh data-only PostgreSQL
+dump and object manifest were captured. The AKS dev row and all three object
+bodies already matched that frozen source by key, size, and SHA-256, so no
+database or object restore was reapplied. See [A14 evidence](../../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt).
 
-AKS dev was already exercised through the loopback Traefik route
-`http://127.0.0.1:18080` with `Host: album.aks.localhost`; the E10 generated
-smoke reached `DONE`, and the fixture was deleted. This validates the AKS
-endpoint in isolation. It does not prove that a client route was switched from
-K3S to AKS or rolled back.
+The generated-photo smoke used only the AKS loopback Traefik route
+`http://127.0.0.1:18080` with `Host: album.aks.localhost`; it reached `DONE`,
+read the original and both thumbnails, and deleted the fixture. K3S dev then
+recovered to Synced/Healthy with its original row and object checksums intact.
+Public DNS, K3S prod, and real user traffic were not changed.
 
 ## Rehearsal procedure
 
@@ -33,16 +36,17 @@ K3S to AKS or rolled back.
    the source PostgreSQL, object store, and both Redis queues. If the source
    cannot be reached, stop here; do not infer it is empty or stopped.
 2. Record source row/status/byte counts, object keys/sizes/SHA-256 values, both
-   queues, image/schema version, and a verified restore baseline. Schedule and
-   record the short write-freeze window before pausing the dev API, worker,
+   queues, image/schema version, and a verified restore baseline. Record the
+   short write-freeze window before pausing the dev API, worker,
    cleanup, HPA/KEDA, and GitOps paths that can create or process writes.
 3. Confirm no request or job can write, both queues are empty, and there are no
    `PROCESSING` rows. Capture a new database dump and object manifest, then
-   verify each copied body by size and SHA-256. Keep all payloads outside Git.
-4. Pause AKS dev writes and cleanup. Restore the validated snapshot to the AKS
-   dev database and object buckets without replacing PVCs. Compare row state,
-   object keys, bytes, checksums, schema version, and queues before resuming
-   the AKS API and worker.
+   verify each target body by size and SHA-256. Keep all payloads outside Git.
+4. Pause AKS dev writes and cleanup. Compare row state, object keys, bytes,
+   checksums, schema version, and queues with the frozen source. If they already
+   match, record that no restore is required. If they differ, validate and
+   apply only the required snapshot data without replacing PVCs, then compare
+   again before resuming the AKS API and worker.
 5. Select the AKS dev URL only in the test client's local base URL/port-forward.
    Keep public DNS and source routes unchanged. Run a generated upload, wait
    for `DONE`, read the original and both thumbnails, then delete the generated
@@ -64,7 +68,7 @@ fails. Keep the source baseline and route unchanged while resolving the issue.
 
 ## Limits
 
-This procedure is not a live production migration. The current work has not
-performed the source write freeze, a fresh consistent copy, client URL switch,
-or source rollback check; A14 remains open until the source path is reachable
-and those steps are observed.
+This procedure is not a live production migration. A14 selected the AKS route
+only for a loopback test client; it did not change DNS, route real users, modify
+K3S prod, or delete the K3S source. A final production migration still needs a
+separately approved traffic plan and source-retirement decision.

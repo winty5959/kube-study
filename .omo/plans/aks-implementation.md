@@ -518,10 +518,12 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A14. 쓰기 정지·접속 전환·롤백 리허설
 
-- [ ] 완료
-- **수정:** `aks/docs/{data-migration,cutover}.md`, `aks/docs/experiments/AKS-CUTOVER.md`.
+- [x] 완료 — dev-only rehearsal evidence: `.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt`
+- **수정:** `aks/docs/data-migration.md`, `aks/docs/experiments/AKS-CUTOVER.md`,
+  `.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt`.
 - **순서:** (14a) 두 환경 상태·source backup·복구 기준과 중단 시간을 기록 →
-  (14b) 원본 쓰기 차단·queue/processing 작업 종료 → (14c) 최종 일관된 DB/객체 복원 →
+  (14b) 원본 쓰기 차단·queue/processing 작업 종료 → (14c) frozen snapshot과 AKS를 비교하고
+  불일치할 때만 필요한 DB/객체를 검증해 복원 →
   (14d) 테스트 접속을 AKS로 전환 → (14e) upload/read/delete →
   (14f) AKS 쓰기 중지·원본 접속 복구 및 이후 데이터 처리 검증.
 - 두 클러스터에 동시에 쓰기를 허용하지 않는다. 기본 localhost 환경에서는 URL/터널 선택으로
@@ -611,6 +613,6 @@ PDB·단일 replica 데이터 서비스·LRS 제약으로 무중단 전체 노�
 - [AKS 중지/재개 조건](https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster)
 - [AKS 이전 가이드](https://learn.microsoft.com/en-us/azure/aks/aks-migration)
 
-2026-10-17 KST 기준 A0~A11은 실제 Azure 상태와 실행 증거로 완료했다. A12~A15는 미완료다.
-실제 Azure invoice 금액은 게시 전이므로 A15 비용 판정에 남아 있다. Live K3S 트래픽/데이터
-전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
+2026-10-17 KST 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12는
+release PR #4 사용자 검토/승인 대기, A13은 E-13/E-14 수행 대기, A15는 실제 Azure 비용
+게시 대기다. Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
