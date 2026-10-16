@@ -1,0 +1,16 @@
+Task 3: AKS roadmap and repository index
+Date: 2026-10-16 KST
+
+Completed:
+- Added a root README linking the K3S project, AKS project, and approved implementation plans.
+- Added aks/README.md with the conversion sequence, ownership boundary, execution preconditions, and links to the detailed plans.
+- Kept actual K3S user traffic migration and deletion of the original environment outside this goal.
+
+Verified:
+- The linked local project README files and plan files exist in this checkout.
+- Markdown link validation completed with no missing local targets.
+- Graphify update completed successfully after the documentation change.
+
+Not completed:
+- This roadmap does not count any AKS implementation card as complete.
+- The K3S live-source inventory and Azure tenant preflight remain incomplete; no AKS resources were created.
