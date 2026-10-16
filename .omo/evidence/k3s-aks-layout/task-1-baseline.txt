@@ -1,0 +1,27 @@
+K3S to AKS layout baseline (partial)
+Date: 2026-10-16 KST
+Repository root: kube-study
+Rollback Git HEAD: a64cdb3e4adc (main, origin/main)
+Origin: https://github.com/winty5959/kube-study.git
+Tags: v1.1.0
+
+Available local facts:
+- Azure CLI selected subscription display name matches AX사업부문-인프라아키텍처팀 and is Enabled.
+- Exactly one enabled subscription with that display name is visible.
+- Azure CLI tenant metadata lists three tenant IDs but no domain metadata, so the
+  selected tenant could not be verified against ktopen.onmicrosoft.com.
+- vm-kube-dev and vm-kube-prod are both VM deallocated in RG-SEONUNG-KUBE-STUDY.
+- Both configured contexts exist, but their local API endpoints at
+  127.0.0.1:16443 (dev) and 127.0.0.1:26443 (prod) refused connections.
+- Documented SSH tunnel starts for dev and prod did not return within 25 seconds;
+  both were interrupted. No VM was started and no cluster state was changed.
+- The proposed AKS resource group rg-seonung-kube-study-aks does not currently exist.
+
+Not captured because the source clusters were unreachable:
+- Live ArgoCD Application source paths, Helm values, sync policies, sync/health/
+  operation states, workloads, PVCs, image tags/digests and root/child ownership.
+- External SealedSecrets key backup availability.
+
+Disposition: task 1 remains incomplete. Keep K3S path bridges and do not perform
+the live GitOps path cutover until the exact live source state and recovery material
+have been checked. Local repository work may proceed.
