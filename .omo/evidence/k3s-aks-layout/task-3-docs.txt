@@ -4,13 +4,16 @@ Date: 2026-10-16 KST
 Completed:
 - Added a root README linking the K3S project, AKS project, and approved implementation plans.
 - Added aks/README.md with the conversion sequence, ownership boundary, execution preconditions, and links to the detailed plans.
+- Mapped E-01 through E-15 to AKS cards and rollback evidence, and described AKS-DATA, AKS-NODE, AKS-STOP, and AKS-CUTOVER as additional experiments.
+- Documented the unresolved cost, isolation, access, image registry, identity, networking, CSI, and observability decisions, plus the data restore rehearsal boundary.
 - Kept actual K3S user traffic migration and deletion of the original environment outside this goal.
 
 Verified:
-- The linked local project README files and plan files exist in this checkout.
-- Markdown link validation completed with no missing local targets.
-- Graphify update completed successfully after the documentation change.
+- `README.md` and `aks/README.md`: 8 local links checked, 0 missing.
+- `git diff --check` passed.
+- `graphify update .` completed with exit status 0 after the documentation change.
+- K3S task 1 inventory is complete with live dev/prod evidence in `task-1-baseline.txt`.
 
 Not completed:
 - This roadmap does not count any AKS implementation card as complete.
-- The K3S live-source inventory and Azure tenant preflight remain incomplete; no AKS resources were created.
+- Azure target tenant/subscription selection remains unresolved; no AKS resources were created.

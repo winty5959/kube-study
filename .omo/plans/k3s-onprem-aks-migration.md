@@ -125,7 +125,7 @@ and record external prerequisites with evidence.
   QA failure: 임시 로컬 rsync 목적지에 보존 파일/형제 폴더를 두고 rsync -ani --delete와 구현 필터로 삭제·전송 대상에 비밀/venv/형제 aks가 포함되지 않음을 검증한다. 빈/잘못된 env는 실패해야 한다. 존재하지 않는 values 참조는 로컬 검증에서 실패하며 live에는 적용하지 않는다. bridge Kustomize 보안 제한으로 외부 참조가 거절되면 이 상태로 push하지 않고 해당 entrypoint를 동일 렌더의 임시 사본으로 구성해 다시 검사한다.
   Commit: Y — refactor(layout): move the existing K3S project under k3s. 이동·필수 문서·CI·GitOps 경로·bridge는 하나의 구조 변경 기능이며 분리 시 깨지는 중간 커밋을 만들지 않는다. 검증 후 로컬 commit, push는 작업 4.
 
-- [ ] 3. AKS 프로젝트 안내와 전환 로드맵 작성
+- [x] 3. AKS 프로젝트 안내와 전환 로드맵 작성
   Recommended task executor category: writing — 코드 복제 없이 전환 경계와 다음 결정을 문서화.
   What to do / Must NOT do: aks/README.md에 기존 K3S와 비교, 전환 단계와 각 단계 검증을 적고 root README에서 연결한다. 순서: 요구/비용/구독 quota 확인 → IaC/네트워크/ID 설계 → ingress/영속성/시크릿 적응 → GitOps/관측성/HPA·KEDA → 데이터 복원 리허설 → 실험 재수행 → 트래픽 전환과 복구. AKS 기본안은 aks-implementation.md와 aks-cost-baseline.md를 따른다. 실제 구독의 SKU 가용성·quota·정책과 생성 시점의 가격은 A0에서 확인한다. 별도 AKS prod 클러스터는 기본안에 없다.
   플랫폼 항목: Traefik IngressRoute와 GET/HEAD-only S3 경로·presigned URL 유지, local-path에서 CSI PVC 및 node/zone/재연결·백업 설계, GHCR/ACR 선택, SealedSecrets 키/재봉인 또는 Workload Identity/Key Vault 선택, NetworkPolicy DNS/ingress selector 차이, 기존 kube-prometheus-stack 재사용/관리형 관측성 비용. MinIO 예외 만료는 재승인 없이 늘리지 않는다. managed PostgreSQL/Redis/Blob 전환은 클러스터 이전과 별도 결정이다.
