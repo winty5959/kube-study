@@ -1,0 +1,63 @@
+name: Open an AKS learning release PR
+on:
+  push:
+    tags: ['aks-v*']
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+concurrency:
+  group: aks-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Alias verified AKS dev manifests and commit each promotion
+        env:
+          RELEASE: ${{ github.ref_name }}
+          OWNER: ${{ github.repository_owner }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 aks/scripts/prepare-release.py --release "$RELEASE" --dry-run --manifest-json /tmp/aks-release-sources.json > /tmp/aks-release-images.md
+          branch="codex/aks-release-$RELEASE"
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          printf '\n| Component | Verified manifest digest |\n|---|---|\n' > /tmp/aks-release-digests.md
+          for component in api worker frontend minio; do
+            source=$(COMPONENT="$component" python3 -c 'import json,os; print(json.load(open("/tmp/aks-release-sources.json"))[os.environ["COMPONENT"]])')
+            image="ghcr.io/$OWNER/album-aks-$component"
+            docker buildx imagetools inspect --raw "$image:$source" > /tmp/aks-source-manifest.json
+            source_digest=$(sha256sum /tmp/aks-source-manifest.json | cut -d' ' -f1)
+            if docker buildx imagetools inspect --raw "$image:$RELEASE" > /tmp/aks-existing-release.json 2>/dev/null; then
+              existing_digest=$(sha256sum /tmp/aks-existing-release.json | cut -d' ' -f1)
+              if [ "$existing_digest" != "$source_digest" ]; then
+                echo 'Refusing to overwrite an existing AKS release alias with a different manifest'
+                exit 1
+              fi
+            fi
+            docker buildx imagetools create --prefer-index=false --tag "$image:$RELEASE" "$image@sha256:$source_digest"
+            docker buildx imagetools inspect --raw "$image:$RELEASE" > /tmp/aks-release-manifest.json
+            release_digest=$(sha256sum /tmp/aks-release-manifest.json | cut -d' ' -f1)
+            test "$release_digest" = "$source_digest"
+            printf '| %s | sha256:%s |\n' "$component" "$source_digest" >> /tmp/aks-release-digests.md
+            python3 aks/scripts/set-image-tag.py aks/k8s/overlays/prod/kustomization.yaml "$component" "$RELEASE"
+            git add aks/k8s/overlays/prod/kustomization.yaml
+            if ! git diff --cached --quiet; then
+              git commit -m "Promote AKS $component to $RELEASE in prod" -m "Tested: AKS release alias manifest equals the recorded dev manifest sha256:$source_digest." -m 'Directive: Production application Sync remains manual.'
+            fi
+          done
+          git push origin "$branch"
+          printf '%s\n' 'This PR adds AKS release aliases to the existing dev manifests without rebuilding images.' '' 'Review the source tags and verified digest table, merge after approval, then manually Sync the prod ArgoCD application.' > /tmp/aks-release-body.md
+          cat /tmp/aks-release-images.md /tmp/aks-release-digests.md >> /tmp/aks-release-body.md
+          gh pr create --base main --head "$branch" --title "AKS release $RELEASE" --body-file /tmp/aks-release-body.md

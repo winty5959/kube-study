@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://github.com/winty5959/kube-study.git
     targetRevision: main
-    path: k3s/k8s/gitops/prod/application
+    path: aks/k8s/gitops/prod/application
   syncPolicy:
     syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true]
     retry:

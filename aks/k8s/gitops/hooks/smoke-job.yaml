@@ -23,7 +23,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: smoke
-          image: ghcr.io/winty5959/album-api:latest
+          image: ghcr.io/winty5959/album-aks-api:latest
           command: [python, /smoke/smoke.py, http://traefik.kube-system.svc.cluster.local, http://api:8000]
           env:
             - name: SMOKE_HOST

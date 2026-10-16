@@ -37,7 +37,7 @@ spec:
         seccompProfile: { type: RuntimeDefault }
       containers:
         - name: frontend
-          image: ghcr.io/winty5959/album-frontend:latest   # tag set by the overlay
+          image: ghcr.io/winty5959/album-aks-frontend:latest   # tag set by the overlay
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:

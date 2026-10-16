@@ -27,7 +27,7 @@ spec:
             seccompProfile: {type: RuntimeDefault}
           containers:
             - name: cleanup
-              image: ghcr.io/winty5959/album-api:latest
+              image: ghcr.io/winty5959/album-aks-api:latest
               imagePullPolicy: IfNotPresent
               command: [python, -m, app.cleanup]
               resources:

@@ -11,7 +11,7 @@ def set_tag(text: str, component: str, tag: str) -> str:
         raise ValueError("unknown album component")
     if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", tag):
         raise ValueError("invalid image tag")
-    name = f"ghcr.io/winty5959/album-{component}"
+    name = f"ghcr.io/winty5959/album-aks-{component}"
     pattern = rf"(  - name: {re.escape(name)}\n    newTag: )[^\n]+"
     updated, count = re.subn(pattern, lambda match: match[1] + tag, text)
     if count == 1:

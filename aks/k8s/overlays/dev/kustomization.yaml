@@ -11,14 +11,14 @@ resources:
 # M2-M6: images are built on the VM and imported into K3S (scripts/build-images.sh).
 # From M7 CI rewrites newTag here with the pushed sha-<commit> tag.
 images:
-  - name: ghcr.io/winty5959/album-api
+  - name: ghcr.io/winty5959/album-aks-api
     newTag: sha-d8f3a38
-  - name: ghcr.io/winty5959/album-worker
+  - name: ghcr.io/winty5959/album-aks-worker
     newTag: sha-d8f3a38
-  - name: ghcr.io/winty5959/album-frontend
+  - name: ghcr.io/winty5959/album-aks-frontend
     newTag: sha-d8f3a38
 
-  - name: ghcr.io/winty5959/album-minio
+  - name: ghcr.io/winty5959/album-aks-minio
     newTag: sha-d8f3a38
 
 configMapGenerator:

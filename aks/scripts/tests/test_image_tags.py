@@ -13,7 +13,7 @@ spec.loader.exec_module(module)
 
 def test_changes_only_one_component():
     original = (
-        "images:\n  - name: ghcr.io/winty5959/album-api\n"
+        "images:\n  - name: ghcr.io/winty5959/album-aks-api\n"
         "    newTag: old\n\nresources:\n  - base\n"
     )
     updated = module.set_tag(original, "api", "sha-abc1234")
@@ -22,11 +22,11 @@ def test_changes_only_one_component():
 
 def test_adds_minio_inside_images_not_the_next_section():
     original = (
-        "images:\n  - name: ghcr.io/winty5959/album-api\n"
+        "images:\n  - name: ghcr.io/winty5959/album-aks-api\n"
         "    newTag: old\n\nresources:\n  - base\n"
     )
     updated = module.set_tag(original, "minio", "sha-abc1234")
-    assert updated.index("album-minio") < updated.index("resources:")
+    assert updated.index("album-aks-minio") < updated.index("resources:")
     assert "newTag: old" in updated
     assert module.set_tag(updated, "minio", "sha-abc1234") == updated
 

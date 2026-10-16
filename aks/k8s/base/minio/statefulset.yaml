@@ -36,7 +36,7 @@ spec:
       containers:
         - name: minio
           # Built from source (infra/minio); upstream no longer publishes images
-          image: ghcr.io/winty5959/album-minio:RELEASE.2025-10-15T17-29-55Z
+          image: ghcr.io/winty5959/album-aks-minio:RELEASE.2025-10-15T17-29-55Z
           imagePullPolicy: IfNotPresent
           resources:
             requests: {cpu: 100m, memory: 128Mi}

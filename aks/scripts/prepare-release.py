@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 def promote(dev: str, prod: str, release: str) -> tuple[str, dict[str, str]]:
-    if not re.fullmatch(r"v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", release):
-        raise ValueError("release must use vMAJOR.MINOR.PATCH")
+    if not re.fullmatch(r"aks-v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", release):
+        raise ValueError("release must use aks-vMAJOR.MINOR.PATCH")
     spec = importlib.util.spec_from_file_location(
         "image_tags", Path(__file__).parent / "set-image-tag.py"
     )
@@ -21,7 +21,7 @@ def promote(dev: str, prod: str, release: str) -> tuple[str, dict[str, str]]:
     sources: dict[str, str] = {}
     for component in ("api", "worker", "frontend", "minio"):
         matches = re.findall(
-            rf"  - name: ghcr.io/winty5959/album-{component}\n    newTag: ([^\n]+)", dev
+            rf"  - name: ghcr.io/winty5959/album-aks-{component}\n    newTag: ([^\n]+)", dev
         )
         if len(matches) != 1 or not re.fullmatch(r"sha-[a-f0-9]{7}", matches[0]):
             raise ValueError(f"{component} must have one CI-published sha tag")

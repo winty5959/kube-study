@@ -9,19 +9,19 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = PROJECT_ROOT.parent
 CONTEXTS = {
-    "api": "k3s/apps/api",
-    "worker": "k3s/apps/worker",
-    "frontend": "k3s/apps/frontend",
-    "minio": "k3s/infra/minio",
+    "api": "aks/apps/api",
+    "worker": "aks/apps/worker",
+    "frontend": "aks/apps/frontend",
+    "minio": "aks/infra/minio",
 }
 SHARED_FILES = {
-    ".github/workflows/ci.yaml",
-    ".github/workflows/release.yaml",
-    "k3s/scripts/changed-components.py",
-    "k3s/scripts/set-image-tag.py",
-    "k3s/scripts/prepare-release.py",
+    ".github/workflows/aks-ci.yaml",
+    ".github/workflows/aks-release.yaml",
+    "aks/scripts/changed-components.py",
+    "aks/scripts/set-image-tag.py",
+    "aks/scripts/prepare-release.py",
 }
-SHARED_PREFIXES = ("k3s/scripts/tests/",)
+SHARED_PREFIXES = ("aks/scripts/tests/",)
 
 
 def select(paths: list[str]) -> list[str]:
@@ -54,7 +54,7 @@ def coordinates(component: str, head: str, rebuild: bool, manifest: str) -> str:
         tag = f"sha-{head[:7]}"
     else:
         matches = re.findall(
-            rf"  - name: ghcr.io/winty5959/album-{component}\n    newTag: ([^\n]+)", manifest
+            rf"  - name: ghcr.io/winty5959/album-aks-{component}\n    newTag: ([^\n]+)", manifest
         )
         if len(matches) != 1 or not re.fullmatch(r"sha-[a-f0-9]{7}", matches[0]):
             raise ValueError("unchanged component must have one published CI tag")

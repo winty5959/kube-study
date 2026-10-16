@@ -22,7 +22,7 @@ spec:
         seccompProfile: { type: RuntimeDefault }
       containers:
         - name: migrate
-          image: ghcr.io/winty5959/album-api:latest   # same image as api; tag set by the overlay
+          image: ghcr.io/winty5959/album-aks-api:latest   # same image as api; tag set by the overlay
           imagePullPolicy: IfNotPresent
           resources:
             requests: {cpu: 50m, memory: 64Mi}

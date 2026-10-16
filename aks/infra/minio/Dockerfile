@@ -2,7 +2,7 @@
 # Upstream stopped publishing container images and archived the repository,
 # so we build the last release tag ourselves and publish it to GHCR.
 #
-#   docker build -t ghcr.io/winty5959/album-minio:RELEASE.2025-10-15T17-29-55Z infra/minio
+#   docker build -t ghcr.io/winty5959/album-aks-minio:RELEASE.2025-10-15T17-29-55Z infra/minio
 ARG MINIO_TAG=RELEASE.2025-10-15T17-29-55Z
 
 FROM golang:1.27.2-alpine3.24 AS build

@@ -1,0 +1,112 @@
+name: Build and publish AKS album images
+on:
+  pull_request:
+    paths: ['aks/apps/**', 'aks/infra/minio/**', 'aks/k8s/**', '.github/workflows/aks-ci.yaml', '.github/workflows/aks-release.yaml', 'aks/scripts/**']
+  push:
+    branches: [main]
+    paths: ['aks/apps/**', 'aks/infra/minio/**', 'aks/k8s/**', '.github/workflows/aks-ci.yaml', '.github/workflows/aks-release.yaml', 'aks/scripts/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: aks-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [api, worker, frontend, minio]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Image coordinates and rebuild selection
+        id: image
+        env:
+          COMPONENT: ${{ matrix.component }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python3 aks/scripts/changed-components.py --base "$BASE_SHA" --head "$GITHUB_SHA" --component "$COMPONENT" >> "$GITHUB_OUTPUT"
+          echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER}/album-aks-$COMPONENT" >> "$GITHUB_OUTPUT"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        if: steps.image.outputs.changed == 'true' && (matrix.component == 'api' || matrix.component == 'worker')
+        with:
+          python-version: '3.13'
+      - name: Lint and test Python
+        if: steps.image.outputs.changed == 'true' && (matrix.component == 'api' || matrix.component == 'worker')
+        working-directory: aks/apps/${{ matrix.component }}
+        run: |
+          uv sync --frozen
+          uv run ruff check .
+          uv run pytest
+      - name: Test AKS image and release helpers
+        if: steps.image.outputs.changed == 'true' && matrix.component == 'api'
+        working-directory: aks/apps/api
+        run: uv run pytest ../../scripts/tests
+      - name: Check frontend JavaScript
+        if: steps.image.outputs.changed == 'true' && matrix.component == 'frontend'
+        run: node --check aks/apps/frontend/public/app.js
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        if: steps.image.outputs.changed == 'true'
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        if: steps.image.outputs.changed == 'true'
+        with:
+          context: ${{ steps.image.outputs.context }}
+          load: true
+          push: false
+          tags: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.tag }}
+          build-args: APP_VERSION=${{ steps.image.outputs.tag }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=aks-${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=aks-${{ matrix.component }}
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.tag }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: false
+          format: table
+          trivyignores: ${{ matrix.component == 'minio' && 'aks/infra/minio/trivyignore.yaml' || '' }}
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        if: steps.image.outputs.changed == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push the scanned AKS image without rebuilding
+        if: steps.image.outputs.changed == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.tag }}
+        run: docker push "$IMAGE"
+  update-dev:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Commit each AKS component promotion
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for component in $(python3 aks/scripts/changed-components.py --base "$BASE_SHA" --head "$GITHUB_SHA"); do
+            python3 aks/scripts/set-image-tag.py aks/k8s/overlays/dev/kustomization.yaml "$component" "sha-${GITHUB_SHA:0:7}"
+            git add aks/k8s/overlays/dev/kustomization.yaml
+            if ! git diff --cached --quiet; then
+              git commit -m "Promote AKS $component to sha-${GITHUB_SHA:0:7} in dev" -m 'Tested: The AKS CI image build and HIGH/CRITICAL vulnerability scan passed before promotion.'
+            fi
+          done
+          git pull --rebase origin main
+          git push origin main

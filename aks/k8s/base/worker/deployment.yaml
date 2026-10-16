@@ -39,7 +39,7 @@ spec:
         seccompProfile: { type: RuntimeDefault }
       containers:
         - name: worker
-          image: ghcr.io/winty5959/album-worker:latest   # tag set by the overlay
+          image: ghcr.io/winty5959/album-aks-worker:latest   # tag set by the overlay
           imagePullPolicy: IfNotPresent
           resources:
             requests: {cpu: 100m, memory: 128Mi}
