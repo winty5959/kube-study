@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: album-smoke
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: album-smoke
+    spec:
+      serviceAccountName: album-smoke
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: smoke
+          image: ghcr.io/winty5959/album-api:latest
+          command: [python, /smoke/smoke.py, http://traefik.kube-system.svc.cluster.local, http://api:8000]
+          env:
+            - name: SMOKE_HOST
+              value: album.dev.local
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - name: script
+              mountPath: /smoke
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: album-smoke-script

@@ -1,0 +1,106 @@
+# M1: run the whole album locally on the dev VM (not on the work PC).
+#   scripts/compose-env.sh      # once: writes .env with random credentials (gitignored)
+#   docker compose up -d --build
+#   open http://localhost:8088  (via: ssh -L 8088:localhost:8088 kube-dev)
+name: album
+
+x-app-env: &app-env
+  DATABASE_URL: postgresql://album:${POSTGRES_PASSWORD:?run scripts/compose-env.sh}@postgres:5432/album
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT: http://minio:9000
+  S3_ACCESS_KEY: ${MINIO_ROOT_USER:?run scripts/compose-env.sh}
+  S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?run scripts/compose-env.sh}
+  LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: album
+      POSTGRES_USER: album
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U album -d album"]
+      interval: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+
+  minio:
+    image: ghcr.io/winty5959/album-minio:RELEASE.2025-10-15T17-29-55Z
+    build: infra/minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes: [miniodata:/data]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      retries: 20
+
+  migrate:
+    image: album-api:local
+    build: { context: apps/api, args: { APP_VERSION: local } }
+    command: ["python", "-m", "app.migrate"]
+    environment:
+      DATABASE_URL: postgresql://album:${POSTGRES_PASSWORD}@postgres:5432/album
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    image: album-api:local
+    build: { context: apps/api, args: { APP_VERSION: local } }
+    # S3_PUBLIC_ENDPOINT unset: presigned URLs are signed for the Host the browser used
+    environment: *app-env
+    read_only: true
+    tmpfs: [/tmp]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/readyz')"]
+      interval: 5s
+      retries: 20
+
+  worker:
+    image: album-worker:local
+    build: { context: apps/worker, args: { APP_VERSION: local } }
+    environment:
+      <<: *app-env
+      THUMB_SMALL_PX: ${THUMB_SMALL_PX:-200}
+      THUMB_MEDIUM_PX: ${THUMB_MEDIUM_PX:-800}
+      ARTIFICIAL_DELAY_MS: ${ARTIFICIAL_DELAY_MS:-0}
+    read_only: true
+    tmpfs: [/tmp]
+    depends_on:
+      api: { condition: service_healthy }   # api creates the buckets on first /readyz
+    restart: unless-stopped
+
+  frontend:
+    image: album-frontend:local
+    build: apps/frontend
+    read_only: true
+    tmpfs: [/tmp]
+
+  gateway:
+    image: nginxinc/nginx-unprivileged:1.29-alpine
+    volumes: ["./infra/compose/gateway.conf:/etc/nginx/conf.d/default.conf:ro"]
+    read_only: true
+    tmpfs: [/tmp]
+    ports: ["127.0.0.1:8088:8080"]   # loopback only; reach it through an SSH tunnel
+    depends_on: [frontend, api, minio]
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

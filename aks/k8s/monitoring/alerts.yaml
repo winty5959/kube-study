@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: album-alerts
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: album
+      rules:
+        - alert: AlbumQueueBacklog
+          expr: max by (namespace) (album_queue_length) > 100
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Thumbnail queue has exceeded 100 jobs for five minutes"
+        - alert: AlbumAPIErrorRate
+          expr: |
+            sum by (namespace) (rate(album_http_request_duration_seconds_count{route=~"/api/.*",status=~"5.."}[5m]))
+            / clamp_min(sum by (namespace) (rate(album_http_request_duration_seconds_count{route=~"/api/.*"}[5m])), 0.001) > 0.05
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Album API 5xx ratio exceeds five percent"
+        - alert: AlbumCrashLoop
+          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"album-.*",reason="CrashLoopBackOff"}) > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "An album container is in CrashLoopBackOff"

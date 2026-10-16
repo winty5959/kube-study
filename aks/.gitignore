@@ -1,0 +1,5 @@
+# Local Azure parameter values and generated access files
+*.local.bicepparam
+*.local.json
+kubeconfig*
+sealed-secrets-key*
