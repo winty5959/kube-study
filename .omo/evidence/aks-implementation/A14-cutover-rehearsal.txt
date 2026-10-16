@@ -1,0 +1,37 @@
+A14 K3S dev to AKS dev cutover rehearsal status
+
+Check time: 2026-10-17 03:01 KST (approximate)
+Source: K3S dev context `k3s-dev`
+Target: Enterprise부문-아키텍처강화TF / rg-seonung-aks-test / aks-kube-study / album-dev
+Result: Partial; source write freeze, final copy, and route rollback not run
+
+Source access:
+- The configured k3s-dev API endpoint was unreachable (`connection refused`) before a tunnel was open.
+- Ran the documented local command `k3s/scripts/tunnel.sh dev start`.
+- SSH connection to the K3S dev VM timed out; the documented tunnel status command reported no
+  active control socket.
+- No VM start, K3S workload patch, queue operation, database/object operation, or client route
+  change was performed. The K3S VM power state and service state were not established by this check.
+
+Target-side evidence already available:
+- AKS dev's loopback Traefik endpoint was exercised in E10 with the generated PostSync photo.
+- The upload reached `DONE`; the original and thumbnails were read by the smoke path. The failed
+  640-pixel smoke fixture was deleted through the API (HTTP 204), and the next lookup returned 404.
+- After restoring the standard ConfigMap, the PostSync smoke succeeded, queues were empty, and
+  root-dev / album-dev were Synced/Healthy. See `aks/docs/experiments/E-10.md`.
+
+Source baseline and backup:
+- A9 contains a K3S dev online snapshot from 2026-10-16: one DONE row (1,064 bytes), one original,
+  two thumbnails, empty main and processing queues, and verified backup hashes.
+- A9 explicitly states that source writes were not frozen during that snapshot. It is not a
+  consistent final cutover copy and was not reused as one.
+
+Not performed:
+- No fresh source row/object/queue inspection through K3S API access.
+- No source write freeze, fresh dump/object copy, AKS restore from a frozen source, test-client URL
+  selection change, K3S route restoration, or post-rollback source write check.
+- No DNS, public IP, or K3S production changes. No source resource or data was deleted.
+
+Follow-up prerequisite: restore a working, user-controlled SSH path to K3S dev and schedule the
+short development write-freeze window before repeating A14. Do not treat the old online A9 snapshot
+as proof of final consistency.
