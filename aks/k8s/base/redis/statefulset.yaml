@@ -59,6 +59,7 @@ spec:
     - metadata:
         name: data
       spec:
+        storageClassName: album-standard-ssd-retain
         accessModes: [ReadWriteOnce]
         resources:
           requests:

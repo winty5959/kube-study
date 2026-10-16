@@ -21,4 +21,4 @@ The workstation's literal authorized IP is intentionally omitted. If its egress 
 
 ## Next infrastructure work
 
-A3 is complete. A4 verifies a dedicated Azure Disk StorageClass and claim behavior; A5 configures internal-only Traefik and network policy; A6 bootstraps independent secrets and data services. No K3S traffic cutover is part of these steps.
+A3 and A4 are complete. A4's temporary non-root consumer proved Azure Disk provisioning and reattachment; application PVCs will be created in A6. A5 configures internal-only Traefik and network policy; A6 bootstraps independent secrets and data services. No K3S traffic cutover is part of these steps.

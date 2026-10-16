@@ -1,0 +1,21 @@
+A4 Azure Disk CSI evidence (2026-10-16 KST)
+
+StorageClass
+- Created `album-standard-ssd-retain` on the AKS cluster with provisioner disk.csi.azure.com, skuName StandardSSD_LRS, ext4, Retain, expansion enabled, and WaitForFirstConsumer.
+- The server accepted the manifest in a server-side dry run and reported the live object unchanged. The AKS default classes were not modified.
+- The class manifest is inside the dev platform Kustomize root. This keeps ArgoCD's default path restriction enabled and gives one Application ownership of the cluster-scoped class.
+
+Provisioning and persistence probe
+- A temporary 5Gi PVC using the new class remained Pending until its consumer Pod was scheduled, then became Bound.
+- Azure created a succeeded 5Gi StandardSSD_LRS managed disk. The probe container used a non-root UID and fsGroup, wrote a marker file, and ran after the Pod was deleted and recreated with the same PVC; the marker content persisted.
+- The test PV's reclaim policy was temporarily changed to Delete, then the probe Pod, PVC, PV, and disk were removed. The node resource group disk query returned no remaining managed disks from this probe.
+
+Manifest adaptation
+- PostgreSQL 2Gi, Redis 1Gi, and MinIO 10Gi volumeClaimTemplates now name the class explicitly and retain their existing ReadWriteOnce access and security contexts.
+- Prometheus 5Gi, Grafana 1Gi, and Alertmanager 1Gi values name the same class. Initial requested claim capacity is 20Gi; price planning uses the six Azure disk tiers (40Gi nominal tier capacity).
+- `kubectl kustomize aks/k8s/base` rendered all three StatefulSets with the expected class and sizes. The full dev platform render is deferred until A6 creates the AKS-specific SealedSecret ciphertext; current render stops only at the planned absent `album-sealed.yaml`.
+- `git diff --check` and Bicep build passed. Graphify update . completed with exit status 0.
+
+Not yet verified
+- The six workload claims do not exist until A6 installs the data and monitoring services. Their application-level UID writes, actual managed disk tier prices, and billed usage remain for A6/A15.
+- The 5Gi test disk's temporary Azure billing tier was not inspected in actual billing data.

@@ -243,9 +243,12 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A4. Azure Disk CSI와 명시적 PVC 정책
 
-- [ ] 완료
-- **수정:** `aks/infra/storage/storage-class.yaml`, `aks/k8s/base/{postgres,redis,minio}/statefulset.yaml`,
-  `aks/infra/monitoring/values.yaml`, `aks/docs/storage.md`.
+- [x] 완료
+- **수정:** `aks/k8s/gitops/dev/platform/storage-class.yaml`,
+  `aks/k8s/base/{postgres,redis,minio}/statefulset.yaml`, `aks/infra/monitoring/values.yaml`,
+  `aks/docs/storage.md`. The StorageClass lives inside the dev platform Kustomize root so ArgoCD's
+  default load restriction accepts it and the prod platform Application cannot claim the same
+  cluster-scoped object.
 - **StorageClass:** 이름 `album-standard-ssd-retain`, provisioner `disk.csi.azure.com`,
   `skuName=StandardSSD_LRS`, `volumeBindingMode=WaitForFirstConsumer`, `reclaimPolicy=Retain`,
   `allowVolumeExpansion=true`, fsType `ext4`. AKS 기본 class를 수정하지 않고 새 class를 사용한다.

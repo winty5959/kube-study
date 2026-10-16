@@ -17,7 +17,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
+          storageClassName: album-standard-ssd-retain
           accessModes: [ReadWriteOnce]
           resources:
             requests:
@@ -32,7 +32,7 @@ grafana:
     limits: {cpu: 500m, memory: 512Mi}
   persistence:
     enabled: true
-    storageClassName: local-path
+    storageClassName: album-standard-ssd-retain
     size: 1Gi
   sidecar:
     dashboards:
@@ -57,7 +57,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
+          storageClassName: album-standard-ssd-retain
           accessModes: [ReadWriteOnce]
           resources:
             requests:
