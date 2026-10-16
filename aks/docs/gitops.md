@@ -4,6 +4,8 @@ AKS runs an independent Argo CD in `argocd`. Its root Application reads only
 `aks/argocd/bootstrap/dev` from the repository's `main` branch. K3S Argo CD does not register or
 manage this cluster.
 
+The A7 live adoption evidence is in `.omo/evidence/aks-implementation/A7-gitops.txt`.
+
 ## Bootstrap order
 
 `root-dev` creates these child Applications in sync-wave order:

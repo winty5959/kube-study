@@ -21,4 +21,4 @@ The workstation's literal authorized IPs are intentionally omitted. If its egres
 
 ## Next infrastructure work
 
-A3-A6 are complete. A4 proved Azure Disk provisioning and reattachment; A5 proved ingress and network policy; A6 installed the data and platform services with six bound retain claims and AKS-only sealed credentials. A7 transfers platform ownership to the AKS Argo CD. K3S traffic and data cutover remain out of scope.
+A3-A7 are complete. A4 proved Azure Disk provisioning and reattachment; A5 proved ingress and network policy; A6 installed the data and platform services with six bound retain claims and AKS-only sealed credentials; A7 adopted platform resources into the AKS Argo CD. A8 prepares the album migration and smoke flow. K3S traffic and data cutover remain out of scope.

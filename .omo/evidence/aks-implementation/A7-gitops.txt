@@ -1,0 +1,44 @@
+A7 AKS Argo CD platform adoption (2026-10-16)
+=============================================
+
+Scope
+-----
+AKS context: aks-study, Enterprise부문-아키텍처강화TF subscription,
+rg-seonung-aks-test/aks-kube-study. K3S Applications and traffic were not changed.
+Argo root sync revision: 11914e86fd42c2966f6d5c8685b35ce8a0be2ca3.
+
+Argo status
+-----------
+root-dev and all six child Applications report Synced/Healthy:
+  credentials-dev, keda-dev, monitoring-dev, observability-dev, platform-dev,
+  sealed-secrets-dev.
+The album-dev Application is not in the bootstrap source and has not been created; A8 adds it
+after migration and smoke hooks are ready.
+
+Ownership
+---------
+platform-dev renders two sources: Traefik chart 42.0.0 with releaseName traefik and the Kustomize
+path aks/k8s/gitops/dev/platform with Git-backed Helm values. Its destination is ingress-system;
+Kustomize resources explicitly target album-dev and the cluster-scoped StorageClass.
+Helm inventory contains one deployed traefik release and zero failed releases. Traefik remains a
+single-replica ClusterIP service. It publishes traefik.ingress-system.svc.cluster.local as the
+Ingress status hostname; no public ingress address is created.
+The platform output contains the existing StorageClass and PostgreSQL, Redis, and MinIO
+StatefulSets. It contains no album-dev Namespace or application Deployment. credentials-dev owns
+the album-dev namespace and sealed credentials.
+KEDA's six AKS-managed validating-webhook namespace selectors remain present and owned by
+admissionsenforcer; keda-dev ignores only that manager's fields on keda-admission and is
+Synced/Healthy.
+
+Data and workload boundary
+--------------------------
+PostgreSQL, Redis, and MinIO Pods are Ready; their StatefulSets each report 1/1.
+All six data and monitoring PVCs remain Bound to album-standard-ssd-retain.
+No album application Deployment, Job, or CronJob is running before A8.
+No second Traefik release or controller was created.
+
+Validation
+----------
+The root and platform Kustomize sources rendered locally. Traefik 42.0.0 rendered with one
+replica, ClusterIP, and the internal DNS hostname. Argo repo-server reconciled root and child
+sources from main; every required child is Synced/Healthy. Graphify update completed with exit 0.

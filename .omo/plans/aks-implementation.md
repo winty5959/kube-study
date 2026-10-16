@@ -330,7 +330,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A7. AKS ArgoCD와 platform 소유권 전환
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/argocd/root-dev.yaml`, `aks/argocd/bootstrap/dev/**`,
   `aks/argocd/observability/**`, `aks/k8s/gitops/dev/platform/**`, `aks/docs/gitops.md`.
 - **순서:** (7a) root/children/Helm source 전체 렌더 → (7b) A6 실제 helm release와 spec 대조 →
@@ -350,6 +350,14 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 - **실패 검증·복구:** 잘못된 path/values는 로컬 렌더에서 실패해야 한다. 인계가 실패하면
   자신의 AKS root 자동 Sync만 중지하고 마지막 검증된 specs로 복구한다. Application
   cascade 삭제나 Helm uninstall로 PVC·CRD를 제거하지 않는다.
+- **실행 결과 (2026-10-16):** `root-dev`와 6개 child Application이 모두 Synced/Healthy다.
+  `platform-dev`의 다중 source는 Traefik 42.0.0을 기존 `traefik` releaseName/namespace로
+  렌더하고 `aks/k8s/gitops/dev/platform`의 StorageClass·data 서비스와 함께 관리한다.
+  Helm inventory에는 deployed Traefik release가 하나다. Traefik은 ClusterIP를 유지하며
+  내부 DNS hostname을 Ingress status에 게시한다. KEDA의 AKS 소유 webhook fields는 Argo
+  ignore rule로 보존한다. 세 data StatefulSet은 Ready 1/1, PVC 6개는 Bound다. album child와
+  앱 Deployment/Job/CronJob은 아직 없어 A8 migration/smoke 전에 앱을 시작하지 않았다.
+  상세 결과는 `.omo/evidence/aks-implementation/A7-gitops.txt`에 있다.
 - **커밋 단위:** `gitops(aks): reconcile the AKS platform independently`.
 
 ### A8. migration·cleanup·smoke와 dev 자동 배포
