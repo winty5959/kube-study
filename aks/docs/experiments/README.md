@@ -20,7 +20,7 @@ for scenario acceptance criteria and recovery boundaries.
 | E-12 self-heal drift | Pass for image drift; annotation drift not detected | [E-12](E-12.md) |
 | E-13 release promotion | Pending release PR review, merge, and manual sync | [release workflow](../release.md) |
 | E-14 GitOps rollback | Not run; requires E-13 | |
-| E-15 PreSync deployment gate | Not run | |
+| E-15 PreSync deployment gate | Pass; reuses A8 gate run | [E-15](E-15.md) |
 
 Additional AKS operations were separately verified: [data restore](AKS-DATA.md),
 [node drain](AKS-NODE.md), and [stop/start](AKS-STOP.md). The cutover rehearsal is
