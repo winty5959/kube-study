@@ -15,6 +15,8 @@ providers:
   kubernetesIngress:
     enabled: true
     ingressClass: traefik
+    ingressEndpoint:
+      hostname: traefik.ingress-system.svc.cluster.local
 service:
   enabled: true
   spec:

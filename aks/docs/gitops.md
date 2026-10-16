@@ -49,6 +49,8 @@ platform source also adopts the already-bound StorageClass and the three data St
 uninstall a Helm release or delete a PVC to resolve an ownership difference.
 `platform-dev` uses server-side diff so API-defaulted StatefulSet fields compare against the same
 values the API server stores.
+Traefik publishes its internal Service DNS hostname to Ingress status. The ClusterIP service remains
+private, and no public ingress address is created.
 
 KEDA's validating webhook includes namespace selectors managed by AKS's `admissionsenforcer`.
 The KEDA Application ignores only fields owned by that manager on `keda-admission`, and uses
