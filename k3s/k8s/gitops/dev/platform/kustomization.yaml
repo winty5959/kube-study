@@ -1,0 +1,105 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: album-dev
+resources:
+  - ../../../overlays/dev
+  - smoke-access.yaml
+patches:
+  - target: {kind: Deployment, name: api}
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: api
+      $patch: delete
+  - target: {kind: Deployment, name: worker}
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: worker
+      $patch: delete
+  - target: {kind: Deployment, name: frontend}
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: frontend
+      $patch: delete
+  - target: {kind: Service, name: api}
+    patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: api
+      $patch: delete
+  - target: {kind: Service, name: worker}
+    patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: worker
+      $patch: delete
+  - target: {kind: Service, name: frontend}
+    patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: frontend
+      $patch: delete
+  - target: {kind: Job, name: db-migrate}
+    patch: |-
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: db-migrate
+      $patch: delete
+  - target: {kind: CronJob, name: album-cleanup}
+    patch: |-
+      apiVersion: batch/v1
+      kind: CronJob
+      metadata:
+        name: album-cleanup
+      $patch: delete
+  - target: {kind: HorizontalPodAutoscaler, name: api}
+    patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: api
+      $patch: delete
+  - target: {kind: ScaledObject, name: worker}
+    patch: |-
+      apiVersion: keda.sh/v1alpha1
+      kind: ScaledObject
+      metadata:
+        name: worker
+      $patch: delete
+  - target: {kind: Ingress, name: album}
+    patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: album
+      $patch: delete
+  - target: {kind: PodDisruptionBudget, name: api}
+    patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: api
+      $patch: delete
+  - target: {kind: PodDisruptionBudget, name: frontend}
+    patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: frontend
+      $patch: delete
+  - target: {kind: ConfigMap, name: album-config}
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: album-config
+      $patch: delete

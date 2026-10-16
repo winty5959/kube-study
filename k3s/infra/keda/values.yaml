@@ -1,0 +1,10 @@
+resources:
+  operator:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+  metricServer:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+  webhooks:
+    requests: {cpu: 25m, memory: 32Mi}
+    limits: {cpu: 200m, memory: 128Mi}

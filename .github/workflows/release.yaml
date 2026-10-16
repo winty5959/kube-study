@@ -26,7 +26,7 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 scripts/prepare-release.py --release "$RELEASE" --dry-run --manifest-json /tmp/album-release-sources.json > /tmp/album-release-images.md
+          python3 k3s/scripts/prepare-release.py --release "$RELEASE" --dry-run --manifest-json /tmp/album-release-sources.json > /tmp/album-release-images.md
           branch="codex/release-$RELEASE"
           git switch -c "$branch"
           git config user.name 'github-actions[bot]'
@@ -49,8 +49,8 @@ jobs:
             release_digest=$(sha256sum /tmp/album-release-manifest.json | cut -d' ' -f1)
             test "$release_digest" = "$source_digest"
             printf '| %s | sha256:%s |\n' "$component" "$source_digest" >> /tmp/album-release-digests.md
-            python3 scripts/set-image-tag.py k8s/overlays/prod/kustomization.yaml "$component" "$RELEASE"
-            git add k8s/overlays/prod/kustomization.yaml
+            python3 k3s/scripts/set-image-tag.py k3s/k8s/overlays/prod/kustomization.yaml "$component" "$RELEASE"
+            git add k3s/k8s/overlays/prod/kustomization.yaml
             if ! git diff --cached --quiet; then
               git commit -m "Promote $component to $RELEASE in prod" -m "Tested: Release alias manifest equals the recorded dev manifest sha256:$source_digest." -m 'Directive: Production application Sync remains manual.'
             fi

@@ -1,0 +1,26 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker
+spec:
+  scaleTargetRef:
+    name: worker
+  pollingInterval: 5
+  cooldownPeriod: 300
+  minReplicaCount: 0
+  maxReplicaCount: 2
+  fallback:
+    failureThreshold: 3
+    replicas: 1
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+  triggers:
+    - type: redis
+      metadata:
+        address: redis.album-dev.svc.cluster.local:6379
+        listName: thumbnail:jobs
+        listLength: "5"
+        activationListLength: "0"

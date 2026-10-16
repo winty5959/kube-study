@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: album-prod
+
+resources:
+  - namespace.yaml
+  - ../../base
+  - ../../secrets/prod/album
+
+# Bootstrap uses CI-published artifacts. Release PRs update these aliases; Sync is manual.
+images:
+  - name: ghcr.io/winty5959/album-api
+    newTag: sha-a3e8669
+  - name: ghcr.io/winty5959/album-worker
+    newTag: sha-a3e8669
+  - name: ghcr.io/winty5959/album-frontend
+    newTag: sha-a3e8669
+
+  - name: ghcr.io/winty5959/album-minio
+    newTag: sha-a3e8669
+
+configMapGenerator:
+  - name: album-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=INFO
+
+# Strict-scope ciphertext; the controller creates the stable album-secrets name.
+patches:
+  - target: { kind: Ingress, name: album }
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: album.local
+      - op: copy
+        from: /spec/rules/0
+        path: /spec/rules/-
+      - op: replace
+        path: /spec/rules/1/host
+        value: album.prod.localhost
+  - target: {kind: IngressRoute, name: album-objects}
+    patch: |-
+      - op: replace
+        path: /spec/routes/0/match
+        value: (Host(`album.local`) || Host(`album.prod.localhost`)) && (PathPrefix(`/originals/`) || PathPrefix(`/thumbnails/`)) && (Method(`GET`) || Method(`HEAD`))
+  - target: {kind: HorizontalPodAutoscaler, name: api}
+    patch: |-
+      - {op: replace, path: /spec/minReplicas, value: 2}
+      - {op: replace, path: /spec/maxReplicas, value: 6}
+  - target: {kind: ScaledObject, name: worker}
+    patch: |-
+      - {op: replace, path: /spec/maxReplicaCount, value: 5}
+      - {op: replace, path: /spec/triggers/0/metadata/address, value: "redis.album-prod.svc.cluster.local:6379"}

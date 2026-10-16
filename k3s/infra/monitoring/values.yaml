@@ -1,0 +1,72 @@
+# Shared by manual Helm deployment and the future ArgoCD Helm Application.
+# K3S embeds these control-plane processes instead of exposing separate scrape targets.
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests: {cpu: 50m, memory: 64Mi}
+      limits: {cpu: 300m, memory: 256Mi}
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi
+grafana:
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 1Gi
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+prometheusOperator:
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    retentionSize: 2GB
+    scrapeInterval: 15s
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {cpu: "1", memory: 2Gi}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 5Gi
+kube-state-metrics:
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 300m, memory: 256Mi}
+prometheus-node-exporter:
+  resources:
+    requests: {cpu: 20m, memory: 32Mi}
+    limits: {cpu: 200m, memory: 128Mi}

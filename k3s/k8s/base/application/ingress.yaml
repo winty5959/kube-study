@@ -1,0 +1,22 @@
+# Path-based routing on K3S' bundled Traefik. The host is patched per overlay.
+#   /api/                       -> api
+#   /originals/, /thumbnails/   -> separate GET/HEAD-only IngressRoute
+#   /                           -> frontend
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: album
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: album.example
+      http:
+        paths:
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service: { name: api, port: { name: http } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { name: http } }

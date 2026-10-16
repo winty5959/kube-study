@@ -1,0 +1,46 @@
+K3S directory layout implementation checks (local, not live cutover)
+Date: 2026-10-16 KST
+
+Implemented:
+- Moved the tracked K3S project into k3s/ and preserved the prior README there.
+- Updated the root CI/Release paths, changed-component selector, Docker contexts,
+  release helper inputs, K3S ArgoCD source paths and Helm value file paths.
+- Retained old argocd/, k8s/, infra/, dashboards/ and scripts/ content as temporary
+  compatibility roots for existing live GitOps paths. The old root Application files
+  were removed; their maintained copies are under k3s/argocd/.
+- Updated VM sync destination to ~/kube-study/k3s and added required environment
+  validation plus secret/venv protection. Updated current K3S operating instructions.
+
+Passed locally:
+- git diff HEAD --check.
+- Python K3S helper tests: 31 passed.
+- Ruff on K3S API, worker and scripts: passed.
+- Node syntax check for the frontend: passed.
+- Bash syntax check for K3S shell scripts: passed.
+- YAML syntax parse: 169 files, zero parse failures.
+- Kustomize render: all 9 old source paths and all 9 matching new paths passed;
+  rendered documents matched after removing the expected k3s/ path prefix.
+- Helm render passed for kube-prometheus-stack 92.7.0, KEDA 2.21.0 and
+  Sealed Secrets 2.20.0 with the existing K3S values. Old and new value copies match.
+- Changed-component selection and release dry-run returned the same result from the
+  repository root and k3s/ working directory.
+- sync.sh rejected a missing or unsupported environment before rsync.
+- A local temporary rsync destination retained protected secrets, venv, the parent
+  .git directory and sibling aks/ while deleting stale files only inside k3s/.
+- Markdown local-link check: 35 files, zero missing links.
+- Graphify update completed with exit status 0. Sensitive files skipped: 8.
+
+Not verified yet:
+- The K3S dev/prod VMs are deallocated and their API tunnels are unavailable, so
+  VM dependency-based pytest/ruff, live ArgoCD renderer version/options, current
+  Application source inventory, PVC/digest/operation states and GitOps cutover were
+  not verified.
+- The host Python environment lacks the API and worker application dependencies
+  (redis and boto3). Their pytest runs were attempted and stopped at import errors;
+  no local venv was created, per project instructions.
+- actionlint is not installed in this environment. PyYAML syntax parsing passed.
+- No GitHub push, hosted CI, VM sync or live cluster mutation was performed.
+
+Disposition: implementation and local checks are ready for review, but plan task 2
+and all live path transition tasks remain incomplete until the specified VM and
+cluster checks pass.
