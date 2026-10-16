@@ -1,0 +1,39 @@
+A15 preliminary posted Azure ActualCost query
+
+Query time: 2026-10-17 03:01 KST (2026-10-16 18:01 UTC)
+Subscription: Enterprise부문-아키텍처강화TF (selected explicitly on each Azure request)
+Usage date: 2026-10-16 UTC
+API: Microsoft.CostManagement/query, api-version 2023-03-01
+Metric: ActualCost, PreTaxCost, grouped by ResourceId and MeterCategory
+
+Scope results:
+- rg-seonung-aks-test: zero rows for this usage date at query time.
+- MC_rg-seonung-aks-test_aks-kube-study_koreacentral: KRW 1,223.913121904263 across 17 rows.
+
+Node resource-group meter totals:
+| Meter category | KRW | Rows |
+| Virtual Machines | 888.2403709248 | 2 |
+| Storage | 147.42954118125002 | 12 |
+| Load Balancer | 158.630830775213 | 1 |
+| Virtual Network | 28.5070780711806 | 1 |
+| Bandwidth | 1.1053009518194 | 1 |
+| Total | 1,223.913121904263 | 17 |
+
+Current resource inventory at query time:
+- One current VM scale set, capacity 2, provisioning Succeeded.
+- Nine managed disks listed; all nine reported attached, zero unattached.
+- Cost rows included resource IDs absent from the current VM scale-set listing. These are historical
+  usage rows; no resource was deleted or assumed unused based on the cost report.
+- The AKS resource-group inventory and node resource-group inventory are kept separate. Cluster
+  resource-group cost was not inferred from node resource-group meters.
+
+Interpretation and open work:
+- This was the first partial posting for the 2026-10-16 usage date. The query was made while the
+  current UTC day was still in progress and less than 24 hours after A11 restarted AKS at
+  2026-10-16 16:34 UTC.
+- The amount is in KRW. It is not compared numerically with the USD retail estimate, and it does not
+  represent a complete first-day or month cost.
+- Existing build VM charges were not queried.
+- Repeat ActualCost queries after 24-48 hours have posted; reconcile compute, disks/PVCs, load
+  balancer, network/bandwidth, historical temporary resources, and any build VM usage before closing
+  A15. No deletion was performed.

@@ -15,6 +15,35 @@ tax, actual storage I/O, traffic, backup, and delayed billing adjustments. An AK
 node compute charges while stopped; retained disks, public IPs, and other resources can continue
 to incur charges. A15 records the actual cost query after Azure billing has had time to post.
 
+## Initial posted ActualCost (partial)
+
+An authenticated Azure Cost Management `ActualCost` query was run at approximately
+2026-10-17 03:00 KST for usage date 2026-10-16, separately at the AKS resource-group and node
+resource-group scopes. The AKS resource group returned no rows. The node resource group returned
+KRW 1,223.91 across the following meter categories:
+
+| Meter category | Posted cost (KRW) | Rows |
+|---|---:|---:|
+| Virtual Machines | 888.24 | 2 |
+| Storage | 147.43 | 12 |
+| Load Balancer | 158.63 | 1 |
+| Virtual Network | 28.51 | 1 |
+| Bandwidth | 1.11 | 1 |
+| **Total** | **1,223.91** | **17** |
+
+This is an early partial posting, not the full first-day cost: the query ran while the current UTC
+usage date was still in progress and before 24 hours had elapsed from the A11 AKS restart. It is
+not a valid direct comparison with the 730-hour retail estimate. The report uses KRW, so no
+exchange-rate conversion is included. See the raw sanitized scope, meter totals, and inventory
+summary in [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt).
+
+At the inventory check, the node resource group contained one current VM scale set at capacity two
+and nine managed disks, all attached; no unattached managed disks were listed. Cost rows include
+historical resource IDs that are no longer in that current VM scale-set listing. They were not
+deleted or treated as unused. A15 remains open until at least 24-48 hours of usage has posted and
+the retained data, node, and temporary-resource charges can be reconciled. Existing build VM cost
+is not included in this query.
+
 ## Capacity evidence
 
 Each D4as_v5 node reports 3860m CPU and approximately 14.49 GiB memory allocatable. During the
