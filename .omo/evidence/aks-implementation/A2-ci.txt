@@ -1,0 +1,24 @@
+A2 AKS CI and image publication evidence (2026-10-16 KST)
+
+Source commit: 4486b3b17983ca672fe7fe67f9645b8da638f478
+Workflow run: https://github.com/winty5959/kube-study/actions/runs/38850843974
+Run result: completed / success.
+
+The run completed all four matrix jobs:
+- API: uv sync, Ruff, API tests, and AKS script tests passed; build, Trivy HIGH/CRITICAL scan, and GHCR push passed.
+- Worker: uv sync, Ruff, worker tests, build, Trivy HIGH/CRITICAL scan, and GHCR push passed.
+- Frontend: Node syntax check, build, Trivy HIGH/CRITICAL scan, and GHCR push passed.
+- MinIO: build, Trivy HIGH/CRITICAL scan, and GHCR push passed.
+
+The update-dev job created and pushed four independent promotion commits on main. The AKS dev overlay now pins all four components to `sha-4486b3b`. K3S image repositories and overlay were not changed.
+
+Anonymous GHCR manifest requests for the promoted tag returned HTTP 200. Recorded registry manifest digests:
+
+| Image | Tag | Digest |
+|---|---|---|
+| album-aks-api | sha-4486b3b | sha256:5e8b5a4f4ef80d1bfd0c548600682ce2ecd4721e82ac335bf1eeff96c070eabb |
+| album-aks-worker | sha-4486b3b | sha256:e756aaf2e2ab0b66d0fc941bb770fde5604ce06dc89abfd2d426490f3190092a |
+| album-aks-frontend | sha-4486b3b | sha256:e4ab0df5e9d6ef443a7790ef16bb50ed26c265aa51885dd909cd268bb6c87d83 |
+| album-aks-minio | sha-4486b3b | sha256:3e5e10b5c9ef95d5d4268404ce0541aba8b6010758b5e0d412273b4932ccf3dd |
+
+The release workflow and `aks-vMAJOR.MINOR.PATCH` parser were covered by actionlint and CI helper tests. No release tag or prod promotion was created; release runtime verification belongs to A12.

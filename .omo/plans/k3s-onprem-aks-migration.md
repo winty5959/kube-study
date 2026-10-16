@@ -27,20 +27,23 @@ goal을 세우고 구현을 진행하도록 요청했다. 실행 중 live 상태
 
 **Why this approach:** 저장소와 기존 이력을 유지하고 임시 호환 경로로 감시 중인 배포를 보호한 뒤 개발 환경부터 전환한다.
 
-**What it will NOT do:** 이 K3S 구조 정리에서 새 저장소 생성, AKS 리소스 구축, 데이터 서비스 교체, 실제 사용자 트래픽·데이터 이전, 기존 K3S 환경 삭제를 수행하지 않는다. AKS 작업은 별도 A0~A15 명세를 따르며 target tenant/subscription 확인 뒤 진행한다.
+**What it will NOT do:** 실제 사용자 트래픽·데이터를 K3S에서 AKS로 이전하거나 기존 K3S 환경을 삭제하지 않는다. 별도 AKS A0~A15 구축·검증은 이 goal의 범위다.
 
 **Effort:** Large
 **Risk:** Medium - 자동 감시 중인 GitOps 경로와 삭제 옵션이 있는 VM 동기화를 순서대로 전환해야 한다.
 **Decisions to sanity-check:** 단일 기존 저장소, 기존 K3S와 미래 AKS의 폴더 분리, 기존 CI의 dev 자동 승격과 prod 수동 승격 유지. AKS 기본안은 단일 학습 클러스터이며 상세 사양·비용·접근 방식은 연결된 AKS 명세를 따른다.
 
-Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with evidence. The
-remaining project work is AKS A0-A15; its target tenant/subscription selection is awaiting the
-user's answer. No AKS resources have been created. K3S traffic/data migration and source
-environment deletion remain outside this goal.
+Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with evidence. The user
+selected the enabled AX사업부문-인프라아키텍처팀 subscription; its registered tenant differs
+from the originally planned KT Open tenant. AKS A1 and A2 are committed and pushed. A0 found
+that Standard_F4s_v2 is unavailable to this subscription in Korea Central and that the current
+identity has Contributor but no role-assignment administrator role. No AKS resources have been
+created. A3 waits for the SKU and Azure RBAC access decisions; K3S traffic/data migration and
+source-environment deletion remain outside this goal.
 
 ---
 
-> TL;DR (machine): Large / Medium risk / same repository; K3S relocation with six tasks and four final checks complete; detailed AKS plan awaits target tenant/subscription selection.
+> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and final checks complete; AKS source/CI cards A1-A2 complete; A0 records the selected AX subscription and the SKU/RBAC blockers before Azure deployment.
 
 ## Scope
 ### Affected user and ideal state
@@ -87,7 +90,7 @@ environment deletion remain outside this goal.
 ### 실행 순서
 준비/구조 작업: 1 → 2; 로드맵 3은 작업 2와 독립 문서로 준비할 수 있으나 같은 파일을 동시 수정하지 않는다.
 게시/전환 작업: 2·3 → 4 → 5 → 6. live dev와 prod 전환은 반드시 순차적이다.
-최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. AKS A0-A15는 target tenant/subscription 확인 뒤 이 goal에서 계속한다.
+최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 AX사업부문-인프라아키텍처팀 구독을 선택했다. A0 제약을 해소한 뒤 A1-A15를 이 goal에서 계속한다.
 
 ### Dependency matrix
 | Todo | Depends on | Blocks | Can parallelize with |

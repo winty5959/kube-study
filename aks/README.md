@@ -5,6 +5,7 @@
 ## 현재 상태
 
 - A1 소스 골격을 원본 `6ca720be871727c240259664d9c1d1515766f42d`에서 복사했습니다. 복사 범위와 제외 항목은 [원본 기준 기록](docs/source-baseline.md)에 있습니다.
+- A2 AKS 전용 CI/Release workflow, helper, 이미지 이름 분리를 커밋 `4486b3b`로 게시했습니다. GitHub Actions run `38850843974`에서 네 이미지 빌드·테스트·취약점 검사가 성공했고, dev 태그는 네 개의 별도 커밋으로 `sha-4486b3b`에 승격됐습니다.
 - A0는 AX사업부문-인프라아키텍처팀 구독으로 확인 중입니다. 기존 K3S RG `rg-seonung-kube-study`는 `koreacentral`에 있고, AKS 전용 후보 `rg-seonung-kube-study-aks`는 아직 없습니다.
 - 구독에서 계획 SKU `Standard_F4s_v2`가 `koreacentral` 사용 불가로 표시되어 인프라 생성은 보류 중입니다. 별도 선택 없이 SKU나 리전을 바꾸지 않습니다.
 - Azure AKS 리소스는 아직 생성하지 않았습니다. A0 결과와 다음 결정은 [결정 기록](docs/decisions.md)에 남깁니다.
@@ -32,6 +33,8 @@ AKS에서는 `local-path` 대신 Azure Disk CSI PVC를 사용하고, node 교체
 
 - [결정 기록](docs/decisions.md)
 - [복사한 원본과 제외 항목](docs/source-baseline.md)
+- [A0 preflight evidence](../.omo/evidence/aks-implementation/A0-preflight.txt)
+- [A2 CI evidence](../.omo/evidence/aks-implementation/A2-ci.txt)
 - [상세 구현 명세](../.omo/plans/aks-implementation.md)
 - [최소 사양·비용 기준](../.omo/plans/aks-cost-baseline.md)
 - [K3S 정리 계획과 완료 증거](../.omo/plans/k3s-onprem-aks-migration.md)

@@ -11,9 +11,10 @@
 2026-10-16 이 계획을 기준으로 goal을 수립하고 프로젝트 구현을 요청해 실행에 들어갔다.
 사용자 합의는 저장소 `winty5959/kube-study` 하나를 유지하고 기존 프로젝트를 `k3s/`,
 새 AKS 전환 프로젝트를 `aks/`에 두는 것이다. 사용자가 AKS를 처음 사용하므로 임의 예산을
-정하지 않고 현재 프로젝트를 실행할 최소 구성부터 검증한다. 구현 담당자는 작은 작업을
-하나씩 수행한다. 저장소 재구성은 시작했지만 Azure tenant 검증과 live K3S 상태 확인은
-아직 끝나지 않았다. 카드의 전제와 증거를 확인한 뒤에만 의존 작업으로 진행한다.
+정하지 않고 현재 프로젝트를 실행할 최소 구성부터 검증한다. 사용자는 AX사업부문-인프라아키텍처팀
+구독을 선택했다. K3S 정리와 live 상태 확인은 완료했고 A1/A2도 구현·게시했다. A0에서는
+계획 SKU F4s_v2가 해당 구독의 Korea Central에서 제한되고, 현재 계정에 Azure RBAC 역할
+부여 권한이 확인되지 않았다. 이 두 전제와 비용을 기록한 뒤에만 A3 인프라 생성으로 진행한다.
 
 ## 1. 목표와 전환 경계
 
@@ -41,10 +42,10 @@
 
 | 항목 | 계획 기본값 | 선택 이유·검증 조건 |
 |---|---|---|
-| Azure 대상 | `ktopen.onmicrosoft.com`, `AX사업부문-인프라아키텍처팀` | Azure Open Tenant 스킬로 tenant·Enabled 구독을 함께 확인 |
+| Azure 대상 | AX사업부문-인프라아키텍처팀, 구독에 등록된 tenant | 사용자가 이 구독을 선택했고 CLI에서 Enabled 확인; 기존 KT Open 계획 tenant와 다름 |
 | 리전 | `koreacentral` | 기존 환경과 비용 문서 기준; 정책·SKU 가용성은 A0 확인 |
 | 구성 방식 / 관리 tier | AKS Standard 구성 방식 / Free 관리 tier | 고정 작은 풀과 수동 stop/start; 유료 Standard tier와 구분 |
-| 노드 | Linux x86_64, System 풀 1개, `Standard_F4s_v2` 2대 | 각 4 vCPU·8 GiB, 총 8 vCPU·16 GiB; 최소 검증 후보 |
+| 노드 | Linux x86_64, System 풀 1개; `Standard_F4s_v2` 2대는 계획 후보 | 각 4 vCPU·8 GiB지만 선택 구독에서 Korea Central 사용 불가; `Standard_D4as_v5`는 대안 후보이며 승인 전 미선택 |
 | OS / OS disk | 지원되는 Ubuntu 이미지, Managed OS 64 GiB | 견적은 Premium SSD P6 2개; 실제 생성 SKU·크기를 확인 |
 | 노드 확장 | 고정 2대, upgrade `maxSurge=1` | 자동 증설 없이 시작; 일반 가동 8 vCPU, surge 포함 12 vCPU quota 확인 |
 | 네트워크 | Azure CNI Overlay + Cilium, Standard LB outbound | 기존 NetworkPolicy 유지, GHCR/Git/Helm outbound 확보 |
@@ -175,7 +176,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A1. 필요한 소스만 독립 AKS 프로젝트로 준비
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/README.md`, `.gitignore`, `aks/.gitignore`, 위 구조의 AKS 디렉터리.
 - **복사 원본:** 완료 SHA의 `k3s/apps`, `k3s/k8s`, `k3s/argocd`, `k3s/dashboards`,
   `k3s/infra/{argocd,keda,sealed-secrets,monitoring,minio,compose}`, `k3s/loadtest`,
@@ -195,7 +196,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A2. AKS 선택 CI·이미지 이름·최초 이미지 게시
 
-- [ ] 완료
+- [x] 완료
 - **읽기/수정:** `.github/workflows/aks-ci.yaml`, `aks/scripts/{changed-components,set-image-tag,
   prepare-release}.py`, `aks/scripts/tests/{test_changed_components,test_image_tags,test_release}.py`,
   `aks/k8s/{base,overlays,gitops}/**`, `aks/infra/minio/trivyignore.yaml`.

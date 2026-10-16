@@ -2,6 +2,8 @@
 
 Last checked: 2026-10-16 KST. Azure subscription context: `AX사업부문-인프라아키텍처팀` (Enabled). The selected subscription is registered to a tenant different from the previously planned `ktopen.onmicrosoft.com`; the user's latest instruction selects the AX subscription.
 
+Detailed command results: [A0 preflight evidence](../../.omo/evidence/aks-implementation/A0-preflight.txt).
+
 ## A0 observations
 
 | Check | Result | Decision/status |

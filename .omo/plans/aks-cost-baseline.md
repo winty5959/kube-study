@@ -4,11 +4,13 @@
 
 ## 1. 먼저 결론
 
-현재 소스의 요청 자원을 기준으로 한 최소 **검증 후보**는 AKS Standard 구성 방식의
-**Free 관리 tier, 시스템 풀 1개, Standard_F4s_v2 2대(각 4 vCPU·8 GiB)**다.
+현재 소스의 요청 자원을 기준으로 산정한 최소 **계획 후보**는 AKS Standard 구성 방식의
+**Free 관리 tier, 시스템 풀 1개, Standard_F4s_v2 2대(각 4 vCPU·8 GiB)**였다.
 클러스터 합계는 8 vCPU·16 GiB다. 앱·PostgreSQL·Redis·MinIO와 기존 ArgoCD,
 KEDA, SealedSecrets, Prometheus/Grafana를 함께 실행하는 학습 환경을 가정한다.
-실제 부하·Open Tenant quota·SKU 생성 가능 여부는 아직 검증하지 않았다.
+2026-10-16 확인에서 AX사업부문-인프라아키텍처팀 구독의 Korea Central은 F4s_v2를
+`NotAvailableForSubscription`으로 표시했다. 이를 배포 가능하다고 간주하지 않는다.
+`Standard_D4as_v5`는 사용 가능으로 조회됐지만 선택하지 않았다.
 
 | 사용 패턴 | 계산 기준 | AKS 월 기본 예상액(USD) |
 |---|---|---:|
@@ -16,6 +18,8 @@ KEDA, SealedSecrets, Prometheus/Grafana를 함께 실행하는 학습 환경을 
 | 예시: 평일 하루 4시간 | 22일 × 4시간 = 88시간 | **$79.11, 약 $80** |
 | 예시: 평일 하루 8시간 | 176시간 | **$112.90, 약 $113** |
 | 한 달 내내 중지, 자원 유지 | 컴퓨트 0, 디스크·IP·LB 잔존 가정 | **최대 약 $45.31의 고정항목을 보수적으로 반영** |
+
+위 사용 패턴 금액은 F4s_v2 기준의 비교 추정이며 현재 선택 구독에서 F4s_v2를 만들 수 있다는 뜻이 아니다. D4as_v5를 선택하면 현재 공개 가격으로 2대 상시 실행의 총 기준은 약 $354.83/월이고, 실제 가격과 디스크 구성은 배포 직전 다시 확인해야 한다.
 
 이 표는 예산 약속이나 청구 상한이 아니다. 디스크 I/O·네트워크 전송·백업·실험 중 추가
 노드·업그레이드 surge 비용은 별도다. 88/176시간은 사용자의 사용시간 결정이 아닌 비교 예시다.
@@ -36,9 +40,10 @@ Free는 **관리 비용**이 무료라는 의미다. 노드 VM·디스크·네�
 구분한다. Automatic의 기본 유료 tier·자동 노드 증설은 이 학습 목적에 필요하지 않다.
 [AKS 관리 tier](https://learn.microsoft.com/en-us/azure/aks/free-standard-pricing-tiers)
 
-F4s_v2는 4 vCPU·8 GiB인 x86_64 SKU다. 이번에 비교한 후보 중 컴퓨트가 가장 저렴하다.
-모든 Azure SKU 중 절대 최저가라고 주장하지 않는다. CPU 4개 조건을 맞추려고 앱 요청량보다
-큰 총 CPU를 확보하게 된다. [Fsv2 사양](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/compute-optimized/fsv2-series)
+F4s_v2는 4 vCPU·8 GiB인 x86_64 SKU다. 공개 가격 비교 후보 중 컴퓨트가 가장 저렴하지만
+선택 구독의 Korea Central에서는 사용할 수 없다. 모든 Azure SKU 중 절대 최저가라고 주장하지 않는다.
+CPU 4개 조건을 맞추려고 앱 요청량보다 큰 총 CPU를 확보하게 된다.
+[Fsv2 사양](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/compute-optimized/fsv2-series)
 
 ## 3. 현재 저장소에서 확인한 requests
 
@@ -87,8 +92,8 @@ Windows·Spot·Low Priority·HDInsight·Cloud Services의 동명 meter는 제외
 
 | 후보 | 노드 1대 사양 | 시간당 1대 | 2대 × 730h 컴퓨트 | 판단 |
 |---|---|---:|---:|---|
-| Standard_F4s_v2 | 4 vCPU / 8 GiB | $0.192 | $280.32 | 최소 RAM·비용 검증 후보 |
-| Standard_D4as_v5 | 4 vCPU / 16 GiB | $0.212 | $309.52 | F4s_v2 부족 시 대안; 상시 +$29.20/월 |
+| Standard_F4s_v2 | 4 vCPU / 8 GiB | $0.192 | $280.32 | Korea Central에서 선택 구독에 unavailable; 견적 비교용만 |
+| Standard_D4as_v5 | 4 vCPU / 16 GiB | $0.212 | $309.52 | 구독에서 사용 가능; 변경 결정 전까지 미선택; 상시 컴퓨트 +$29.20/월 |
 | Standard_D4ads_v5 | 4 vCPU / 16 GiB, 로컬 임시 디스크 | $0.254 | $370.84 | ephemeral OS가 가능하면 간헐 사용 시 비교 가치 |
 
 F4s_v2는 Managed OS 64 GiB로 계획하고 계산에서는 Premium SSD P6를 반영한다.
@@ -206,6 +211,9 @@ Premium **Managed Disks** 항목을 사용하며 Premium Page Blob과 중복 합
 empty result는 무료가 아니다. LB의 지역 조회가 비어 있으면 Global primary meter를 확인한다.
 `NextPageLink`가 있으면 다음 페이지까지 읽고, 429는 제한된 재시도 후 미조회로 표시한다.
 
-최종 배포 견적은 공개 소매가격이 아니라 Open Tenant의 실제 계약 가격·허용 SKU·
-조직 정책·측정된 디스크 SKU를 반영해 갱신한다. 이번 계획은 구독에 로그인하거나
-리소스를 생성하지 않았으므로 이 조건을 검증 완료로 표시하지 않는다.
+최종 배포 견적은 공개 소매가격이 아니라 선택한 AX 구독의 실제 계약 가격·조직 정책·
+측정된 디스크 SKU를 반영해 갱신한다. Azure Retail Prices API에서 D4as_v5를 다시
+조회한 값은 $0.212/노드·시간(USD)이다. 이를 선택한다면 2대 상시 컴퓨트는 $309.52/월,
+문서의 기존 고정항목 추정과 합계 약 $354.83/월이며 88시간 예시는 약 $82.63이다.
+이 수치는 공개 소매가격 기반 비교값으로 기업 계약·세금·I/O·전송을 포함하지 않는다.
+CLI로 선택 구독에 로그인해 quota/SKU/RG를 조회했지만 AKS 리소스는 생성하지 않았다.

@@ -1,0 +1,29 @@
+A0 Azure preflight (2026-10-16 KST)
+
+Selected destination
+- User selected AX사업부문-인프라아키텍처팀.
+- Azure CLI reports the subscription Enabled and selects it as the current context.
+- Its registered tenant differs from ktopen.onmicrosoft.com, the prior plan default. No tenant or subscription identifiers are recorded here.
+
+Resource groups
+- Existing K3S resource group: rg-seonung-kube-study, koreacentral, provisioning state Succeeded.
+- Planned AKS resource group: rg-seonung-kube-study-aks; absent from the selected subscription at this check.
+- The existing K3S group will not be reused for AKS.
+
+Region, version, and compute
+- Candidate region: koreacentral.
+- AKS versions returned 1.31 through 1.37; 1.36 is the current default and 1.37 is listed as available.
+- Standard_F4s_v2 reports 4 vCPU / 8 GiB, but its Korea Central SKU result contains NotAvailableForSubscription. It is not deployable under the current subscription context.
+- Standard_D4as_v5 reports 4 vCPU / 16 GiB and no SKU restriction. It is a candidate only; the user has not selected this plan change.
+- Current reported quotas: regional vCPU 30/354, FSv2 0/350, DASv5 14/350. The documented 12-vCPU upgrade-surge requirement fits the displayed numeric limits; quota does not remove the F4s_v2 availability restriction.
+- Public Azure Retail Prices API returned $0.212 per D4as_v5 node-hour (USD, Korea Central, primary consumption meter). Two nodes at 730 hours are $309.52 compute/month. Adding the existing $45.314 fixed-item estimate gives about $354.83/month before enterprise contract pricing, tax, I/O, traffic, backups, or experiments.
+
+Permissions, providers, and network
+- The signed-in user and its security-group role assignments returned Contributor only. No role-assignment administrator role was found for Azure RBAC grants.
+- Microsoft.ContainerService, Microsoft.Compute, Microsoft.Network, Microsoft.ManagedIdentity, and Microsoft.Storage are Registered.
+- Eleven existing subscription VNet address ranges were checked against VNet 10.240.0.0/16, node 10.240.0.0/22, pod 10.244.0.0/16, and service 10.250.0.0/16. No overlap was found within this subscription. Organization and VPN routes outside it remain unchecked.
+- A stable management source CIDR and authorized Entra/Azure RBAC administration path remain unconfirmed.
+
+Result
+- A0 is incomplete. Do not deploy A3 until an available node SKU is selected and an authorized Azure RBAC administration path is confirmed. The proposed region, SKU change, public API source range, and cost baseline remain subject to owner confirmation.
+- No AKS resource, resource group, role assignment, provider registration, or network change was created.
