@@ -16,7 +16,7 @@ Detailed command results: [A0 preflight evidence](../../.omo/evidence/aks-implem
 | Documented alternative `Standard_D4as_v5` | 4 vCPU / 16 GiB, no SKU restriction returned | Candidate only; requires an explicit plan decision because it changes the planned SKU and cost. |
 | Quota | 30/354 regional vCPU; FSv2 0/350; DAsv5 14/350 | The currently reported family and regional limits have headroom; this does not override SKU availability. |
 | Azure providers | ContainerService, Compute, Network, ManagedIdentity, Storage are Registered | No provider registration is required at this point. |
-| Existing subscription VNets | 11 address ranges inspected; no overlap with the proposed VNet, node, pod, or service ranges | Subscription-level check only; organization/VPN routes still need confirmation. |
+| Existing subscription VNets and connections | 5 VNets / 11 address ranges across 6 resource groups; no overlap with the proposed VNet, node, pod, or service ranges. No VNet peering, VPN connection, local gateway, or VNet gateway found. | Subscription-level check only; organization/VPN routes outside this subscription still need confirmation. |
 | Current user's roles | Contributor found for the user and security-group assignments | No role-assignment administrator role was found. Confirm who can grant the needed AKS Azure RBAC access before relying on Entra/Azure RBAC administration. |
 
 ## Pending before A3

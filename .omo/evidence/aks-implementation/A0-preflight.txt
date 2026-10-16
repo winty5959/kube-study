@@ -21,7 +21,7 @@ Region, version, and compute
 Permissions, providers, and network
 - The signed-in user and its security-group role assignments returned Contributor only. No role-assignment administrator role was found for Azure RBAC grants.
 - Microsoft.ContainerService, Microsoft.Compute, Microsoft.Network, Microsoft.ManagedIdentity, and Microsoft.Storage are Registered.
-- Eleven existing subscription VNet address ranges were checked against VNet 10.240.0.0/16, node 10.240.0.0/22, pod 10.244.0.0/16, and service 10.250.0.0/16. No overlap was found within this subscription. Organization and VPN routes outside it remain unchecked.
+- Five existing subscription VNets and their eleven address ranges were checked against VNet 10.240.0.0/16, node 10.240.0.0/22, pod 10.244.0.0/16, and service 10.250.0.0/16. No overlap was found within this subscription. The six resource groups were also checked: no VNet peering, VPN connection, local gateway, or VNet gateway was present. Organization and VPN routes outside this subscription remain unchecked.
 - A stable management source CIDR and authorized Entra/Azure RBAC administration path remain unconfirmed.
 
 Result
