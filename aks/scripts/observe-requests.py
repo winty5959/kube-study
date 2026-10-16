@@ -16,6 +16,7 @@ import httpx2
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", default="http://album.aks.localhost")
+    parser.add_argument("--host-header", default="")
     parser.add_argument("--duration", type=float, default=90)
     parser.add_argument("--interval", type=float, default=0.25)
     args = parser.parse_args()
@@ -42,7 +43,10 @@ def main() -> None:
             started = time.monotonic()
             status, version, pod = 0, "-", "-"
             try:
-                response = client.get(args.base + "/api/photos", params={"size": 1})
+                headers = {"Host": args.host_header} if args.host_header else None
+                response = client.get(
+                    args.base + "/api/photos", params={"size": 1}, headers=headers
+                )
                 status = response.status_code
                 version = response.headers.get("X-App-Version", "-")
                 pod = response.headers.get("X-Served-By", "-")
