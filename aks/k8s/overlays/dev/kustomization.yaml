@@ -25,7 +25,6 @@ configMapGenerator:
     behavior: merge
     literals:
       - LOG_LEVEL=DEBUG
-      - THUMB_MEDIUM_PX=640
 
 # Strict-scope ciphertext; the controller creates the stable album-secrets name.
 patches:
