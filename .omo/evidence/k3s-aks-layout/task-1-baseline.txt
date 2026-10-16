@@ -1,4 +1,4 @@
-K3S to AKS layout baseline (dev captured, prod pending)
+K3S to AKS layout baseline (dev and prod captured)
 Date: 2026-10-16 KST
 Repository root: kube-study
 Rollback Git HEAD: a64cdb3e4adc844e50cb44e43757b03f7159be58 (main, origin/main)
@@ -15,13 +15,14 @@ Azure scope:
 
 K3S VM access:
 - Both VMs initially reported VM deallocated in RG-SEONUNG-KUBE-STUDY.
-- Started vm-kube-dev in the selected AX subscription for baseline collection; it reports
-  VM running. vm-kube-prod remains deallocated.
-- SSH initially timed out because the dev NSG SSH rule did not include the current
-  workstation address. Updated only that rule to the current address /32. `ssh kube-dev
-  hostname` returned `vm-kube-dev`; the dev tunnel is up. No public address was recorded.
-- Daily 18:00 KST auto-shutdown is documented. The dev VM is left running for the
-  current baseline work and should be deallocated when that work is complete.
+- Started vm-kube-dev and vm-kube-prod in the selected AX subscription for baseline
+  collection; both report VM running.
+- SSH initially timed out because each VM's NSG SSH rule omitted the current workstation
+  address. Updated only each SSH rule to the current address /32. `ssh kube-dev hostname`
+  and `ssh kube-prod hostname` returned their expected hostnames; both API tunnels are up.
+  No public address was recorded.
+- Daily 18:00 KST auto-shutdown is documented. Both VMs are left running for current
+  migration work and should be deallocated when that work is complete.
 
 K3S dev live baseline:
 - `k3s-dev` node is Ready; kubelet version v1.36.5+k3s1.
