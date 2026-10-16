@@ -18,10 +18,14 @@ The A7 live adoption evidence is in `.omo/evidence/aks-implementation/A7-gitops.
 | -1 | `platform-dev` | Traefik Helm chart, Azure Disk StorageClass, and data services |
 | 0 | `monitoring-dev` | kube-prometheus-stack Helm release |
 | 1 | `observability-dev` | Dashboards and monitoring resources |
+| 0 | `album-dev` | Album API, frontend, worker, migration/smoke hooks, and cleanup CronJob |
 
 The child-Application health customization makes the root wait for each child to report Synced
-before proceeding. The album application is added in A8, after its migration and smoke hooks are
-ready. The data services remain available while the application child is absent.
+before proceeding. A8 adds `album-dev` with automated sync after the data and credential
+applications are healthy. Its PreSync migration uses the API image and database credentials;
+PostSync smoke exercises the internal Traefik route and preserves the signed host. The data
+services remain managed by `platform-dev` and retain their PVCs. A8 live evidence is in
+`.omo/evidence/aks-implementation/A8-gitops-smoke.txt`.
 
 `platform-dev` combines the pinned Traefik chart with the Kustomize source at
 `aks/k8s/gitops/dev/platform`. Its destination namespace is `ingress-system`, which is Traefik's

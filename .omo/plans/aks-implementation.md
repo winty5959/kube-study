@@ -362,7 +362,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A8. migration·cleanup·smoke와 dev 자동 배포
 
-- [ ] 완료
+- [x] 완료
 - **수정:** `aks/k8s/{base/migrate,base/cleanup,gitops/hooks,gitops/dev/application}/**`,
   `aks/scripts/{smoke.py,kustomization.yaml}`, `aks/argocd/bootstrap/dev/album-dev.yaml`.
 - **순서:** (8a) data/credentials가 별도 platform에 Ready인지 확인 → (8b) API와 같은 image의
@@ -380,6 +380,20 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 - **실패 검증·복구:** 잘못된 DB 설정의 migration 실패가 신규 app rollout을 막고
   기존 서비스/PVC를 유지해야 한다. 정상 Git 설정으로 복구 후 Sync한다. 실패 PostSync를
   삭제해서 성공으로 표시하거나 DB 전체를 초기화하지 않는다.
+- **실행 결과 (2026-10-16):** `album-dev` 자동 Sync가 revision `68b0c939`에서 Synced /
+  Healthy다. API image `sha-b7122b7`의 PreSync migration과 PostSync smoke가 성공했다.
+  migration 재실행은 0건 적용을 기록했다. upload→DONE, 두 WebP thumbnail 크기와
+  원본 동일 bytes, API 삭제를 실제로 검증했다. 별도 HeadObject 서명은 Traefik 경유
+  HTTP 200, `image/webp`를 반환했다. 서명 변조는 MinIO 403, 외부 PUT/DELETE는 frontend
+  nginx 405였고 PostgreSQL egress는 frontend selector에서 timeout으로 차단됐다.
+  임시 Argo gate Application의 잘못된 DB host는 `gate-db-migrate` PreSync에서 실패했고
+  Sync phase에 workload가 생성되지 않았다. 이 동안 원래 app은 Synced/Healthy였고 API,
+  frontend, data StatefulSet과 세 PVC 상태가 유지됐다. CI run `38861459807`의 API lint/
+  tests, build, Trivy, publish 및 update-dev가 성공했다. 결과와 정리 상태는
+  `.omo/evidence/aks-implementation/A8-gitops-smoke.txt`에 기록했다.
+- **복구/정리:** Traefik provider 설정에 맞춰 dev IngressRoute에 class annotation을
+  추가했다. PostSync 오류가 난 원래 sync는 실패로 보존했고 수정 후 별도 sync가 성공했다.
+  테스트 Job/Application과 생성 fixture는 모두 정리했다.
 - **커밋 단위:** `gitops(aks): gate dev rollouts with migration and smoke hooks`.
 
 ### A9. 실제 데이터 백업·복원 리허설

@@ -37,8 +37,8 @@ Current execution: K3S tasks 1-6 and final checks F1-F4 are complete with eviden
 selected AX사업부문-인프라아키텍처팀, then explicitly changed the AKS target to the
 Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0 found
 Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
-AKS cluster RBAC roles were assigned. A1-A7 are implemented. Evidence is in
-`.omo/evidence/aks-implementation/`. A8-A15 remain in progress.
+AKS cluster RBAC roles were assigned. A1-A8 are implemented. Evidence is in
+`.omo/evidence/aks-implementation/`. A9-A15 remain in progress.
 K3S traffic/data migration and source-environment deletion remain outside this goal.
 
 ---

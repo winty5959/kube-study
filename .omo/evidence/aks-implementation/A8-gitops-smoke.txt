@@ -1,0 +1,67 @@
+A8 AKS dev migration, cleanup, and smoke verification (2026-10-16 KST)
+
+Git revisions and CI:
+- df687889ee134c24cb851890aaa36ae4b99d1b10 enables the album-dev Application in the
+  dev bootstrap.
+- 68b0c93995d2b264aac645fd95cd062469cb448b marks the AKS object IngressRoute with the
+  Traefik CRD ingress class.
+- AKS CI run 38861459807 for b7122b7397c8e83eaddc72add493bef49ea15a31 completed
+  successfully. API lint/tests, image build, HIGH/CRITICAL scan, GHCR push, and update-dev
+  completed; the live API uses the promoted image tag sha-b7122b7.
+
+Argo CD/Application:
+- root-dev and album-dev compare to revision 68b0c93995d2b264aac645fd95cd062469cb448b.
+- album-dev is Synced and Healthy; its latest sync operation is Succeeded.
+- The latest operation reports db-migrate PreSync Succeeded and album-smoke PostSync
+  Succeeded, each reaching the expected succeeded pod count.
+- The initial PostSync attempt failed because the Traefik CRD provider filters on
+  ingressClass=traefik and album-objects had no class annotation. Signed object paths fell
+  through to the frontend. The AKS platform patch added
+  `kubernetes.io/ingress.class: traefik`; a non-existent-key request then reached MinIO,
+  and the next Argo sync completed successfully.
+- The first HPA health check lacked a CPU sample while API Pods were starting. Argo retried
+  the sync; after HPA metrics became available, the final sync passed. No resources were
+  deleted to make the earlier failure appear successful.
+
+Workloads/data:
+- API is 1/1 Ready, frontend is 2/2 Ready, and worker returned to 0 replicas after the
+  smoke upload was processed. The KEDA ScaledObject is Ready.
+- PostgreSQL, Redis, and MinIO StatefulSets are each 1/1 Ready. Their three PVCs remain
+  Bound; this test did not replace the platform-owned data services.
+- album-cleanup completed on its scheduled run using the API image.
+- The failed smoke's generated fixture was removed through the API (HTTP 204) after the
+  successful retry.
+
+Migration and smoke/API behavior:
+- The migration Job runs the same API image as the Deployment and contains only
+  POSTGRES_PASSWORD and DATABASE_URL environment variables. A rerun logged
+  `migrations up to date (0 applied now)`.
+- The smoke upload response reported X-Served-By=api-679bb59678-72nkr and
+  X-App-Version=sha-b7122b7.
+- An additional request-path probe uploaded a generated PNG and observed DONE. Both signed
+  thumbnail GETs returned image/webp at 200x100 and 800x400. A separate valid HeadObject
+  signature returned HTTP 200, image/webp, and 654 bytes through Traefik and MinIO.
+- A tampered signature returned 403 from MinIO. External PUT and DELETE requests returned
+  405 from frontend nginx and did not reach MinIO. Original download returned the same
+  3,462 bytes as the uploaded PNG. API deletion returned 204 and the next lookup returned
+  404.
+- A temporary `frontend`-labelled Pod resolved the PostgreSQL Service through DNS, then
+  timed out opening TCP 5432. The API smoke `/readyz` returned Postgres, Redis, and S3 as
+  ready, confirming the allowed API-to-data path.
+
+Failure gate:
+- A temporary `migration-gate-probe` Argo Application used a unique `gate-` resource
+  prefix and an invalid database host. Argo marked its only resource, `gate-db-migrate`,
+  Failed in PreSync with `failed to resolve host`; it created no Sync-phase workloads.
+- During that failure, the real album-dev Application remained Synced and Healthy. API
+  stayed 1/1, frontend 2/2, the three data StatefulSets stayed 1/1, and all three PVCs
+  stayed Bound.
+- The temporary Application, failed gate Job, successful HEAD probe Job, and generated
+  photo fixtures were removed after their results were recorded.
+
+Validation:
+- Local Kustomize renders showed seven dev Applications, PreSync migration before
+  PostSync smoke, DB-only migration credentials, the hashed smoke-script ConfigMap, and the
+  Traefik ingress class annotation.
+- `python3 -m pytest -q aks/scripts/tests`: 34 passed.
+- K3S service/data and live traffic cutover were not changed.
