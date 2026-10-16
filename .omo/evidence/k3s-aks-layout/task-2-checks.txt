@@ -1,56 +1,49 @@
-K3S directory layout implementation checks (local, not live cutover)
+K3S directory layout implementation checks
 Date: 2026-10-16 KST
 
 Implemented:
 - Moved the tracked K3S project into k3s/ and preserved the prior README there.
-- Updated the root CI/Release paths, changed-component selector, Docker contexts,
-  release helper inputs, K3S ArgoCD source paths and Helm value file paths.
-- Added bridges at all seven distinct old live Kustomize source paths, pointing to their
-  k3s/ counterparts. Preserved both old argocd/bootstrap specs unchanged until root
-  cutover and kept byte-identical infra/ Helm values copies for the old $values/ paths.
-  The new root Application manifests live only under k3s/argocd/.
-- Updated VM sync destination to ~/kube-study/k3s and added required environment
-  validation plus secret/venv protection. Updated current K3S operating instructions.
+- Updated root CI/Release paths, the changed-component selector, Docker contexts,
+  release helper inputs, ArgoCD source paths, Helm value paths and operating docs.
+- Added bridges for all seven distinct old live Kustomize paths; retained old bootstrap
+  specs and identical Helm values until the roots were switched.
+- Restricted VM sync to ~/kube-study/k3s with environment validation and secret/venv
+  protection. The sibling aks/ and parent sync destination were not touched.
 
-Passed locally:
-- git diff HEAD --check.
-- Python K3S helper tests: 31 passed.
-- Ruff on K3S API, worker and scripts: passed.
-- Node syntax check for the frontend: passed.
-- Bash syntax check for 11 K3S shell scripts: passed.
-- YAML syntax parse: 165 files, zero parse failures.
-- Kustomize bridge render: all 7 distinct old live Kustomize paths rendered byte-for-byte
-  identically to their k3s/ targets. Both bootstrap directories rendered 7 Applications;
-  after normalizing only expected `k3s/` source-path and `$values/k3s/` prefixes, the old
-  and new bootstrap specs matched. Five unique root/K3S Helm values files remain identical.
-- Local renderer: kubectl v1.32.2 with Kustomize v5.5.0. The dev repo-server reports
-  Kustomize v5.8.1 and no custom build options; exact server-side bridge rendering remains
-  a post-push check before either root Application is switched.
-- Helm render passed for kube-prometheus-stack 92.7.0, KEDA 2.21.0 and
-  Sealed Secrets 2.20.0 with the existing K3S values. Old and new value copies match.
-- Changed-component selection and release dry-run returned the same result from the
-  repository root and k3s/ working directory.
-- sync.sh rejected a missing or unsupported environment before rsync.
-- A local temporary rsync destination retained protected secrets, venv, the parent
-  .git directory and sibling aks/ while deleting stale files only inside k3s/.
-- Markdown local-link check: 36 files, 144 local links, zero missing links.
-- actionlint 1.7.12 passed on the K3S CI and Release workflows.
-- Graphify update completed with exit status 0. Sensitive files skipped: 8.
+Verified locally:
+- Python helper tests: 31 passed; Ruff for API, worker and scripts passed.
+- Frontend node syntax, 11 shell syntax checks, actionlint 1.7.12, 165-file YAML parse,
+  and git diff --check passed.
+- All seven old/new bridge renders were byte-identical using local Kustomize v5.5.0.
+  Bootstrap Application specs matched after normalizing only k3s/ and $values/k3s/ prefixes.
+  Five old/new Helm values files were identical.
+- Helm renders passed for the pinned KEDA 2.21.0, kube-prometheus-stack 92.7.0 and
+  Sealed Secrets 2.20.0 charts. Selector and release dry-run matched from repo root and k3s/.
+- sync.sh rejects missing or unsupported environments; isolated rsync checks preserved
+  VM-only files and the sibling AKS directory.
+- Markdown links and Graphify were checked after docs changes; Graphify update exit status 0.
+  Sensitive files skipped by Graphify: 8.
 
-Not verified yet:
-- VM dependency-based pytest/ruff from the new `~/kube-study/k3s` path; current VM checkouts
-  have not been prepared or synced to the new tree.
-- GitHub main/PR CI, GHCR rebuild/digests, and exact Argo repo-server rendering of the
-  pushed bridge files.
-- No live ArgoCD Application source path has been switched. The baseline and live state
-  are recorded in task-1-baseline.txt; both VMs and their SSH tunnels are currently up.
-- Local API and worker pytest could not run because Mac Python lacks `redis` and `boto3`;
-  no local venv was created, per project instructions.
-- Hosted GitHub CI has not run on this commit; actionlint validates workflow syntax and
-  expressions locally but does not exercise the workflow on GitHub.
-- VM starts and each current-workstation `/32` SSH allowlist update were performed for
-  baseline access. No K3S GitOps Application or workload was changed; no GitHub push or VM sync.
+Verified on both VMs from ~/kube-study/k3s:
+- `uv sync --frozen` created new Python 3.13.16 virtual environments; existing root venvs
+  were not copied. API helper tests: 31 passed; API tests: 12 passed; worker tests: 8 passed;
+  API and worker Ruff checks passed on dev and prod.
+- VM rsync dry-runs listed 67 planned items each and 0 sensitive-path items. dev's existing
+  `.env` was copied with its mode preserved; prod had no existing `.env`, so none was created.
 
-Disposition: implementation and local checks are ready for review, but plan task 2
-and all live path transition tasks remain incomplete until the specified VM and
-cluster checks pass.
+Renderer and live GitOps verification:
+- Argo repo-server Kustomize v5.8.1; no custom build options. After push, all old bridge paths
+  rendered successfully (all 16 Applications Synced/Healthy). After switching roots, all new
+  paths also rendered and all 16 Applications remained Synced/Healthy on that renderer.
+- GitHub main run 38842930641 succeeded: API, worker, frontend and MinIO build jobs plus
+  update-dev succeeded. dev now serves API version sha-d8f3a38; prod remains on sha-a3e8669.
+- After live transition, each cluster had 5 Git source paths under k3s/, 4 Helm value files
+  under $values/k3s/infra/, and 3 pathless chart sources.
+
+Not performed:
+- No pull request CI run was needed for the approved main push. No AKS resources were created.
+- Local macOS Python could not run dependency tests; VM Python checks above replaced that run.
+
+Disposition: task 2 acceptance is complete. Live old/new rendering succeeded on Argo's v5.8.1
+renderer, the K3S application source paths now use k3s/, and no product or data migration was
+performed.

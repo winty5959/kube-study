@@ -1,0 +1,50 @@
+K3S remote publish and live source-path cutover
+Date: 2026-10-16 KST
+
+Publish and CI:
+- Pushed the 11 approved commits to origin/main without force-push; remote main had no
+  divergent commits. New head: d8f3a38.
+- GitHub run 38842930641 completed successfully. API, worker, frontend and MinIO builds,
+  scans and dev update all succeeded.
+- Existing source paths continued to render through the bridges after push; all 16 live
+  Applications were Synced/Healthy before either root was switched.
+
+VM working tree:
+- Both VM sync destinations were absent before preparation and neither VM has a Git checkout
+  at ~/kube-study. The sync script's --delete was scoped to the new ~/kube-study/k3s/ path.
+- Each dry-run listed 67 planned items and zero sensitive paths; both new project trees synced.
+- Dev's existing root `.env` was copied into k3s/ with its file mode preserved. No value was
+  read or logged. Prod had no existing root `.env`; no replacement credentials were created.
+- `uv sync --frozen` created new venvs in k3s/apps/api and k3s/apps/worker on both VMs.
+- Both VMs: 31 script tests, 12 API tests, 8 worker tests and API/worker Ruff passed.
+
+Live root transition:
+- Pre-apply `kubectl diff` for each root showed only the expected source.path change.
+- Applied `k3s/argocd/root-dev.yaml` to k3s-dev first. Then applied
+  `k3s/argocd/root-prod.yaml` to k3s-prod after dev smoke and observability passed.
+- Both clusters now have 8/8 Applications Synced/Healthy. Each has 5 Git source paths using
+  `k3s/` and 4 Helm value files using `$values/k3s/infra/`; 3 chart sources per cluster remain
+  pathless. Chart versions and external chart repositories are unchanged.
+- Prod `album-prod` remains manual-sync with no active operation. `root-prod` retained its
+  `/operation` ignoreDifferences and RespectIgnoreDifferences behavior. No prod workload
+  operation was started by the path change.
+- All 6 PVCs per cluster remained Bound with identical pre/post UID fingerprints:
+  dev a88f786a7f3a48a6b0368cd2b475b0a4acef3a67b45cf1bc220e0626cbb56af9;
+  prod 79912e26ae4c5d174c9d19fe321aa14705c3c5a3a2159edd4647bc4d48c7b061.
+- dev images were promoted by the main CI run; prod remained on its pre-cutover sha-a3e8669
+  application images. The dev browser smoke reported API version sha-d8f3a38.
+
+Application checks:
+- Dev and prod CLI smoke each uploaded a generated PNG, reached DONE, checked both WebP
+  thumbnail dimensions (200x100 and 800x400), downloaded the unchanged 3,462-byte original,
+  and deleted the test photo.
+- Dev observability passed: five provisioned dashboards, 20 panels with finite samples, and
+  the three required Prometheus alerts.
+- Prod's first observability attempt had no finite processing percentile while worker metrics
+  were absent at KEDA scale-to-zero. A disposable QA job warmed the worker and produced a
+  finite Prometheus sample; the rerun passed all five dashboards, 20 panels and three alerts.
+- Browser UI upload on dev reached DONE and showed the detail view and processing worker.
+  The QA photo was deleted through the UI confirmation; API and refreshed gallery showed no
+  `final-ui-gallery.png` record. Screenshots: task-6-dev-ui.png and task-6-dev-ui-clean.png.
+
+No K3S user traffic cutover, source deletion, AKS deployment, or data migration was performed.

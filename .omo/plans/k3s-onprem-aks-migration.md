@@ -110,7 +110,7 @@ and record external prerequisites with evidence.
   QA failure: context 접속 불가/키 백업 부재면 해당 항목을 미검증으로 명시하고 live 전환 4를 보류한다. 로컬 설계/편집은 계속 가능하나 bridge 삭제 완료를 주장하지 않는다.
   Commit: N — 준비 증거는 민감 값 없이 최종 완료 문서에 요약.
 
-- [ ] 2. K3S 이동과 모든 실행 경로를 하나의 일관된 변경으로 구현
+- [x] 2. K3S 이동과 모든 실행 경로를 하나의 일관된 변경으로 구현
   Recommended task executor category: unspecified-high — 코드·CI·GitOps 경로가 같은 시점에 일치해야 한다.
   What to do / Must NOT do: 명시된 프로젝트 파일을 git mv로 k3s/에 옮긴다. .git/.github/AGENTS.md/root ignore는 유지한다. 루트 README를 인덱스로 만들고 기존 README를 k3s/README.md에 보존한다. k3s에서 실행하는 상대 경로는 유지하되 저장소 루트 좌표만 수정한다.
   CI: .github/workflows/{ci,release}.yaml의 paths, helper 호출, action Docker context, node/trivy 파일 경로, Python working-directory, git add/commit, overlay 수정, release dry-run 입력을 k3s 위치로 맞춘다. defaults.run.working-directory만으로 uses: action 입력 경로가 바뀌지 않음을 반영한다. selector의 git diff 입력은 k3s/apps/...와 k3s/scripts/... 및 root의 K3S 소유 workflow 파일만 명시적으로 처리한다. 기존 .github/workflows/ 전체 prefix 매칭을 좁혀 미래 aks-ci.yaml/aks-release.yaml 수정이 K3S 빌드를 유발하지 않게 한다. selector 출력 Docker context는 workflow checkout 루트 기준 k3s/apps/...로 정하고 helper 파일 접근은 __file__ 기준 컴포넌트 루트로 고정한다. repo 루트와 k3s cwd 양쪽 실행을 검사한다. aks/ 문서 변경은 K3S rebuild/promotion을 유발하지 않는다.
@@ -137,7 +137,7 @@ and record external prerequisites with evidence.
   QA failure: 실행 지시 없는 로드맵인지 확인, 실제 API/SKU 가격·지원 설명에는 공식 출처·조회일·실제 구독 검증 여부를 구분한다. CI selector의 aks-only fixture가 empty임을 확인.
   Commit: Y — docs(aks): map the AKS conversion roadmap. 기능별 Lore 사용, 실제 배포 미실행 명시.
 
-- [ ] 4. 기존 원격에 게시하고 VM·GitOps 경로를 dev부터 전환
+- [x] 4. 기존 원격에 게시하고 VM·GitOps 경로를 dev부터 전환
   Recommended task executor category: unspecified-high — 자동 root reconciler와 수동 prod workload 정책의 순서 제어.
   What to do / Must NOT do: 작업 2·3 로컬 commit의 검사 결과를 확인하고 기존 origin main에 정상 push한다. force-push·새 repo 생성 금지. 기존 정책의 main CI는 workflow 수정 때문에 네 이미지 모두 재빌드하고 dev를 자동 승격할 수 있다. 이를 사전 계획대로 관찰하고 기준 digest와 새 dev digest를 구별한다. 기존 이미지와 prod tag는 유지한다.
   VM 경로 준비: 원격 ~/kube-study/k3s를 준비한 뒤 기존 VM-only env 파일은 외부 채널/로그 노출 없이 같은 파일 권한으로 새 상대 위치에 사본을 보존한다. 값 비교는 boolean만 기록한다. 기존 .env가 없어 새 credential 생성으로 진행하는 상황을 차단하며 원본은 삭제하지 않는다. sealing key는 기존 외부 위치에서 사용한다. 이후 새 sync dry-run 확인 후 sync한다. 원격 기존 .git이 있으면 old tracked tree와 rsync --delete가 충돌하지 않도록 git status를 먼저 확인하고 git checkout/pull 경로와 rsync 개발 경로를 일치시킨다.
