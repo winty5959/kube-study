@@ -1,0 +1,27 @@
+K3S compatibility path cleanup
+Date: 2026-10-16 KST
+
+Pre-removal consumer check:
+- Dev and prod each had 8/8 Applications Synced/Healthy.
+- Each cluster had 5 Git source paths, all under k3s/, and zero old source paths.
+- Each cluster had 4 Helm value files, all under $values/k3s/infra/, and zero old values.
+- Three external chart sources per cluster remain pathless; their repositories and pinned
+  chart versions were not changed.
+- `album-prod` remains manual-sync. All 6 PVCs in each cluster remain Bound, and neither
+  root transition started a prod workload operation.
+
+Cleanup:
+- Removed 112 tracked legacy K3S files from root argocd/, dashboards/, infra/, k8s/ and
+  scripts/ after the live consumer check. These files now live under k3s/.
+- Preserved root README.md, AGENTS.md, .gitignore, .github/, k3s/ and aks/.
+- No VM-only `.env`, data, SealedSecrets key backup, or other VM state was removed.
+
+Verified after cleanup:
+- Nine new Kustomize entrypoints rendered successfully, each as a separate build.
+- `aks/` and `k3s/` resolve to the same Git root.
+- All 39 tracked Markdown files and 155 local links passed; no missing local targets.
+- `git diff --check` and `git diff --cached --check` passed.
+- `graphify update .` completed with exit status 0. Sensitive files skipped: 8.
+
+No AKS resources were created. K3S user traffic was not moved and source environments were
+not deleted.

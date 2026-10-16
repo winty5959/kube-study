@@ -1,6 +1,0 @@
-server:
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    hostname: argocd.dev.localhost
-    tls: false

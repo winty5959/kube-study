@@ -1,5 +1,0 @@
-grafana:
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    hosts: [grafana.dev.local, grafana.dev.localhost]

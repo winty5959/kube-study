@@ -149,7 +149,7 @@ and record external prerequisites with evidence.
   QA failure: renderer/CI 실패 시 old bridges와 baseline prod 유지, 호환 파일을 제거하지 않는다. dev root 전환 실패 시 baseline root path를 복원해 원인을 수정하고 진행한다. 옛 entrypoint bridge는 실제 workload가 동일하도록 작성돼 있어야 하며 이미지 rollback이 필요하면 기존 Git revert+prod 수동 승인 절차를 따른다. live prod에 잘못된 URL·path를 주입하는 실패 실험은 금지.
   Commit: N — source 전환 정의는 작업 2에 이미 게시, live 적용 증거만 기록.
 
-- [ ] 5. 이전 경로 호환 파일 제거 및 최종 구조 확정
+- [x] 5. 이전 경로 호환 파일 제거 및 최종 구조 확정
   Recommended task executor category: quick — 참조가 사라진 임시 파일만 명시적으로 제거.
   What to do / Must NOT do: 작업 1의 옛 entrypoint/Helm values 목록과 live sources를 대조해 소비자가 없는지 확인한 뒤 bridge/bootstrap/values 사본만 제거한다. 경로 전체 rm -rf 대신 git에 추적된 임시 파일 목록으로 제거한다. VM의 옛 env/데이터·키는 이 작업에서 삭제하지 않는다. root .github/README/AGENTS/.gitignore와 k3s/aks 최종 트리를 확인한다.
   Closes: GAP-1, GAP-3. Blocked by: 4. Blocks: 6.
