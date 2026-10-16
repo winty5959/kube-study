@@ -11,7 +11,7 @@ for scenario acceptance criteria and recovery boundaries.
 | E-03 KEDA queue scaling | Pass | A10 500-image run: [A10-observability](../../../.omo/evidence/aks-implementation/A10-observability.txt) |
 | E-04 rolling update | Pass | [E-04](E-04.md) |
 | E-05 failed readiness rollout | Pass | [E-05](E-05.md) |
-| E-06 worker OOM retry | Not run | |
+| E-06 worker OOM retry | Pass | [E-06](E-06.md) |
 | E-07 database dependency failure | Not run | |
 | E-08 persistence after restore | Pass | [AKS-DATA](AKS-DATA.md) |
 | E-09 NetworkPolicy | Not run | |
