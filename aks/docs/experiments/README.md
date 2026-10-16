@@ -14,7 +14,7 @@ for scenario acceptance criteria and recovery boundaries.
 | E-06 worker OOM retry | Pass | [E-06](E-06.md) |
 | E-07 database dependency failure | Pass | [E-07](E-07.md) |
 | E-08 persistence after restore | Pass | [AKS-DATA](AKS-DATA.md) |
-| E-09 NetworkPolicy | Not run | |
+| E-09 NetworkPolicy | Pass | [E-09](E-09.md) |
 | E-10 ConfigMap rollout | Not run | |
 | E-11 CI-triggered API deployment | Not run | |
 | E-12 self-heal drift | Not run | |
