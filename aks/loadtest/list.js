@@ -11,6 +11,8 @@ export const options = {
 };
 
 export default function () {
-  const response = http.get(`${__ENV.BASE_URL || 'http://album.aks.localhost'}/api/photos`);
+  const hostHeader = __ENV.HOST_HEADER;
+  const params = hostHeader ? { headers: { Host: hostHeader } } : {};
+  const response = http.get(`${__ENV.BASE_URL || 'http://album.aks.localhost'}/api/photos`, params);
   check(response, { 'list returns 200': (r) => r.status === 200 });
 }

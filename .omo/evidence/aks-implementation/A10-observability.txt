@@ -1,0 +1,61 @@
+A10 observability, scaling, and capacity acceptance
+Date: 2026-10-17 KST
+Target: Enterprise architecture TF subscription / rg-seonung-aks-test / aks-kube-study
+
+Configuration
+- Cluster provisioning state Succeeded, power state Running; two Standard_D4as_v5 nodes.
+- Azure managed Prometheus and Container Insights are not enabled. Metrics Server APIService was
+  Available. kubeEtcd, kubeControllerManager, kubeScheduler, and kubeProxy scrapes are disabled.
+- One kube-prometheus-stack is installed. ServiceMonitor and PrometheusRule selectors accept the
+  monitoring release label; album API and worker monitors select only album-dev and album-prod.
+- python3 aks/scripts/check-observability.py dev passed against Grafana and Prometheus. It reported
+  five provisioned dashboards, four panels each (20 total) with finite samples, and all three
+  required alerts loaded: AlbumQueueBacklog, AlbumAPIErrorRate, AlbumCrashLoop.
+
+200-VU load
+- The first attempt started from the old API HPA scale-up state. Its separate kubectl
+  port-forward exited with a lost connection during the run; 68K requests completed before the
+  tunnel failed, and k6 recorded connection-refused errors afterward. This attempt is a failed
+  test harness run, not an application acceptance result.
+- After the HPA returned to one replica, the passing three-minute 200-VU run started at one API
+  replica at 2026-10-16T15:59:01Z. The Deployment reached two at 15:59:17Z, three at 16:00:17Z,
+  and returned to one at 16:09:01Z under the 300-second scale-down stabilization policy.
+- k6 result: 143,495 requests and checks; 100% checks succeeded, 0 failed checks, 0.00%
+  http_req_failed, 200 maximum VUs, average 652.24 requests/second.
+- An additional 200-VU run while API was already at three replicas completed 148,576 requests
+  with zero HTTP errors. It did not count as the replica-transition run.
+
+500-image/KEDA exercise
+- Uploaded 500 generated PNG fixtures through the application API. All 500 reached DONE.
+- The worker Deployment was observed at zero before the batch, one and then two during the batch,
+  and zero after queue cooldown. Kubernetes recorded scale to two at 2026-10-16T15:50:25Z and
+  scale to zero at 15:55:56Z. The ScaledObject returned to Active=False.
+- The batch cleanup deleted/already found absent all 500 fixtures. The local ID manifest was
+  removed. The API list contained one remaining row, the A9 restored sample.
+- A new worker initially logged a startup-probe connection-refused event before its listener was
+  ready; it recovered to Ready. No CrashLoopBackOff or OOMKilled condition remained.
+
+Capacity and recovery state
+- Each node has 3860m CPU and about 14.49Gi memory allocatable. With API at three and worker at
+  two during the batch, node requests were 2047m / 2972Mi (53% CPU / 20% memory) and
+  980m / 1408Mi (25% CPU / 9% memory), below the 80% per-node request limit.
+- A live CPU sample during 200 VU reached 85% on one node and 23% on the other. Both nodes stayed
+  Ready. This records CPU concentration/headroom and does not establish production throughput.
+- Post-run: two Ready nodes, zero node MemoryPressure/DiskPressure/PIDPressure, zero Pending Pods,
+  zero CrashLoopBackOff, zero OOMKilled-last-state, and zero Evicted Pods. API was 1/1, worker
+  desired replicas 0, and frontend 2/2.
+- Current workstation management egress was added to the API authorized ranges while retaining
+  the two earlier ranges. The current source is allowed; literal addresses are omitted.
+- The 500-photo input was synthetic and read-only 200-VU traffic used GET. K3S service and data
+  were not changed. AKS is left Running for A11 operations testing.
+
+Cost comparison
+- Public retail snapshot: two D4as_v5 nodes at $0.212/VM-hour cost $309.52 per 730 hours; two
+  F4s_v2 nodes at $0.192/VM-hour would cost $280.32. The D4as_v5 difference is $29.20/month.
+- With the same $45.314 fixed-item estimate, totals are $354.83/month and $325.63/month (about
+  9% difference). F4s_v2 is unavailable in the selected subscription. This is not actual billing;
+  A15 must query posted charges and distinguish retained storage/network items.
+
+Local checks: Python compile for both changed scripts; Ruff passed for both; git diff --check
+passed before this evidence was added. The real cluster checks above passed. No source traffic
+cutover or source deletion was performed.

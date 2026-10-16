@@ -12,7 +12,7 @@ Detailed results: [Enterprise A0 recheck](../../.omo/evidence/aks-implementation
 | AKS resource group | `rg-seonung-aks-test` | Created in the user-selected Enterprise subscription. |
 | Cluster | `aks-kube-study`, `koreacentral`, Kubernetes 1.36 | Provisioning succeeded; AKS Base / Free management tier. |
 | Node SKU | Two `Standard_D4as_v5`, each 4 vCPU / 16 GiB | Selected after `Standard_F4s_v2` returned `NotAvailableForSubscription`; both nodes are Ready. |
-| Network | Azure CNI Overlay, Cilium, isolated VNet; two workstation IPv4 `/32` ranges on the public API endpoint | The previous and current management egress addresses are retained after the workstation location changed. Proposed CIDRs do not overlap inspected VNets/subnets in the selected subscription. Organization routes outside it are not checked. |
+| Network | Azure CNI Overlay, Cilium, isolated VNet; three workstation IPv4 `/32` ranges on the public API endpoint | Previous management egress addresses remain authorized; the current address was added after the workstation location changed. Proposed CIDRs do not overlap inspected VNets/subnets in the selected subscription. Organization routes outside it are not checked. |
 | Identity | Entra managed identity, Azure RBAC, local accounts disabled | Signed-in user has Cluster User and cluster-scope RBAC Cluster Admin roles on this test cluster. |
 | Cost | Public retail baseline about `$354.83/month` | Estimate includes two D4as_v5 nodes and current fixed items; enterprise discounts, tax, I/O, traffic, backups, and actual billing remain excluded. |
 | Azure providers | ContainerService, Compute, Network, ManagedIdentity, Storage are Registered | No provider registration was needed. |

@@ -424,7 +424,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A10. 관측성·HPA/KEDA·최소 사양 수용 검증
 
-- [ ] 완료
+- [x] 완료 - `.omo/evidence/aks-implementation/A10-observability.txt`
 - **수정:** `aks/infra/monitoring/values*.yaml`, `aks/k8s/monitoring/**`, `aks/dashboards/**`,
   `aks/k8s/base/{api/hpa.yaml,worker/scaledobject.yaml}`, `aks/scripts/check-observability.py`,
   `aks/docs/{observability,cost}.md`.
@@ -611,5 +611,6 @@ PDB·단일 replica 데이터 서비스·LRS 제약으로 무중단 전체 노�
 - [AKS 중지/재개 조건](https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster)
 - [AKS 이전 가이드](https://learn.microsoft.com/en-us/azure/aks/aks-migration)
 
-현재 A0~A15는 모두 미실행이다. 실제 Azure 인증·계약 가격·권한·SKU·quota·지원 버전,
-클러스터 수용량, 데이터 복원과 제품 테스트 결과를 검증 완료로 표시하지 않는다.
+2026-10-17 KST 기준 A0~A10은 실제 Azure 상태와 실행 증거로 완료했다. A11~A15는 미완료다.
+실제 Azure invoice 금액은 게시 전이므로 A15 비용 판정에 남아 있다. Live K3S 트래픽/데이터
+전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.

@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = "==3.13.*"
-# dependencies = ["httpx2[http2,brotli,zstd]"]
-# ///
-# Run on the matching VM: uv run scripts/check-observability.py dev|prod
 """Verify Grafana dashboard provisioning and real Prometheus samples for every panel."""
 
 import base64
@@ -13,15 +8,16 @@ import socket
 import subprocess
 import sys
 import time
-from collections.abc import Iterator
+import urllib.error
+import urllib.parse
+import urllib.request
 from contextlib import contextmanager
-
-import httpx2
+from typing import Iterator
 
 
 @contextmanager
 def forward(service: str, local_port: int, remote_port: int) -> Iterator[None]:
-    """Keep a port-forward local to the VM and terminate it even when a check fails."""
+    """Keep a port-forward local to the caller and always stop the child process."""
     with subprocess.Popen(
         [
             "kubectl",
@@ -51,26 +47,32 @@ def forward(service: str, local_port: int, remote_port: int) -> Iterator[None]:
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
+                process.wait()
 
 
-def observe(response: httpx2.Response) -> None:
-    """Record only status on errors, never credentials, headers or response bodies."""
-    if response.is_error:
-        print(f"Monitoring HTTP check returned {response.status_code}", file=sys.stderr)
+def get_json(url: str, auth: str = "") -> dict:
+    """Read one API response without logging credentials or returned content."""
+    headers = {"Authorization": f"Basic {auth}"} if auth else {}
+    request = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read())
+    except urllib.error.HTTPError as error:
+        raise RuntimeError(f"Monitoring HTTP check returned {error.code}") from None
 
 
-def check_query(client: httpx2.Client, expr: str, title: str, deadline: float) -> None:
-    """Wait for at least one finite sample, failing on invalid PromQL immediately."""
+def check_query(expr: str, title: str, deadline: float) -> None:
+    """Wait for a finite sample, and fail immediately on invalid PromQL."""
+    query = urllib.parse.urlencode({"query": expr})
     while True:
-        response = client.get(
-            "http://127.0.0.1:19090/api/v1/query", params={"query": expr}
-        )
-        response.raise_for_status()
-        payload = response.json()
-        assert payload["status"] == "success"
+        payload = get_json(f"http://127.0.0.1:19090/api/v1/query?{query}")
+        if payload.get("status") != "success":
+            raise RuntimeError(f"Prometheus query failed for {title}")
+        samples = payload.get("data", {}).get("result", [])
         if any(
             math.isfinite(float(sample["value"][1]))
-            for sample in payload["data"]["result"]
+            for sample in samples
+            if len(sample.get("value", [])) > 1
         ):
             return
         if time.monotonic() >= deadline:
@@ -98,53 +100,46 @@ def main() -> None:
             ]
         )
     )["data"]
-    auth = httpx2.BasicAuth(
-        base64.b64decode(secret["admin-user"]).decode(),
-        base64.b64decode(secret["admin-password"]).decode(),
-    )
-    transport = httpx2.HTTPTransport(
-        http2=True,
-        retries=3,
-        limits=httpx2.Limits(
-            max_connections=200, max_keepalive_connections=40, keepalive_expiry=30
-        ),
-        socket_options=[(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)],
-    )
+    user = base64.b64decode(secret["admin-user"]).decode()
+    password = base64.b64decode(secret["admin-password"]).decode()
+    auth = base64.b64encode(f"{user}:{password}".encode()).decode()
+
     with (
         forward("monitoring-grafana", 19000, 80),
         forward("monitoring-kube-prometheus-prometheus", 19090, 9090),
-        httpx2.Client(
-            transport=transport,
-            timeout=httpx2.Timeout(connect=5, read=30, write=10, pool=10),
-            follow_redirects=True,
-            event_hooks={"response": [observe]},
-        ) as client,
     ):
         deadline = time.monotonic() + 120
+        total_panels = 0
         for number in range(1, 6):
-            dashboard = client.get(
-                f"http://127.0.0.1:19000/api/dashboards/uid/album-{number:02}",
-                auth=auth,
+            dashboard = get_json(
+                f"http://127.0.0.1:19000/api/dashboards/uid/album-{number:02}", auth
             )
-            dashboard.raise_for_status()
-            panels = dashboard.json()["dashboard"]["panels"]
-            assert panels
+            panels = dashboard["dashboard"]["panels"]
+            if not panels:
+                raise RuntimeError(f"Dashboard {number} has no panels")
             for panel in panels:
-                for target in panel["targets"]:
+                targets = panel.get("targets", [])
+                if not targets:
+                    raise RuntimeError(f"Dashboard {number} panel has no query")
+                for target in targets:
                     expr = target["expr"].replace("$namespace", namespace)
-                    check_query(client, expr, panel["title"], deadline)
-            print(
-                f"Dashboard {number}: provisioned, {len(panels)} panels have real samples"
-            )
-        response = client.get("http://127.0.0.1:19090/api/v1/rules")
-        response.raise_for_status()
+                    check_query(expr, panel["title"], deadline)
+            total_panels += len(panels)
+            print(f"Dashboard {number}: provisioned, {len(panels)} panels have real samples")
+
+        rules = get_json("http://127.0.0.1:19090/api/v1/rules")
         names = {
             rule["name"]
-            for group in response.json()["data"]["groups"]
+            for group in rules["data"]["groups"]
             for rule in group["rules"]
         }
-        assert {"AlbumQueueBacklog", "AlbumAPIErrorRate", "AlbumCrashLoop"} <= names
+        expected = {"AlbumQueueBacklog", "AlbumAPIErrorRate", "AlbumCrashLoop"}
+        missing = expected - names
+        if missing:
+            raise RuntimeError(f"Required album alerts are not loaded: {', '.join(sorted(missing))}")
         print("Three required album alerts loaded in Prometheus")
+    if total_panels != 20:
+        raise RuntimeError(f"Expected 20 panels, found {total_panels}")
     print(f"Observability passed: five dashboards / twenty panels in {namespace}")
 
 

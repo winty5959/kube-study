@@ -3,7 +3,7 @@
 The test cluster lives in `rg-seonung-aks-test` in `koreacentral`. The deployment uses
 the selected `Standard_D4as_v5` SKU, two system nodes, an isolated VNet, Azure CNI Overlay
 with Cilium, Microsoft Entra/Azure RBAC, disabled local accounts, and a public API endpoint
-restricted to the current management workstation's IPv4 `/32`.
+restricted to approved workstation IPv4 `/32` ranges. Literal ranges are intentionally omitted.
 
 ## Preview and deploy
 
@@ -31,6 +31,9 @@ The Bicep example parameter file uses a documentation-only IP range. Do not use 
 deployment. The live deployment command passes the current workstation range directly and keeps
 it out of tracked files. If the workstation's egress address changes, update AKS API server
 authorized ranges before using `kubectl` again.
+The authorized-ranges parameter replaces the complete list. When refreshing access, preserve the
+existing approved ranges and append the new `/32`; do not rerun this one-range example if other
+workstations still need access.
 
 The first deployment has already completed. On later runs, inspect the complete `what-if` output
 before deploying. ARM reports some AKS provider-generated fields and the identity principal
