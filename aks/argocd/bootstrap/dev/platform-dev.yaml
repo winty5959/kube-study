@@ -10,18 +10,26 @@ spec:
   project: default
   destination:
     server: https://kubernetes.default.svc
-    namespace: album-dev
-  source:
-    repoURL: https://github.com/winty5959/kube-study.git
-    targetRevision: main
-    path: aks/k8s/gitops/dev/platform
+    namespace: ingress-system
+  sources:
+    - repoURL: https://traefik.github.io/charts
+      chart: traefik
+      targetRevision: 42.0.0
+      helm:
+        releaseName: traefik
+        valueFiles:
+          - $values/aks/infra/traefik/values.yaml
+    - repoURL: https://github.com/winty5959/kube-study.git
+      targetRevision: main
+      path: aks/k8s/gitops/dev/platform
+      ref: values
   ignoreDifferences:
     - group: apps
       kind: StatefulSet
       jqPathExpressions: [".spec.volumeClaimTemplates[].status"]
   syncPolicy:
     automated: {prune: true, selfHeal: true}
-    syncOptions: [CreateNamespace=true, PruneLast=true]
+    syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true]
     retry:
       limit: 3
       backoff: {duration: 5s, factor: 2, maxDuration: 1m}

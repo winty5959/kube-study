@@ -6,5 +6,4 @@ resources:
   - credentials-dev.yaml
   - platform-dev.yaml
   - monitoring-dev.yaml
-  - album-dev.yaml
   - observability-dev.yaml
