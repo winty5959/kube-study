@@ -58,3 +58,9 @@ Release promotion
 
 - The release PR has no reported status checks and awaits human review/merge. It has not been
   merged. Prod alias updates and `album-prod` manual Sync/smoke remain pending; A12 stays open.
+
+Registry recheck (2026-10-17 03:46 KST)
+- `docker buildx imagetools inspect --raw` confirmed current `aks-v1.0.0` registry manifests
+  still match the digests recorded above for api, worker, frontend, and minio.
+- PR #4 remains OPEN with no reviews and no reported status checks. No prod application Sync or
+  merge was performed.
