@@ -5,9 +5,10 @@ Implemented:
 - Moved the tracked K3S project into k3s/ and preserved the prior README there.
 - Updated the root CI/Release paths, changed-component selector, Docker contexts,
   release helper inputs, K3S ArgoCD source paths and Helm value file paths.
-- Retained old argocd/, k8s/, infra/, dashboards/ and scripts/ content as temporary
-  compatibility roots for existing live GitOps paths. The old root Application files
-  were removed; their maintained copies are under k3s/argocd/.
+- Added bridges at all seven distinct old live Kustomize source paths, pointing to their
+  k3s/ counterparts. Preserved both old argocd/bootstrap specs unchanged until root
+  cutover and kept byte-identical infra/ Helm values copies for the old $values/ paths.
+  The new root Application manifests live only under k3s/argocd/.
 - Updated VM sync destination to ~/kube-study/k3s and added required environment
   validation plus secret/venv protection. Updated current K3S operating instructions.
 
@@ -16,10 +17,15 @@ Passed locally:
 - Python K3S helper tests: 31 passed.
 - Ruff on K3S API, worker and scripts: passed.
 - Node syntax check for the frontend: passed.
-- Bash syntax check for K3S shell scripts: passed.
-- YAML syntax parse: 169 files, zero parse failures.
-- Kustomize render: all 9 old source paths and all 9 matching new paths passed;
-  rendered documents matched after removing the expected k3s/ path prefix.
+- Bash syntax check for 11 K3S shell scripts: passed.
+- YAML syntax parse: 165 files, zero parse failures.
+- Kustomize bridge render: all 7 distinct old live Kustomize paths rendered byte-for-byte
+  identically to their k3s/ targets. Both bootstrap directories rendered 7 Applications;
+  after normalizing only expected `k3s/` source-path and `$values/k3s/` prefixes, the old
+  and new bootstrap specs matched. Five unique root/K3S Helm values files remain identical.
+- Local renderer: kubectl v1.32.2 with Kustomize v5.5.0. The dev repo-server reports
+  Kustomize v5.8.1 and no custom build options; exact server-side bridge rendering remains
+  a post-push check before either root Application is switched.
 - Helm render passed for kube-prometheus-stack 92.7.0, KEDA 2.21.0 and
   Sealed Secrets 2.20.0 with the existing K3S values. Old and new value copies match.
 - Changed-component selection and release dry-run returned the same result from the
@@ -32,16 +38,18 @@ Passed locally:
 - Graphify update completed with exit status 0. Sensitive files skipped: 8.
 
 Not verified yet:
-- The K3S dev/prod VMs are deallocated and their API tunnels are unavailable, so
-  VM dependency-based pytest/ruff, live ArgoCD renderer version/options, current
-  Application source inventory, PVC/digest/operation states and GitOps cutover were
-  not verified.
-- The host Python environment lacks the API and worker application dependencies
-  (redis and boto3). Their pytest runs were attempted and stopped at import errors;
+- VM dependency-based pytest/ruff from the new `~/kube-study/k3s` path; current VM checkouts
+  have not been prepared or synced to the new tree.
+- GitHub main/PR CI, GHCR rebuild/digests, and exact Argo repo-server rendering of the
+  pushed bridge files.
+- No live ArgoCD Application source path has been switched. The baseline and live state
+  are recorded in task-1-baseline.txt; both VMs and their SSH tunnels are currently up.
+- Local API and worker pytest could not run because Mac Python lacks `redis` and `boto3`;
   no local venv was created, per project instructions.
 - Hosted GitHub CI has not run on this commit; actionlint validates workflow syntax and
   expressions locally but does not exercise the workflow on GitHub.
-- No GitHub push, hosted CI, VM sync or live cluster mutation was performed.
+- VM starts and each current-workstation `/32` SSH allowlist update were performed for
+  baseline access. No K3S GitOps Application or workload was changed; no GitHub push or VM sync.
 
 Disposition: implementation and local checks are ready for review, but plan task 2
 and all live path transition tasks remain incomplete until the specified VM and
