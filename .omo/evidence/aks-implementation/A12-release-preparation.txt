@@ -29,9 +29,32 @@ Verification
 - Live `album-prod/album-secrets` SealedSecret condition was True. Dev Applications remained
   Synced/Healthy and dev PVCs remained Bound.
 
-Pending before A12 acceptance
-- root-prod has not yet been bootstrapped and the three prod PVCs have not yet been provisioned.
-- No `aks-v1.0.0` tag or release PR exists yet; manifest digest alias verification and prod image
-  sync/smoke are pending.
-- A12 remains incomplete until the release PR is reviewed/merged, the prod application is
-  manually synced, and image digests and smoke behavior are verified.
+Live prod preparation (2026-10-17 KST)
+- Commit `72657f9` installed the manual-only prod boundary; `5012d0b` corrected the initial
+  MinIO bootstrap tag from an unpublished `sha-a3e8669` to CI-published `sha-4486b3b` after the
+  first platform sync showed ImagePullBackOff. The intended image change was manually synced and
+  MinIO became Ready; the prod overlay release PR will replace that dev tag with its verified alias.
+- root-prod is Synced/Healthy with `.operation=null`; credentials-prod is Synced/Healthy and
+  album-prod is OutOfSync/Missing with `.operation=null` and no automated sync policy.
+- platform-prod was manually synced and is Synced/Healthy. PostgreSQL, Redis, and MinIO are
+  Ready; three Retain PVCs are Bound (2Gi, 1Gi, and 10Gi). All three pods currently fit on one
+  node with both AKS nodes Ready. `kubectl top nodes` showed 7% and 3% CPU, 21% and 10% memory;
+  neither node reports MemoryPressure, DiskPressure, or PIDPressure.
+- The prod album workload has not been synced. It has no app Pods and no migration/operation run.
+
+Release promotion
+- Tag `aks-v1.0.0` at `5012d0b` triggered GitHub Actions run `38936255936`, which completed
+  successfully. It verified that release manifest digests equal source manifests and created
+  [PR #4](https://github.com/winty5959/kube-study/pull/4). PR #4 changes only
+  `aks/k8s/overlays/prod/kustomization.yaml`; no other path is in its diff.
+- Verified source/release digest table:
+
+  | Component | Dev source tag | Manifest digest |
+  |---|---|---|
+  | API | `sha-b7122b7` | `sha256:91b6d71a6db96f6d3108cbe5476b644481334b17a465c3aa79580f0e27b2c263` |
+  | Worker | `sha-4486b3b` | `sha256:e756aaf2e2ab0b66d0fc941bb770fde5604ce06dc89abfd2d426490f3190092a` |
+  | Frontend | `sha-4486b3b` | `sha256:e4ab0df5e9d6ef443a7790ef16bb50ed26c265aa51885dd909cd268bb6c87d83` |
+  | MinIO | `sha-4486b3b` | `sha256:3e5e10b5c9ef95d5d4268404ce0541aba8b6010758b5e0d412273b4932ccf3dd` |
+
+- The release PR has no reported status checks and awaits human review/merge. It has not been
+  merged. Prod alias updates and `album-prod` manual Sync/smoke remain pending; A12 stays open.
