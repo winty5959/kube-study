@@ -33,7 +33,50 @@ Interpretation and open work:
   2026-10-16 16:34 UTC.
 - The amount is in KRW. It is not compared numerically with the USD retail estimate, and it does not
   represent a complete first-day or month cost.
-- Existing build VM charges were not queried.
+- A separate query now records the existing K3S dev/prod VM resource group's usage in the
+  AX subscription. Those costs are separate from the Enterprise AKS scopes.
 - Repeat ActualCost queries after 24-48 hours have posted; reconcile compute, disks/PVCs, load
-  balancer, network/bandwidth, historical temporary resources, and any build VM usage before closing
-  A15. No deletion was performed.
+  balancer, network/bandwidth, and historical temporary resources before closing A15. No deletion
+  was performed.
+
+Separate existing K3S environment query:
+- Query time: 2026-10-17 03:32 KST (2026-10-16 18:32 UTC).
+- Subscription/scope: AX사업부문-인프라아키텍처팀 / `rg-seonung-kube-study`.
+- API: Microsoft.CostManagement/query, api-version 2023-03-01; ActualCost, PreTaxCost; UTC usage
+  dates 2026-10-14 through 2026-10-16; grouped by resource ID and meter category.
+- Resource group totals by meter (KRW):
+
+| UTC usage date | Total | Virtual Machines | Storage | Virtual Network | Bandwidth |
+|---|---:|---:|---:|---:|---:|
+| 2026-10-14 | 1,737.148628754256 | 1,615.898640145910 | 81.784117680000 | 38.769675838542 | 0.696195089804 |
+| 2026-10-15 | 2,323.534922257469 | 1,685.550618053445 | 429.205631910000 | 204.068764484375 | 4.709907809649 |
+| 2026-10-16, partial | 676.457104407153 | 312.040192380125 | 246.383612730000 | 116.208462500000 | 1.824836797028 |
+
+- Resource-ID rows for `vm-kube-dev` (the existing K3S development VM) show VM and bandwidth
+  costs of KRW 1,616.594835235714 on Oct 14, KRW 958.784978981243 on Oct 15, and KRW
+  163.018853115949 on Oct 16 through query time.
+- `vm-kube-prod` rows show KRW 731.475546881851 on Oct 15 and KRW 150.846176061204 on Oct 16
+  through query time. Azure reported `vm-kube-prod` deallocated and `vm-kube-dev` running at
+  2026-10-17 03:32 KST. Oct 16 is incomplete; these posted resource-group costs are not final
+  invoice totals.
+
+Updated AKS inventory check:
+- At 2026-10-17 03:32 KST, `aks-kube-study` was Running with a single two-node
+  `Standard_D4as_v5` VM scale set. `rg-seonung-aks-test` held the cluster, control-plane resource,
+  and VNet, all provisioning Succeeded.
+- The AKS node resource group had one Standard load balancer, one attached Standard static public
+  IP, and nine `StandardSSD_LRS` managed disks totaling 33 GiB (four 1-GiB, two 2-GiB, one 5-GiB,
+  and two 10-GiB disks). All nine disk IDs matched existing Retain PVs with Bound PVCs; all disks
+  were Attached to the two current VMSS node instances. No unattached disk or temporary node pool
+  was found.
+- Kubernetes showed nine Bound PVCs: 13 GiB in `album-dev`, 13 GiB in `album-prod`, and 7 GiB in
+  `monitoring`. `album-prod` data StatefulSets were Ready, while the album application remained
+  Missing pending the unreviewed release PR. The AKS dev photo row was still `DONE` and both Redis
+  queues were empty; the A14 smoke fixture had been deleted.
+- No resource met the verified criteria for cleanup. The cluster remains Running while release
+  tests await PR review; no Azure resource was deleted.
+
+Documentation validation after this update:
+- `graphify update .` completed with exit status 0.
+- `git diff --check` completed with exit status 0.
+- Local links in the four updated/added Markdown files were checked; zero broken links were found.
