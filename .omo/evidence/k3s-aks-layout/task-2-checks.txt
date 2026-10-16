@@ -27,7 +27,8 @@ Passed locally:
 - sync.sh rejected a missing or unsupported environment before rsync.
 - A local temporary rsync destination retained protected secrets, venv, the parent
   .git directory and sibling aks/ while deleting stale files only inside k3s/.
-- Markdown local-link check: 35 files, zero missing links.
+- Markdown local-link check: 36 files, 144 local links, zero missing links.
+- actionlint 1.7.12 passed on the K3S CI and Release workflows.
 - Graphify update completed with exit status 0. Sensitive files skipped: 8.
 
 Not verified yet:
@@ -38,7 +39,8 @@ Not verified yet:
 - The host Python environment lacks the API and worker application dependencies
   (redis and boto3). Their pytest runs were attempted and stopped at import errors;
   no local venv was created, per project instructions.
-- actionlint is not installed in this environment. PyYAML syntax parsing passed.
+- Hosted GitHub CI has not run on this commit; actionlint validates workflow syntax and
+  expressions locally but does not exercise the workflow on GitHub.
 - No GitHub push, hosted CI, VM sync or live cluster mutation was performed.
 
 Disposition: implementation and local checks are ready for review, but plan task 2
