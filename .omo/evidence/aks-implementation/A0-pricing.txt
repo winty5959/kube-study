@@ -1,0 +1,18 @@
+AKS A0 pricing preflight (partial)
+Date: 2026-10-16 KST
+
+Source: Azure Retail Prices API, api-version 2023-01-01-preview.
+Query scope: koreacentral, Standard_F4s_v2, Consumption, primary meter region.
+
+Verified:
+- Linux Standard_F4s_v2 retail rate: USD 0.192 per VM-hour.
+- Two nodes for 730 hours: USD 280.32, matching the compute line in
+  .omo/plans/aks-cost-baseline.md.
+- The query also returned Windows, Spot, Low Priority and HDInsight meters; these
+  were excluded from the Linux regular VM estimate.
+
+Incomplete:
+- This verifies only the VM compute rate. Disk, load balancer, public IP, transactions,
+  network transfer, contractual discounts and actual billed usage remain unverified.
+- Tenant/subscription, quota, SKU availability, policy, CIDR and management access remain
+  unresolved. No AKS resource was created.

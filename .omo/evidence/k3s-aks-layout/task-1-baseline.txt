@@ -8,8 +8,12 @@ Tags: v1.1.0
 Available local facts:
 - Azure CLI selected subscription display name matches AX사업부문-인프라아키텍처팀 and is Enabled.
 - Exactly one enabled subscription with that display name is visible.
-- Azure CLI tenant metadata lists three tenant IDs but no domain metadata, so the
-  selected tenant could not be verified against ktopen.onmicrosoft.com.
+- Public tenant metadata for ktopen.onmicrosoft.com resolved successfully. The unique
+  enabled AX사업부문-인프라아키텍처팀 subscription belongs to a different tenant, and
+  the current Azure CLI cache has no enabled subscription for KT Open.
+- `az account get-access-token --tenant ktopen.onmicrosoft.com` succeeded, but explicit
+  interactive `az login` opened a browser and was interrupted before account selection.
+  No Azure resource write was performed.
 - vm-kube-dev and vm-kube-prod are both VM deallocated in RG-SEONUNG-KUBE-STUDY.
 - Both configured contexts exist, but their local API endpoints at
   127.0.0.1:16443 (dev) and 127.0.0.1:26443 (prod) refused connections.
