@@ -49,9 +49,10 @@ platform source also adopts the already-bound StorageClass and the three data St
 uninstall a Helm release or delete a PVC to resolve an ownership difference.
 
 KEDA's validating webhook includes namespace selectors managed by AKS's `admissionsenforcer`.
-The standalone bootstrap script uses Helm client-side apply for that release to preserve those
-fields. After Argo takes ownership, use the Application as the sole reconciler and inspect Argo's
-diff before changing the webhook configuration.
+The KEDA Application ignores only fields owned by that manager on `keda-admission`, and uses
+`RespectIgnoreDifferences=true` so sync preserves them. The standalone bootstrap script uses Helm
+client-side apply for that release. After Argo takes ownership, use the Application as the sole
+reconciler and inspect its diff before changing the webhook configuration.
 
 ## Stop and resume the learning cluster
 

@@ -21,9 +21,15 @@ spec:
     - repoURL: https://github.com/winty5959/kube-study.git
       targetRevision: main
       ref: values
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: keda-admission
+      managedFieldsManagers:
+        - admissionsenforcer
   syncPolicy:
     automated: {prune: true, selfHeal: true}
-    syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true]
+    syncOptions: [CreateNamespace=true, ServerSideApply=true, PruneLast=true, RespectIgnoreDifferences=true]
     retry:
       limit: 3
       backoff: {duration: 5s, factor: 2, maxDuration: 1m}

@@ -104,3 +104,10 @@ patches:
       metadata:
         name: album-config
       $patch: delete
+  - target: {kind: Namespace, name: album-dev}
+    patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: album-dev
+      $patch: delete
