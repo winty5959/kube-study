@@ -47,6 +47,8 @@ Check `SYNC STATUS` and `HEALTH STATUS` for every child. `platform-dev` must be 
 and the live Helm inventory must contain exactly one Traefik release in `ingress-system`. The
 platform source also adopts the already-bound StorageClass and the three data StatefulSets. Do not
 uninstall a Helm release or delete a PVC to resolve an ownership difference.
+`platform-dev` uses server-side diff so API-defaulted StatefulSet fields compare against the same
+values the API server stores.
 
 KEDA's validating webhook includes namespace selectors managed by AKS's `admissionsenforcer`.
 The KEDA Application ignores only fields owned by that manager on `keda-admission`, and uses
