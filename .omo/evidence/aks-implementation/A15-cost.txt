@@ -121,3 +121,27 @@ Documentation validation after the refreshed AKS query record:
 - `graphify update .` completed with exit status 0.
 - `git diff --check` completed with exit status 0.
 - Six changed Markdown files were checked for local file links; zero missing targets were found.
+
+Temporary cost pause inventory, checked 2026-10-18 13:17 UTC:
+- Azure CLI was explicitly on subscription `Enterprise부문-아키텍처강화TF`. `az aks show` reported
+  `aks-kube-study` as `powerState=Stopped`, `provisioningState=Succeeded`, with the system pool
+  configured for two nodes.
+- `az disk list` in node resource group
+  `MC_rg-seonung-aks-test_aks-kube-study_koreacentral` returned nine managed disks; every disk
+  reported `Unattached`. The preceding inventory had matched these nine 33-GiB total disks to nine
+  Bound `Retain` PVs. The unattached state is expected while AKS nodes are stopped; no disk, PVC,
+  or Azure resource was deleted.
+- Before stopping, dev contained one intentional migrated `DONE` photo and prod contained zero
+  photos. Both namespaces' Redis queues and active workload jobs were empty. API, frontend, and
+  worker replicas were set to zero in dev and prod; API HPAs were removed; root-dev and album-dev
+  automated sync were paused. Prod remains manually synced only.
+- `aks/scripts/aks-power.sh` had an incorrect pinned context (`aks-kube-study`); the local context
+  is `aks-study`. After correcting the helper and operations example, the helper stopped AKS
+  successfully. This is a temporary pause, not a new A11 stop/start experiment. K3S was not
+  modified.
+- The ActualCost query above predates this stop. No post-stop ActualCost query has been recorded;
+  retained disks, IP, and other resources may still incur charges while node compute is paused.
+  Repeat cost reconciliation after the corrected release exercises and billing posting delay.
+- PR #5 is open and review submissions are empty. After review/merge, restart AKS, verify two Ready
+  nodes and recovery of all nine PVCs/data, restore dev sync and workloads, then publish a new
+  immutable release alias and continue A12/E-13/E-14. The stop does not close A15.

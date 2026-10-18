@@ -64,6 +64,13 @@ category breakdowns are preserved in [A15 cost evidence](../../.omo/evidence/aks
 These are posted usage amounts, not invoice-period totals. The Oct 18 row is partial, and the
 values must not be compared directly with the USD retail estimate or combined with K3S costs.
 
+At 2026-10-18 13:17 UTC, the cluster was `Stopped` / `Succeeded` to pause node compute charges
+while PR #5 awaits review. The ActualCost query above was made before the stop and does not measure
+the post-stop period. Retained disks, the public IP, and other resources may continue to incur
+charges. Nine disks remain provisioned (33 GiB); the Azure inventory currently reports them
+`Unattached` while the nodes are stopped. Query ActualCost again after the release experiments and
+allow for billing-posting delay before closing A15.
+
 ## Existing K3S development environment ActualCost
 
 At 2026-10-17 03:32 KST, a separate Cost Management `ActualCost` / `PreTaxCost` query covered

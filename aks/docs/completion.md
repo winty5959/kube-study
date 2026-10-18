@@ -17,22 +17,26 @@ final delayed-cost reconciliation remain open.
 
 ## Current Azure state
 
-As of 2026-10-18 22:02 KST, `aks-kube-study` is Running in
-`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central, with two
-`Standard_D4as_v5` nodes. The dev API and two frontends are Ready, the worker is idle at zero,
-and the migrated dev fixture remains one `DONE` row. Its Redis queues are empty. In prod, API and
-frontend each have two Ready replicas, the worker is idle at zero, and MinIO/PostgreSQL/Redis are
-Ready with three Bound Retain PVCs. `album-prod` is Synced/Healthy at merge SHA
-`51b9ea9f3285866b26cfe4daa5db70b40a6c31d7`, but its latest sync operation is Failed because the
-PostSync thumbnail smoke received HTTP 200 with `text/html` instead of `image/webp`. The
-generated fixture was deleted through the API (204; follow-up GET 404), and both prod Redis
-queues are empty. Full A12 verification remains open.
+As of 2026-10-18 13:17 UTC, `aks-kube-study` is `Stopped` with provisioning `Succeeded` in
+`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central. The configured system pool
+still has two `Standard_D4as_v5` nodes. Before stopping, the dev API, frontend, and worker and the
+same three prod workloads were scaled to zero; API HPAs were removed. `root-dev` and `album-dev`
+automated sync were paused so Argo CD cannot restart workloads while AKS is stopped. The one
+migrated dev photo remained `DONE`, prod had zero photo rows, and both namespaces' Redis queues
+were empty. Prod's previous `album-prod` sync at merge SHA
+`51b9ea9f3285866b26cfe4daa5db70b40a6c31d7` had failed because the PostSync thumbnail smoke
+received HTTP 200 with `text/html` instead of `image/webp`; its generated fixture was deleted
+through the API (204; follow-up GET 404). No new prod sync was run before stopping. Full A12
+verification remains open.
 
 The latest ActualCost query returned node-resource-group totals of KRW 6,934.55 for Oct 16,
 KRW 9,655.21 for Oct 17, and KRW 2,147.96 for partial Oct 18; the AKS resource group returned no
-rows. Reconcile these posted amounts after E-13/E-14 before closing A15. The AKS cluster is still
-Running, so compute usage continues. Current storage, networking, and resource attachment details
-are in [cleanup inventory](cleanup.md).
+rows. This query predates the stop. Reconcile posted costs after E-13/E-14 and query again after
+the release work before closing A15. While AKS is stopped, node compute charges pause; retained
+disks, public IP, and other resources may still incur charges. Nine managed disks currently report
+`Unattached` because the nodes are stopped; the pre-stop inventory mapped them to nine Bound
+Retain PVCs. See [cleanup inventory](cleanup.md) and the [temporary stop record](experiments/AKS-STOP.md).
+Restart and verify data recovery before resuming experiments.
 
 ## Project boundary
 

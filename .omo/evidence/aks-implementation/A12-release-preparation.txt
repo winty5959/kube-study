@@ -89,3 +89,13 @@ Production deployment follow-up (2026-10-18 13:02 UTC)
   fix changes the image digest; do not retag the immutable `aks-v1.0.0` alias. Publish and verify
   a new release version after merge, then repeat the manual prod sync, all thumbnail/original
   checks, fixture cleanup, and four-component digest comparison. A12 and E-13/E-14 remain open.
+
+Temporary state while PR #5 awaits review (2026-10-18 13:17 UTC): AKS is stopped with
+provisioning Succeeded. There was no active workload job and both Redis queues were empty before
+the stop; the dev migrated photo remained the only dev row, and prod contained zero photos. The
+prod failed smoke Job remains historical. No new prod sync occurred after the failure. Workload
+replicas were set to zero in dev and prod, API HPAs were removed, and root-dev/album-dev automated
+sync was paused. The nine pre-stop Bound Retain PVCs remain provisioned; all nine Azure disks now
+report Unattached while the nodes are stopped. No PVC, Azure resource, or K3S resource was deleted.
+Restart and verify cluster/data recovery after PR review and merge, then publish a new immutable
+release digest and rerun the complete A12 smoke before attempting E-13/E-14.
