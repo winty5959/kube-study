@@ -1,0 +1,19 @@
+AKS dev Album browser verification after cluster resume
+
+Observed: 2026-10-18 14:31 UTC (2026-10-18 23:31 KST)
+Endpoint: loopback Traefik port-forward at http://album.aks.localhost:18081/
+Browser: local Chrome controlled through browser-harness after the user approved remote debugging.
+
+Observed UI:
+- Page title: Mini Photo Album.
+- The album rendered one existing card. Its image completed loading at 200x150 pixels.
+- Opened the card through its rendered position. The detail dialog opened with a loaded 400x300
+  image and one download link. Closed the dialog afterward.
+- No upload, delete, or other write action was performed.
+- Browser evidence screenshot: /Users/seonung/.local/share/kube-study/aks-evidence/A8-browser-ui-20261018.png
+  (2704x1410 PNG, mode 0600). The card was blurred in the saved screenshot to avoid copying
+  identifiable photo content into the repository. The image-load dimensions above were read before
+  applying screenshot redaction.
+
+The app and image were observed in the running AKS dev browser surface. Screenshot remains outside
+Git. This is a UI verification, not a user-traffic cutover.

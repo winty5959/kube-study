@@ -10,33 +10,41 @@ final delayed-cost reconciliation remain open.
 |---|---|---|
 | K3S path migration, tasks 1–6 and F1–F4 | Complete | [Migration plan](../../.omo/plans/k3s-onprem-aks-migration.md) |
 | A0–A11 AKS foundation, workload, recovery and operations | Complete | [Implementation plan](../../.omo/plans/aks-implementation.md) and `.omo/evidence/aks-implementation/` |
-| A12 release promotion | In progress; smoke failed | [PR #4](https://github.com/winty5959/kube-study/pull/4) merged. `platform-prod` and `album-prod` are Synced/Healthy at the merge SHA, but the PostSync smoke failed because thumbnail URLs returned frontend HTML. [PR #5](https://github.com/winty5959/kube-study/pull/5) adds the Traefik class and patches the frontend scan finding; after merge, publish a new immutable release alias and rerun prod smoke. |
-| A13 AKS experiments | Partial | E-01–E-12 and E-15 pass. E-13 promotion and E-14 rollback wait for A12 to pass with the corrected release. See [experiment results](experiments/README.md). |
+| A12 release promotion | In progress; manual release test pending | PRs #4 and #5 are merged. [PR #6](https://github.com/winty5959/kube-study/pull/6) proposes aks-v1.0.1. Its four immutable GHCR alias digests match the current dev digests, but it has no owner review or reported PR checks. Prod application Sync and smoke have not been rerun after this release candidate. [Current A12 evidence](../../.omo/evidence/aks-implementation/A12-current-release.txt). |
+| A13 AKS experiments | Partial | E-01–E-12 and E-15 pass. E-13 promotion and E-14 rollback wait for A12 to pass with the reviewed release. See [experiment results](experiments/README.md). |
 | A14 dev cutover rehearsal | Complete | [A14 evidence](../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt) |
-| A15 costs, final status and cleanup | In progress | [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt). A repeat ActualCost query now returns Oct 16–18 rows; Oct 18 is partial and the totals still need final reconciliation after release experiments. A separate query covers the existing K3S dev/prod resource group. No Azure resource or PVC was deleted. |
+| A15 costs, final status and cleanup | In progress | [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt) and [latest refresh](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt). Oct 18 remains partial and the final variance requires post-release usage and billing posting. No Azure resource or PVC was deleted. |
 
 ## Current Azure state
 
-As of 2026-10-18 13:22 UTC, `aks-kube-study` is `Stopped` with provisioning `Succeeded` in
-`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central. The configured system pool
-still has two `Standard_D4as_v5` nodes. Before stopping, the dev API, frontend, and worker and the
-same three prod workloads were scaled to zero; API HPAs were removed. `root-dev` and `album-dev`
-automated sync were paused so Argo CD cannot restart workloads while AKS is stopped. The one
-migrated dev photo remained `DONE`, prod had zero photo rows, and both namespaces' Redis queues
-were empty. Prod's previous `album-prod` sync at merge SHA
-`51b9ea9f3285866b26cfe4daa5db70b40a6c31d7` had failed because the PostSync thumbnail smoke
-received HTTP 200 with `text/html` instead of `image/webp`; its generated fixture was deleted
-through the API (204; follow-up GET 404). No new prod sync was run before stopping. Full A12
-verification remains open.
+Before the temporary stop, at 2026-10-18 14:34 UTC, `aks-kube-study` was Running/Succeeded in
+`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central, with two Ready
+`Standard_D4as_v5` nodes. Dev API is 1/1, frontend 2/2, and worker 0/0; the [browser evidence](../../.omo/evidence/aks-implementation/A8-browser-resumed.txt)
+records the existing photo card and loaded thumbnail and detail image. Prod API, frontend, and worker
+remain at zero replicas. Prod PostgreSQL, Redis, and MinIO are Ready, and all nine PVCs remain
+Bound with Retain policy.
 
-The latest ActualCost query returned node-resource-group totals of KRW 6,934.55 for Oct 16,
-KRW 9,655.21 for Oct 17, and KRW 2,147.96 for partial Oct 18; the AKS resource group returned no
-rows. This query predates the stop. Reconcile posted costs after E-13/E-14 and query again after
-the release work before closing A15. While AKS is stopped, node compute charges pause; retained
-disks, public IP, and other resources may still incur charges. Nine managed disks currently report
-`Unattached` because the nodes are stopped; the pre-stop inventory mapped them to nine Bound
-Retain PVCs. See [cleanup inventory](cleanup.md) and the [temporary stop record](experiments/AKS-STOP.md).
-Restart and verify data recovery before resuming experiments.
+PR #6 remains unmerged and has no owner review or reported PR checks. The four aks-v1.0.1 image
+aliases match the current dev manifest digests. `root-prod` is Synced at current main;
+`platform-prod` and `album-prod` remain manually synced and OutOfSync. The last album-prod
+PostSync smoke operation is still Failed from the earlier thumbnail route issue. This turn did
+not run a prod Sync. A12 requires owner review/merge, manual application Sync, a passing prod
+smoke, and running digest comparison.
+
+The latest authenticated ActualCost query (2026-10-18 14:32 UTC) returned zero rows for the AKS
+resource group and 52 KRW rows totaling KRW 19,547.98 in the node resource group across partial
+Oct 16, full Oct 17, and partial Oct 18. The public retail estimate remains USD 354.83/month; the actual rows are partial and
+in KRW, so final reconciliation waits for A12/A13 and billing posting. See [cost](cost.md),
+[cleanup inventory](cleanup.md), and [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+
+At 2026-10-18 14:38 UTC, a stop was requested while the release review is pending. Azure confirmed
+`powerState=Stopped`, `provisioningState=Succeeded` at 14:40 UTC. Node compute is paused; retained
+disks and network resources may continue to incur charges.
+
+The existing AX subscription K3S dev and prod VMs read as deallocated at 14:34 UTC. Their managed
+disks remain present. This project did not change or delete source resources, and no user traffic
+was redirected to AKS. A14 remains a historical dev-only rehearsal; it does not prove current K3S
+service availability.
 
 ## Project boundary
 

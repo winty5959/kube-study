@@ -52,3 +52,15 @@ PVCs, and application data/readiness. Restore `root-dev` and `album-dev` automat
 `prune: true` and `selfHeal: true`, then verify dev desired workloads recover. Keep prod manual
 until the new immutable release digest is explicitly synced and A12 smoke passes. Resume E-13/E-14
 only after that release gate. A post-stop ActualCost query has not yet been recorded.
+
+## Temporary cost pause while PR #6 awaits owner review
+
+At 2026-10-18 14:38 UTC, the cluster stop was requested while PR #6 awaited owner review. Azure
+reported `powerState=Stopped`, `provisioningState=Succeeded` at 14:40 UTC. The pre-stop snapshot
+showed two Ready D4as_v5 nodes and nine Bound Retain PVCs mapped to nine managed disks. Prod app
+replicas were zero; no prod Sync or K3S mutation was performed. The node compute allocation is
+paused. Post-stop inventory found zero VMSS instances and all nine disks `Unattached`, which is
+the expected stopped-node state for those pre-stop Retain PVs, not evidence they are orphaned.
+Retained disks and network resources may continue to accrue cost. Start AKS and
+repeat PVC/data and workload readiness checks only when the release gate is ready. The 14:32 UTC
+ActualCost query predates this pause; no post-stop cost period has posted yet.

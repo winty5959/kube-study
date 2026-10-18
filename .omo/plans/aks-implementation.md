@@ -613,12 +613,11 @@ PDB·단일 replica 데이터 서비스·LRS 제약으로 무중단 전체 노�
 - [AKS 중지/재개 조건](https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster)
 - [AKS 이전 가이드](https://learn.microsoft.com/en-us/azure/aks/aks-migration)
 
-2026-10-18 KST 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12의
-release PR #4는 merge되어 prod에 수동 동기화됐지만 PostSync thumbnail smoke가 object route
-class 누락으로 실패했다. 수정 PR #5의 사람 검토/merge 후 새 immutable frontend release를
-검증해 A12 smoke를 다시 통과해야 한다. A13의 E-13/E-14와 A15의 최종 ActualCost 대조는
-남아 있다. Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
-
-2026-10-18 13:22 UTC 현재 AKS는 PR #5 검토를 기다리는 동안 비용 절감을 위해 일시 중지했다.
-재개 후 두 노드와 PVC/data 복구를 확인하고 dev Argo 자동 동기화와 workload를 복원해야
-A12 release 재검증을 이어갈 수 있다. 중지 전 비용 스냅샷이므로 A15는 닫지 않았다.
+2026-10-18 14:40 UTC 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12의
+PR #6은 aks-v1.0.1 승격을 제안하며 네 이미지의 registry manifest digest가 현재 dev와
+일치한다. PR은 아직 열려 있고 사람의 검토와 merge가 없다. merge 뒤 album-prod를 수동
+동기화하고 upload-thumbnail-original-download-delete smoke 및 실행 이미지 digest 비교를
+통과해야 A12를 닫을 수 있다. A13의 E-13/E-14는 그 뒤 수행한다. A15 ActualCost는 Oct 16과
+18 부분일 및 Oct 17 게시분만 포함하므로 게시 지연 뒤 다시 대조한다. AKS 중지를 요청했고
+2026-10-18 14:40 UTC Azure는 powerState Stopped, provisioningState Succeeded를 반환했다.
+Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.

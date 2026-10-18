@@ -1,0 +1,61 @@
+AKS A15 ActualCost and resource inventory refresh
+
+Query time: 2026-10-18 14:32 UTC (2026-10-18 23:32 KST)
+Subscription: Enterprise부문-아키텍처강화TF
+API: Microsoft.CostManagement/query, api-version 2023-03-01
+Metric: ActualCost / PreTaxCost, daily, grouped by ResourceId and MeterCategory
+Usage period: 2026-10-16T00:00:00Z through 2026-10-19T00:00:00Z
+Query scopes were requested separately for rg-seonung-aks-test and
+MC_rg-seonung-aks-test_aks-kube-study_koreacentral.
+
+ActualCost result:
+- The AKS resource group returned zero rows at query time.
+- The node resource group returned 52 rows across 21 resource IDs, all in KRW.
+- Oct 16 is partial. Oct 17 is a complete usage date in this query. Oct 18 is partial at query time.
+- The amounts are posted ActualCost, not an invoice-period total. No K3S resource-group cost is
+  included in these AKS scopes.
+
+| UTC usage date | Bandwidth | Load Balancer | Storage | Virtual Machines | Virtual Network | Total KRW | Rows |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 2026-10-16 partial | 2.393719 | 435.512096 | 461.714050 | 5,957.256181 | 77.672197 | 6,934.548243 | 22 |
+| 2026-10-17 | 1.212985 | 574.310265 | 712.129790 | 8,260.287702 | 107.269350 | 9,655.210092 | 15 |
+| 2026-10-18 partial | 0.465614 | 215.364267 | 271.820815 | 2,430.346800 | 40.226006 | 2,958.223502 | 15 |
+| **Total reported** | **4.072318** | **1,225.186628** | **1,445.664655** | **16,647.890683** | **225.167553** | **19,547.981837** | **52** |
+
+Retail price reference:
+- Azure Retail Prices API, queried 2026-10-18, Korea Central, Standard_D4as_v5, Consumption,
+  primary meter region.
+- Linux D4as_v5 rate was USD 0.212 per VM-hour. A currencyCode=KRW request returned KRW 289.327
+  per VM-hour at the current retail currency conversion.
+- The existing 730-hour estimate remains USD 309.52 for two nodes and USD 354.83 including the
+  USD 45.314 fixed-item estimate. The KRW retail quote is a current API conversion, not the
+  historical FX rate or negotiated price used by the subscription invoice. Because the ActualCost
+  rows cover partial usage dates and use KRW, this snapshot is not treated as a final monthly
+  estimate-versus-invoice variance. Repeat after release testing and billing posting delay.
+
+AKS inventory observed at 2026-10-18 14:34 UTC:
+- aks-kube-study is Running/Succeeded, Kubernetes 1.36, with two Ready Standard_D4as_v5 nodes.
+- rg-seonung-aks-test contains the cluster, its control-plane managed identity, and VNet; all
+  report provisioning Succeeded.
+- The node resource group contains one two-instance VM scale set, one Standard load balancer, and
+  one Standard static public IP, all provisioning Succeeded.
+- Nine StandardSSD_LRS managed disks are attached. Kubernetes reports nine Bound Retain PVCs with
+  33 GiB requested in total: 13 GiB album-dev, 13 GiB album-prod, and 7 GiB monitoring. All disk
+  IDs map to those PVs; eight are attached to VMSS instance 6 and one to instance 7.
+- Prod app deployments are scaled to zero while release review is pending. Prod PostgreSQL, Redis,
+  and MinIO remain Ready. No disk, PVC, Azure resource, or K3S resource was deleted.
+
+The existing AX subscription K3S dev and prod VMs were read as deallocated at 2026-10-18 14:34 UTC.
+Three managed disks remain in the source resource group: two report Reserved and one Unattached.
+This task did not change the source VMs or disks. The K3S source was preserved, but it was not
+running at the time of this inventory query.
+
+A15 remains open: Oct 18 is partial, billing rows may post late, and final reconciliation follows
+the A12/A13 production release exercises. No cleanup candidate was established.
+
+AKS cost pause requested at 2026-10-18 14:38 UTC while PR #6 awaits owner review. Azure confirmed
+powerState `Stopped` and provisioningState `Succeeded` at 14:40 UTC. The ActualCost values above
+predate this stop and do not measure the post-stop period. No source K3S VM or disk was modified.
+Post-stop Azure inventory found zero VMSS instances and nine `Unattached` disks. All nine had
+mapped to Bound Retain PVs immediately before stopping; no disk was treated as an orphan or
+deleted.

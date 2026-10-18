@@ -2,7 +2,7 @@
 
 ## Inventory snapshot
 
-Checked 2026-10-18 13:22 UTC in the selected Enterprise subscription. The AKS cluster is
+Historical snapshot checked 2026-10-18 13:22 UTC in the selected Enterprise subscription. The AKS cluster was
 `Stopped`, provisioning succeeded, and the system pool is configured for two
 `Standard_D4as_v5` nodes. Node compute is paused until the cluster is started again.
 
@@ -45,3 +45,32 @@ before stopping. After the release PR is reviewed and merged, use the checked
 [stop/start procedure](operations.md#stop-and-start), restart AKS, verify PVC/data recovery, and
 restore dev automation and workload state before further experiments. Keep prod manual pending
 the corrected A12 release. Refresh this inventory and posted costs before a later cleanup decision.
+
+## Refreshed inventory
+
+Checked 2026-10-18 14:34 UTC in the selected Enterprise subscription. AKS was Running/Succeeded
+with two Ready Standard_D4as_v5 nodes. The AKS resource group contains the cluster, control-plane
+managed identity, and VNet, all provisioning Succeeded. The node resource group contains one
+two-instance VM scale set, one Standard load balancer, one Standard static public IP, and nine
+attached StandardSSD_LRS disks. All nine disk IDs map to Bound Retain PVs; Kubernetes reports
+33 GiB requested across album-dev, album-prod, and monitoring.
+
+The prod API, frontend, and worker deployments are at zero replicas while the release PR awaits
+owner review. Prod PostgreSQL, Redis, and MinIO remain Ready. No unattached AKS disk, unowned PV,
+or temporary node pool was found. No Azure or Kubernetes resource was deleted.
+
+The source AX subscription K3S dev and prod VMs were both deallocated at this read-only check.
+Three managed disks remain in the source resource group (two Reserved and one Unattached). This
+task did not alter or delete them; no cleanup candidate was inferred from the VM power state.
+Their current service availability is not proven by the earlier A14 rehearsal.
+
+The latest posted ActualCost snapshot is partial: the AKS resource group returned no rows and the
+node resource group returned 52 KRW rows through partial Oct 18. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt)
+and [cost reconciliation](cost.md). Repeat the query after release exercises and posting delay.
+
+At 2026-10-18 14:40 UTC, a stop requested while waiting for owner review of PR #6 reached
+`powerState=Stopped` and `provisioningState=Succeeded`. The pre-stop disk-to-PV/PVC mapping remains the
+ownership record. A post-stop inventory found zero VMSS instances and all nine disks `Unattached`;
+those disks mapped to nine Bound Retain PVs immediately before the stop. This is the expected
+stopped-node state, not an orphan finding. Node compute is paused; retained disks, load balancer,
+public IP, and network resources may still incur charges.

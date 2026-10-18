@@ -124,3 +124,37 @@ reduce requests or limits solely to improve the percentages.
 When the cluster is not in an experiment, use the documented AKS stop/start procedure rather than
 deallocating its VM scale set directly. Do not remove Retain disks unless their ownership and
 backup/restore evidence have been checked individually.
+
+## Latest ActualCost and inventory snapshot
+
+At 2026-10-18 14:32 UTC, an authenticated ActualCost/PreTaxCost query covered the AKS resource
+group and node resource group separately for 2026-10-16 through the partial 2026-10-18 usage date.
+The AKS resource group returned zero rows. The node resource group returned 52 KRW rows across 21
+resource IDs, totaling KRW 19,547.98 so far. Oct 16 and Oct 18 are partial. The date and meter
+totals, query parameters, and resource inventory are in [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+
+| UTC usage date | Virtual Machines | Storage | Load Balancer | Virtual Network | Bandwidth | Total KRW |
+|---|---:|---:|---:|---:|---:|---:|
+| 2026-10-16, partial | 5,957.26 | 461.71 | 435.51 | 77.67 | 2.39 | 6,934.55 |
+| 2026-10-17 | 8,260.29 | 712.13 | 574.31 | 107.27 | 1.21 | 9,655.21 |
+| 2026-10-18, partial | 2,430.35 | 271.82 | 215.36 | 40.23 | 0.47 | 2,958.22 |
+
+The current Retail Prices API response still returns USD 0.212 per D4as_v5 VM-hour. A request for
+KRW returned KRW 289.327 per hour using the API's current retail currency conversion. The
+two-node 730-hour estimate remains USD 309.52 for compute and USD 354.83 including the existing
+fixed-item estimate. The localized KRW rate is not the historical FX or negotiated rate used on
+the subscription invoice. These partial posted amounts therefore do not establish a complete
+monthly variance; repeat after the release exercises and billing delay.
+
+At 2026-10-18 14:34 UTC, AKS was Running/Succeeded with two D4as_v5 nodes. Nine attached
+StandardSSD_LRS disks mapped to nine Bound Retain PVs totaling 33 GiB. The AKS resource group
+contains the cluster, control-plane identity, and VNet; the node resource group contains one
+two-instance VMSS, one Standard load balancer, and one Standard static public IP. No unowned disk
+or cleanup candidate was established. The dev workloads were available; prod application
+replicas were zero while PR #6 awaited review.
+
+The AX subscription K3S dev and prod VMs read as deallocated in the 14:34 UTC inventory. Their
+managed disks remained present. This project did not change or delete the K3S source. The AKS
+cluster stop was requested at 14:38 UTC while A12 review is pending. Azure confirmed `Stopped` /
+`Succeeded` at 14:40 UTC. Node compute is paused; retained disks and network resources may still
+accrue charges. A15 remains open for final release testing and delayed ActualCost reconciliation.

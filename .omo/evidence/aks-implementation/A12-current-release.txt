@@ -1,0 +1,51 @@
+AKS A12 current release PR, digest, and manual-sync gate
+
+Observed: 2026-10-18 14:30 UTC (2026-10-18 23:30 KST)
+Target: Enterprise부문-아키텍처강화TF / rg-seonung-aks-test / aks-kube-study
+Candidate: aks-v1.0.1 / https://github.com/winty5959/kube-study/pull/6
+
+Release PR:
+- PR #6 is OPEN and mergeable, based on main. It changes only
+  aks/k8s/overlays/prod/kustomization.yaml from aks-v1.0.0 to aks-v1.0.1 for api, worker,
+  frontend, and minio.
+- No owner review is recorded and GitHub reports no PR status checks. Release workflow run
+  39133810267 on main commit 2204704d45fcd3a1e1947ee83c7cfdb769ff8c8f completed successfully.
+- The tag workflow created immutable aliases from the CI-published development manifests; no
+  image rebuild was used for the aliases.
+
+Registry manifest comparison:
+
+| Component | Current dev tag | aks-v1.0.1 tag | Manifest digest | Match |
+|---|---|---|---|---|
+| API | sha-b7122b7 | aks-v1.0.1 | sha256:91b6d71a6db96f6d3108cbe5476b644481334b17a465c3aa79580f0e27b2c263 | Yes |
+| Worker | sha-4486b3b | aks-v1.0.1 | sha256:e756aaf2e2ab0b66d0fc941bb770fde5604ce06dc89abfd2d426490f3190092a | Yes |
+| Frontend | sha-a6976fc | aks-v1.0.1 | sha256:e0bbe1d083583845c9aa73cec7f367745465fa973b67e6c0baa98d54369c5bc1 | Yes |
+| MinIO | sha-4486b3b | aks-v1.0.1 | sha256:3e5e10b5c9ef95d5d4268404ce0541aba8b6010758b5e0d412273b4932ccf3dd | Yes |
+
+Each pair was read from GHCR with docker buildx imagetools inspect. PR #6 has not been merged.
+
+Current production boundary:
+- AKS is Running/Succeeded with two Standard_D4as_v5 nodes.
+- album-prod api, frontend, and worker deployments are at zero replicas. PostgreSQL, Redis, and
+  MinIO are Ready; all nine cluster PVCs are Bound and Retain.
+- root-prod is Synced at the current main revision. platform-prod and album-prod remain OutOfSync
+  under manual sync policy. album-prod retains its earlier failed PostSync smoke operation.
+- No production application Sync was run during this verification. The production smoke and live
+  image-ID comparison remain pending owner review and merge of PR #6.
+
+Adjacent environment:
+- AKS dev API is 1/1 Ready, frontend 2/2 Ready, and worker is 0/0 with an empty queue.
+- The dev Album browser verification is recorded separately in A8-browser-resumed.txt.
+- Read-only Azure checks found the existing AX subscription K3S dev and prod VMs deallocated.
+  Their managed disks remain present; this task did not stop, start, delete, or change K3S
+  resources. No user traffic was redirected to AKS.
+
+Current gate recheck, 2026-10-18 14:38 UTC:
+- `gh pr view 6` still reported OPEN, no review decision, and no PR status checks.
+- `root-prod` was Synced at main `2204704d45fcd3a1e1947ee83c7cfdb769ff8c8f` with operation Succeeded;
+  `platform-prod` was OutOfSync/Progressing; `album-prod` was OutOfSync/Healthy with its previous
+  PostSync operation Failed. No prod Sync was run.
+- Two AKS D4as_v5 nodes were Ready. Dev API was 1/1 and frontend 2/2; prod API/frontend/worker
+  were 0/0. A separate browser record shows the dev Album UI rendered its existing photo.
+- The AX subscription still listed both K3S VMs and all three managed disks. They were deallocated/
+  Reserved or Unattached in the read-only check; no K3S mutation was made.
