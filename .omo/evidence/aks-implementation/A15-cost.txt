@@ -170,3 +170,14 @@ Current acceptance status, 2026-10-18 14:40 UTC:
   Current K3S service availability is not proven and no source resource was modified.
 - A12 is still gated by owner review/merge of PR #6. Post-merge prod smoke, E-13/E-14, and another
   ActualCost query after release use and billing posting remain open.
+
+Final stop after A12/A13, 2026-10-18 17:30:59 UTC: Azure reported `Stopped` / `Succeeded`.
+ActualCost queried at 17:26 UTC remained KRW 20,361.926634 across 52 node resource group rows;
+the AKS resource group returned zero rows. No posted row represented the 17:11:29–17:30:59 UTC
+restart/release/stop window, so this is not a post-test total. The VMSS now has capacity zero and
+no instances; all nine StandardSSD_LRS disks are Unattached and still map to the nine Bound Retain
+PVs recorded just before stop (33 GiB). The load balancer and static Standard IP remain. Both
+source K3S VMs are deallocated and all three source disks remain present. No cleanup candidate
+was verified, and no resource was deleted. Keep A15 open until the delayed ActualCost posting is
+queried after 2026-10-19 17:31 UTC; do not infer zero charge or compare partial KRW with the USD
+354.83 monthly retail estimate.

@@ -64,3 +64,25 @@ the expected stopped-node state for those pre-stop Retain PVs, not evidence they
 Retained disks and network resources may continue to accrue cost. Start AKS and
 repeat PVC/data and workload readiness checks only when the release gate is ready. The 14:32 UTC
 ActualCost query predates this pause; no post-stop cost period has posted yet.
+
+## Cost pause after A12 and A13, 2026-10-18 17:30 UTC
+
+After A12 and E-13/E-14 passed, dev still contained its single intentional `DONE` photo and
+`album-prod` contained zero photo rows. The prod smoke fixture had been deleted; dev/prod Redis
+job lists were empty and there were no active Jobs. Before shutdown, all nine PVCs were Bound.
+`root-dev` and `album-dev` automated sync were paused; prod Applications remained manual. API
+HPAs were removed and API, frontend, and worker Deployments in both namespaces were scaled to zero.
+No PVC, disk, app data, or K3S resource was removed.
+
+Ran `bash aks/scripts/aks-power.sh stop`. Azure Activity Log recorded the stop request Started
+at 2026-10-18 17:28:35.3096115Z, Accepted at 17:28:35.6846421Z, and Succeeded at
+17:30:59.575028Z. Final Azure state was `powerState=Stopped`, `provisioningState=Succeeded`.
+The node resource group has the two-node D4as_v5 VMSS configured with capacity zero and no VMSS
+instances. Its Standard load balancer and Standard static public IP remain provisioned. Nine
+StandardSSD_LRS disks remain `Unattached`; immediately before stop they mapped to nine Bound
+Retain PVs requesting 33 GiB total. This is the expected stopped-node state, not an orphan signal.
+
+At 17:26 UTC the latest ActualCost query still returned only 52 KRW rows for partial Oct 16,
+Oct 17, and partial Oct 18; it had no usage row for the 17:11–17:31 UTC restart/release/stop
+period. Repeat after the plan's 24–48 hour posting delay. The cost pause does not prove zero
+charges because disks, load balancer, public IP, and network resources remain.

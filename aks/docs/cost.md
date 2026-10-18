@@ -158,3 +158,34 @@ managed disks remained present. This project did not change or delete the K3S so
 cluster stop was requested at 14:38 UTC while A12 review is pending. Azure confirmed `Stopped` /
 `Succeeded` at 14:40 UTC. Node compute is paused; retained disks and network resources may still
 accrue charges. A15 remains open for final release testing and delayed ActualCost reconciliation.
+
+## Release-window ActualCost and final pause
+
+At 2026-10-18 17:26 UTC (2026-10-19 02:26 KST), an authenticated `ActualCost` / `PreTaxCost`
+query covered 2026-10-16T00:00Z through 2026-10-20T00:00Z, grouped daily by resource ID and
+meter category. The AKS and node resource groups were queried separately. The AKS resource group
+returned zero rows; the node resource group returned 52 KRW rows across 21 resource IDs.
+
+| UTC usage date | Virtual Machines | Storage | Load Balancer | Virtual Network | Bandwidth | Total KRW |
+|---|---:|---:|---:|---:|---:|---:|
+| 2026-10-16, partial | 5,957.256181 | 461.714050 | 435.512096 | 77.672197 | 2.393719 | 6,934.548243 |
+| 2026-10-17 | 8,260.287702 | 712.129790 | 574.310265 | 107.269350 | 1.212985 | 9,655.210093 |
+| 2026-10-18, partial | 3,124.731600 | 334.592866 | 263.114152 | 49.165119 | 0.564561 | 3,772.168299 |
+| **Reported total** | **17,342.275483** | **1,508.436706** | **1,272.936513** | **234.106666** | **4.171265** | **20,361.926634** |
+
+The query was unchanged from 17:08 UTC. No row yet covered the AKS restart at 17:11:29 UTC or
+the release and stop work through 17:30:59 UTC. This short ActualCost period does not measure
+those charges or demonstrate savings. Dates include two partial days and are in KRW; the USD
+354.83/month retail estimate is not a direct comparison with this posted total. Do not infer
+invoice FX or a final monthly variance.
+
+Azure confirmed `Stopped` / `Succeeded` at 17:30:59 UTC. The node VMSS has capacity zero and no
+instances. Nine StandardSSD_LRS disks are `Unattached`, having mapped immediately before stop to
+nine Bound Retain PVCs totaling 33 GiB. The Standard load balancer and static Standard public IP
+remain provisioned and may continue to incur charges. No resource was deleted. See [latest A15
+evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+
+A15 stays open until ActualCost has had the plan's 24–48 hours to post the restart/release/stop
+usage. The earliest recheck is after 2026-10-19 17:31 UTC; use a later query if the new usage date
+has not appeared. Then reconcile VM, OS disk, PVC, load balancer, IP, I/O, egress, and any backup
+meters against the retail estimate without combining the AX K3S scope.

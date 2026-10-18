@@ -7,10 +7,10 @@
 - A1 소스 골격을 원본 `6ca720be871727c240259664d9c1d1515766f42d`에서 복사했습니다. 복사 범위와 제외 항목은 [원본 기준 기록](docs/source-baseline.md)에 있습니다.
 - A2 AKS 전용 CI/Release workflow, helper, 이미지 이름 분리를 커밋 `4486b3b`로 게시했습니다. GitHub Actions run `38850843974`에서 네 이미지 빌드·테스트·취약점 검사가 성공했고, dev 태그는 네 개의 별도 커밋으로 `sha-4486b3b`에 승격됐습니다.
 - 사용자가 최종 선택한 `Enterprise부문-아키텍처강화TF` 구독의 `rg-seonung-aks-test`에 AKS를 배포했습니다.
-- `Standard_F4s_v2`는 선택 구독에서 사용할 수 없어 `Standard_D4as_v5` 두 대를 사용합니다. `aks-kube-study`는 `koreacentral`, Kubernetes 1.36, AKS Base/Free 관리 tier입니다. 2026-10-18 14:40 UTC 현재 AKS는 `Stopped` / `Succeeded`입니다. 정지된 동안 노드 compute는 멈추고, 디스크·네트워크 요금은 남을 수 있습니다.
+- `Standard_F4s_v2`는 선택 구독에서 사용할 수 없어 `Standard_D4as_v5` 두 대를 사용합니다. `aks-kube-study`는 `koreacentral`, Kubernetes 1.36, AKS Base/Free 관리 tier입니다. 2026-10-18 17:30:59 UTC 현재 AKS는 `Stopped` / `Succeeded`입니다. 정지 중 VMSS capacity는 0이며, 디스크·네트워크 요금은 남을 수 있습니다.
 - A14 개발용 전환 리허설을 통과했습니다. 동결한 K3S dev 스냅샷과 AKS dev의 행·오브젝트 키·크기·SHA-256이 일치했고, AKS smoke 사진은 삭제했습니다. 실제 사용자 트래픽은 전환하지 않았습니다. [A14 증거](../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt)를 참고하세요.
-- A0–A11과 A14는 완료했습니다. PR #4와 #5는 merge됐습니다. [release PR #6](https://github.com/winty5959/kube-study/pull/6)은 aks-v1.0.1을 제안하며 네 이미지 manifest digest는 현재 dev와 일치하지만, 아직 사람의 검토·merge가 없습니다. Prod API·frontend·worker는 0 replica이고 앱 Sync는 수동입니다. A12 prod smoke, A13 E-13/E-14, A15 최종 비용 대조가 남아 있습니다. [완료 현황](docs/completion.md)과 [실험 결과](docs/experiments/README.md)를 참고하세요.
-- 현재 Azure 인벤토리와 정리 상태는 [정리 기록](docs/cleanup.md)에 있습니다. 클러스터 중지를 요청해 노드 비용을 멈추는 중이며, 디스크·네트워크 요금은 남을 수 있습니다. 2026-10-18 ActualCost 게시분은 부분 기간입니다.
+- A0–A14는 완료했습니다. Owner-merged [PR #6](https://github.com/winty5959/kube-study/pull/6) aks-v1.0.1 release의 수동 prod Sync, smoke, runtime digest, Album 화면 검증이 통과했고 E-13/E-14도 완료했습니다. GitHub에는 별도 review/check 기록이 없었습니다. A15는 실제 과금 게시 지연만 남아 있습니다. [완료 현황](docs/completion.md)과 [실험 결과](docs/experiments/README.md)를 참고하세요.
+- 최신 Azure 상태는 [정리 기록](docs/cleanup.md)에 있습니다. AKS는 2026-10-18 17:30:59 UTC에 안전하게 중지했습니다. Retain PVC에 연결된 managed disk 9개는 그대로 있고, 중지 후 Azure에서 `Unattached` 상태입니다. ActualCost는 Oct 18까지의 부분 KRW 게시분이며 restart/release/stop 사용분은 아직 반영되지 않아 24–48시간 뒤 재조회해야 합니다.
 - 관리 API는 승인된 관리 출발지 범위만 허용하며, CIDR 실값은 저장소에 기록하지 않습니다. 로컬 kubeconfig는 `aks/infra/azure/local/kubeconfig`에 분리해 두고 context 이름은 `aks-study`입니다.
 - A4에서 Azure Disk CSI `StandardSSD_LRS`의 5Gi 비루트 PVC 프로비저닝과 Pod 재생성 후 파일 보존을 확인했습니다. 애플리케이션 PVC는 A6에서 생성합니다. A0/A4 결과와 이후 결정을 [결정 기록](docs/decisions.md)에 남깁니다.
 - A5에서는 Traefik을 `ingress-system`의 ClusterIP로 설치하고, dev 접근을 loopback port-forward로 확인했습니다. 실행 방법은 [접근 가이드](docs/access.md)에 있습니다.

@@ -74,3 +74,38 @@ ownership record. A post-stop inventory found zero VMSS instances and all nine d
 those disks mapped to nine Bound Retain PVs immediately before the stop. This is the expected
 stopped-node state, not an orphan finding. Node compute is paused; retained disks, load balancer,
 public IP, and network resources may still incur charges.
+
+## Release-exercise inventory, 2026-10-18 17:31 UTC
+
+The owner-merged `aks-v1.0.1` release and E-13/E-14 completed before the final stop. The stop
+helper finished successfully at 17:30:59 UTC and Azure reported `Stopped` / `Succeeded`.
+
+| Scope | Observed state |
+|---|---|
+| `rg-seonung-aks-test` | AKS cluster, control-plane identity, and VNet remain provisioned |
+| `MC_rg-seonung-aks-test_aks-kube-study_koreacentral` VMSS | One `Standard_D4as_v5` system pool configured for two; VMSS capacity zero and no instances |
+| Node resource group load balancer | One Standard load balancer, provisioning Succeeded |
+| Node resource group public IP | One Standard static public IP, provisioning Succeeded |
+| Managed disks | Nine StandardSSD_LRS disks, all `Unattached` after stop |
+
+Immediately before stop, Kubernetes showed nine Bound Retain PVCs requesting 33 GiB: 13 GiB in
+`album-dev`, 13 GiB in `album-prod`, and 7 GiB in `monitoring`. Azure disk IDs mapped to those
+PVs. The disks becoming Unattached is expected with stopped nodes and is not an orphan signal.
+No disk, PVC, Azure resource, or K3S resource was deleted.
+
+At shutdown, dev retained its single intentional `DONE` photo and prod contained zero rows after
+the release smoke fixture was deleted. Both Redis job lists were empty and no Job was active. App
+Deployments were zero, API HPAs were removed, dev root/app automated sync was paused, and prod
+sync remained manual. On next start, restore dev policy and workloads per
+[operations](operations.md#stop-and-start); for prod, restore two API replicas and wait for valid
+HPA metrics before manual sync.
+
+The latest ActualCost query at 17:26 UTC does not include posted usage for the 17:11–17:31 UTC
+restart/release/stop period. It returned 52 node resource group rows, KRW 20,361.926634, and zero
+AKS resource group rows across partial Oct 16, Oct 17, and partial Oct 18. Repeat after the
+24–48 hour posting delay before comparing actual cost or making a deletion decision. The AKS
+inventory does not identify an unused disk or temporary pool eligible for cleanup.
+
+The AX source check showed both `vm-kube-dev` and `vm-kube-prod` present and deallocated. All
+three source managed disks remain present (two Reserved, one Unattached). No source resource was
+changed and current K3S service availability is not established by this inventory.

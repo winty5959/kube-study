@@ -59,3 +59,34 @@ predate this stop and do not measure the post-stop period. No source K3S VM or d
 Post-stop Azure inventory found zero VMSS instances and nine `Unattached` disks. All nine had
 mapped to Bound Retain PVs immediately before stopping; no disk was treated as an orphan or
 deleted.
+
+## Release experiment cost query, 2026-10-18 17:26 UTC (2026-10-19 02:26 KST)
+
+The query was repeated after the release and rollback exercises, before the final stop. It used
+Microsoft.CostManagement/query API `2023-03-01`, `ActualCost` / `PreTaxCost`, daily granularity,
+grouped by `ResourceId` and `MeterCategory`, for 2026-10-16T00:00Z through 2026-10-20T00:00Z.
+The AKS and node resource groups were queried separately in
+`Enterprise부문-아키텍처강화TF`.
+
+- `rg-seonung-aks-test`: zero rows.
+- `MC_rg-seonung-aks-test_aks-kube-study_koreacentral`: 52 rows across 21 resource IDs, all KRW.
+- Totals were KRW 6,934.548243 for partial Oct 16, KRW 9,655.210093 for Oct 17, and KRW
+  3,772.168299 for partial Oct 18; reported total KRW 20,361.926634.
+- Meter categories are Bandwidth, Load Balancer, Storage, Virtual Machines, and Virtual Network.
+  The date/category totals are in `aks/docs/cost.md`.
+- This result matched the 17:08 UTC query. No posted row yet represented the AKS start at
+  17:11:29 UTC or the release/stop work. Do not infer the short run's charge or cost savings from
+  these unchanged rows.
+
+At 17:30:59.575028 UTC, Azure confirmed AKS `Stopped` / `Succeeded`. Current node RG inventory
+showed VMSS capacity zero and no VMSS instances, one Standard load balancer, one Standard static
+public IP, and nine `StandardSSD_LRS` disks, all `Unattached`. Immediately before stop the nine
+disks mapped to nine Bound Retain PVCs totaling 33 GiB; the stop did not delete or orphan them.
+The AKS resource group and node RG remain provisioned. No cleanup candidate was established.
+
+The source AX subscription check still showed both K3S VMs deallocated and all three source disks
+present (two `Reserved`, one `Unattached`). No source resource was changed. The current public
+retail estimate remains USD 354.83/month including the existing fixed-item estimate. Posted
+ActualCost is partial KRW and cannot establish a final monthly variance or invoice FX. A15 remains
+open until a query after the planned 24–48 hour usage-posting delay captures the restart/stop
+period and the invoice comparison can be made without guessing.

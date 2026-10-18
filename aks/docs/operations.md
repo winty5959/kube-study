@@ -48,6 +48,13 @@ After start, check PVC attachment, database/object readiness, Argo health, metri
 photo before restoring GitOps and the HPA. A11 observed a short metrics-server warmup; the HPA and
 Argo health recovered after pod metrics became available.
 
+The stop procedure intentionally leaves API, frontend, and worker Deployments at zero and removes
+the API HPA. On restart, the HPA will not scale an API whose target replica count is zero. Before
+the production manual Sync, restore API replicas to the declared minimum (two in `album-prod`),
+wait for the API Pods to be Ready, and confirm the HPA has a valid CPU metric. A manual Sync made
+while metrics-server is still warming may stop at Argo's HPA health gate; retry after the HPA
+reports `ScalingActive=True`. Keep production automated sync disabled.
+
 Stopping removes AKS node compute charges while it is stopped. Retained disks and other attached
 resources may continue to incur charges. Never deallocate the AKS VM scale set directly; do not
 delete retained disks as a stop/start shortcut. See [AKS-STOP](experiments/AKS-STOP.md).

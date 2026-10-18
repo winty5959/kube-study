@@ -1,6 +1,6 @@
 # AKS decisions and preflight
 
-Last checked: 2026-10-18 14:40 UTC. The user first selected `AX사업부문-인프라아키텍처팀`, then explicitly replaced that target with the `Enterprise부문-아키텍처강화TF` subscription and authorized using its Owner access to grant the required AKS roles. The cluster is deployed in `rg-seonung-aks-test`, `koreacentral`.
+Last checked: 2026-10-18 17:31 UTC. The user first selected `AX사업부문-인프라아키텍처팀`, then explicitly replaced that target with the `Enterprise부문-아키텍처강화TF` subscription and authorized using its Owner access to grant the required AKS roles. The cluster is deployed in `rg-seonung-aks-test`, `koreacentral`.
 
 Detailed results: [Enterprise A0 recheck](../../.omo/evidence/aks-implementation/A0-preflight-enterprise.txt) and [A3 deployment evidence](../../.omo/evidence/aks-implementation/A3-provision.txt). The earlier [AX preflight](../../.omo/evidence/aks-implementation/A0-preflight.txt) is retained as historical evidence for the superseded target.
 
@@ -10,7 +10,7 @@ Detailed results: [Enterprise A0 recheck](../../.omo/evidence/aks-implementation
 |---|---|---|
 | Existing K3S resource group | `rg-seonung-kube-study`, `koreacentral` | Keep K3S resources and data isolated. |
 | AKS resource group | `rg-seonung-aks-test` | Created in the user-selected Enterprise subscription. |
-| Cluster | `aks-kube-study`, `koreacentral`, Kubernetes 1.36 | Provisioning succeeded; power state Stopped as of 14:40 UTC; AKS Base / Free management tier. |
+| Cluster | `aks-kube-study`, `koreacentral`, Kubernetes 1.36 | Provisioning succeeded; power state Stopped at 17:30:59 UTC after A12/A13 acceptance; AKS Base / Free management tier. |
 | Node SKU | Two configured `Standard_D4as_v5`, each 4 vCPU / 16 GiB | Selected after `Standard_F4s_v2` returned `NotAvailableForSubscription`; both nodes were Ready before the stop. |
 | Network | Azure CNI Overlay, Cilium, isolated VNet; three workstation IPv4 `/32` ranges on the public API endpoint | Previous management egress addresses remain authorized; the current address was added after the workstation location changed. Proposed CIDRs do not overlap inspected VNets/subnets in the selected subscription. Organization routes outside it are not checked. |
 | Identity | Entra managed identity, Azure RBAC, local accounts disabled | Signed-in user has Cluster User and cluster-scope RBAC Cluster Admin roles on this test cluster. |
@@ -21,4 +21,4 @@ The workstation's literal authorized IPs are intentionally omitted. If its egres
 
 ## Next infrastructure work
 
-A0-A11 and A14 are complete with recorded evidence. The dev Album UI was rechecked after resuming AKS; its existing card, thumbnail, and detail image loaded successfully. A12 is at PR #6 (`aks-v1.0.1`): the four release aliases match current dev digests, but human review/merge and the manual prod Sync/smoke remain pending. A13 E-13/E-14 depend on A12. A15 has only partial ActualCost dates and needs a later posting query. AKS was stopped at 14:38 UTC while awaiting review; Azure reported `powerState=Stopped` and `provisioningState=Succeeded` at 14:40 UTC. Dev had been available and prod app replicas were zero before the stop. K3S traffic and data cutover remain out of scope.
+A0-A14 are complete with recorded evidence. The dev Album UI and the prod empty gallery were both checked in a browser. Owner-merged PR #6 was manually deployed to prod; its smoke and four runtime digest checks passed. GitHub reported no separate review or PR checks. E-13 and E-14 passed with prod automated sync disabled. AKS was safely stopped at 17:30:59 UTC; its D4as_v5 node pool is configured for two but the VMSS capacity is zero, and all nine managed disks are Unattached after mapping to Bound Retain PVCs before stop. A15 has partial KRW ActualCost through Oct 18, and the short Oct 18 restart/release/stop period has not posted. Re-query after 24–48 hours before claiming a final actual-versus-estimate comparison. K3S traffic and data cutover remain out of scope.
