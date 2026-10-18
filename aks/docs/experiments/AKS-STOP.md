@@ -27,3 +27,28 @@ Post-start readiness returned Postgres, Redis, and S3 `ok`. A generated image re
 thumbnails, original download, and DELETE passed. The original API row remained the only row and
 its 1,064-byte original SHA-256 matched the pre-stop checksum. The generated smoke fixture was
 deleted. AKS remains Running for A12 onward; K3S was not modified.
+
+## Temporary cost pause while PR #5 awaits review
+
+Before 2026-10-18 13:11:54 UTC, confirmed there were no active workload jobs and both
+Redis queues were empty. `album-dev` contained the intentional migrated photo as its only row;
+`album-prod` contained zero photo rows. The prod smoke failure remained historical and its fixture
+had already been deleted. Before stopping, API, frontend, and worker replicas were set to zero in
+both namespaces, the API HPAs were removed, and automated sync was paused on `root-dev` and
+`album-dev`. Prod remains manual. No PVC or Azure resource was deleted.
+
+The power helper initially refused to run because its pinned Kubernetes context was incorrectly
+set to `aks-kube-study`; the actual context is `aks-study`. The helper and operations example were
+corrected, and shell syntax/lint checks passed. The corrected `bash aks/scripts/aks-power.sh stop`
+then completed successfully. Azure Activity Log recorded Stop Managed Cluster as Started at
+13:11:54.738Z, Accepted at 13:11:55.144Z, and Succeeded at 13:15:26.061Z. At 13:22 UTC, Azure
+reported `powerState=Stopped`, `provisioningState=Succeeded`, and configured node count two. All nine
+`StandardSSD_LRS` disks (33 GiB total) reported `Unattached`; immediately before the stop they
+mapped to nine Bound `Retain` PVCs. This records the current temporary pause, not a new full A11
+stop/start experiment. K3S was not modified.
+
+After PR #5 review and merge, start AKS with the helper and verify two Ready nodes, nine Bound
+PVCs, and application data/readiness. Restore `root-dev` and `album-dev` automated sync with
+`prune: true` and `selfHeal: true`, then verify dev desired workloads recover. Keep prod manual
+until the new immutable release digest is explicitly synced and A12 smoke passes. Resume E-13/E-14
+only after that release gate. A post-stop ActualCost query has not yet been recorded.

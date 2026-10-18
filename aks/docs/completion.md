@@ -10,23 +10,33 @@ final delayed-cost reconciliation remain open.
 |---|---|---|
 | K3S path migration, tasks 1–6 and F1–F4 | Complete | [Migration plan](../../.omo/plans/k3s-onprem-aks-migration.md) |
 | A0–A11 AKS foundation, workload, recovery and operations | Complete | [Implementation plan](../../.omo/plans/aks-implementation.md) and `.omo/evidence/aks-implementation/` |
-| A12 release promotion | Waiting for user review and approval | [PR #4](https://github.com/winty5959/kube-study/pull/4) is open. `root-prod` and `platform-prod` are manually synced; `album-prod` remains Missing. Do not sync it before the approved release merge. |
-| A13 AKS experiments | Partial | E-01–E-12 and E-15 pass. E-13 waits on A12; E-14 has not run. See [experiment results](experiments/README.md). |
+| A12 release promotion | In progress; smoke failed | [PR #4](https://github.com/winty5959/kube-study/pull/4) merged. `platform-prod` and `album-prod` are Synced/Healthy at the merge SHA, but the PostSync smoke failed because thumbnail URLs returned frontend HTML. [PR #5](https://github.com/winty5959/kube-study/pull/5) adds the Traefik class and patches the frontend scan finding; after merge, publish a new immutable release alias and rerun prod smoke. |
+| A13 AKS experiments | Partial | E-01–E-12 and E-15 pass. E-13 promotion and E-14 rollback wait for A12 to pass with the corrected release. See [experiment results](experiments/README.md). |
 | A14 dev cutover rehearsal | Complete | [A14 evidence](../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt) |
-| A15 costs, final status and cleanup | In progress | [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt). The AKS ActualCost query is still an early partial posting; repeat after 24–48 hours of usage have posted. A separate ActualCost query now includes the existing K3S dev and prod VM resource group. No resource was deleted. |
+| A15 costs, final status and cleanup | In progress | [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt). A repeat ActualCost query now returns Oct 16–18 rows; Oct 18 is partial and the totals still need final reconciliation after release experiments. A separate query covers the existing K3S dev/prod resource group. No Azure resource or PVC was deleted. |
 
 ## Current Azure state
 
-As of 2026-10-17 03:32 KST, `aks-kube-study` is Running in
-`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central, with two
-`Standard_D4as_v5` nodes. The dev API and two frontends are Ready, the worker is idle at zero,
-and the migrated dev fixture remains one `DONE` row. Its Redis queues are empty. The platform
-StatefulSets and three Retain PVCs in `album-prod` are Ready/Bound for the pending release
-exercise; the `album-prod` application itself remains manually managed and Missing.
+As of 2026-10-18 13:22 UTC, `aks-kube-study` is `Stopped` with provisioning `Succeeded` in
+`Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central. The configured system pool
+still has two `Standard_D4as_v5` nodes. Before stopping, the dev API, frontend, and worker and the
+same three prod workloads were scaled to zero; API HPAs were removed. `root-dev` and `album-dev`
+automated sync were paused so Argo CD cannot restart workloads while AKS is stopped. The one
+migrated dev photo remained `DONE`, prod had zero photo rows, and both namespaces' Redis queues
+were empty. Prod's previous `album-prod` sync at merge SHA
+`51b9ea9f3285866b26cfe4daa5db70b40a6c31d7` had failed because the PostSync thumbnail smoke
+received HTTP 200 with `text/html` instead of `image/webp`; its generated fixture was deleted
+through the API (204; follow-up GET 404). No new prod sync was run before stopping. Full A12
+verification remains open.
 
-The latest ActualCost data does not cover a full AKS day after the 2026-10-16 16:34 UTC restart.
-The AKS cluster is still Running, so compute usage continues. Current storage, networking, and
-resource attachment details are in [cleanup inventory](cleanup.md).
+The latest ActualCost query returned node-resource-group totals of KRW 6,934.55 for Oct 16,
+KRW 9,655.21 for Oct 17, and KRW 2,147.96 for partial Oct 18; the AKS resource group returned no
+rows. This query predates the stop. Reconcile posted costs after E-13/E-14 and query again after
+the release work before closing A15. While AKS is stopped, node compute charges pause; retained
+disks, public IP, and other resources may still incur charges. Nine managed disks currently report
+`Unattached` because the nodes are stopped; the pre-stop inventory mapped them to nine Bound
+Retain PVCs. See [cleanup inventory](cleanup.md) and the [temporary stop record](experiments/AKS-STOP.md).
+Restart and verify data recovery before resuming experiments.
 
 ## Project boundary
 

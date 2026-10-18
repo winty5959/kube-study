@@ -4,7 +4,7 @@ set -euo pipefail
 readonly SUBSCRIPTION="Enterprise부문-아키텍처강화TF"
 readonly RESOURCE_GROUP="rg-seonung-aks-test"
 readonly CLUSTER="aks-kube-study"
-readonly CONTEXT="aks-kube-study"
+readonly CONTEXT="aks-study"
 
 usage() {
   echo "Usage: bash aks/scripts/aks-power.sh stop|start" >&2

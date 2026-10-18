@@ -2,15 +2,15 @@
 
 ## Inventory snapshot
 
-Checked 2026-10-17 03:32 KST in the selected Enterprise subscription. The AKS cluster is
-Running, provisioning succeeded, and the single system VM scale set has capacity two at
-`Standard_D4as_v5`.
+Checked 2026-10-18 13:22 UTC in the selected Enterprise subscription. The AKS cluster is
+`Stopped`, provisioning succeeded, and the system pool is configured for two
+`Standard_D4as_v5` nodes. Node compute is paused until the cluster is started again.
 
 | Scope | Current resources | State |
 |---|---|---|
 | `rg-seonung-aks-test` | AKS cluster, control-plane resource, VNet | All provisioning Succeeded |
-| `MC_rg-seonung-aks-test_aks-kube-study_koreacentral` | One two-node VM scale set, one Standard load balancer, one attached Standard static public IP, node security/network resources | Provisioning Succeeded |
-| AKS node resource group | Nine `StandardSSD_LRS` managed disks, total 33 GiB | All Attached to the two current VMSS instances |
+| `MC_rg-seonung-aks-test_aks-kube-study_koreacentral` | One system VM scale set configured for two nodes, one Standard load balancer, one Standard static public IP, node security/network resources | AKS is Stopped; provisioning Succeeded |
+| AKS node resource group | Nine `StandardSSD_LRS` managed disks, total 33 GiB | All nine currently report `Unattached` while AKS nodes are stopped |
 
 The disk inventory is four 1-GiB disks, two 2-GiB disks, one 5-GiB disk, and two 10-GiB disks.
 All nine map by disk ID to Kubernetes PVs with `Retain` policy and Bound PVCs:
@@ -24,8 +24,10 @@ All nine map by disk ID to Kubernetes PVs with `Retain` policy and Bound PVCs:
 
 The A14 generated AKS smoke fixture was deleted and its API lookup returned 404. The intentional
 migrated dev photo remains `DONE`; `album-dev` queues are empty. Prod data services and their
-Bound PVCs remain in place for A12/A13. `album-prod` is not deployed yet because release PR #4
-has not been reviewed or merged.
+Bound PVCs remain in place for A12/A13. PR #4 was merged and `album-prod` was manually synced.
+Its generated A12 smoke photo was deleted (API 204, then GET 404); both prod Redis queues are
+empty. The smoke Job remains Failed pending a route fix and a corrected release; no Azure resource
+or PVC was deleted.
 
 ## Cleanup decision
 
@@ -35,7 +37,11 @@ candidate for removal. The main AKS resource group, load balancer, public IP, VM
 data disks are in use. Historical cost rows alone do not establish that a resource is unused.
 No Azure resource or PVC was deleted.
 
-The AKS cluster remains Running for the approved release and experiment work. For an intentional
-pause, use the checked [stop/start procedure](operations.md#stop-and-start) and
-[power evidence](experiments/AKS-STOP.md); do not deallocate the VM scale set or delete Retain
-disks. Refresh this inventory and actual costs before a later cleanup decision.
+The nine PVCs were Bound to `Retain` PVs at the pre-stop check; Azure reported all nine disks
+`Unattached` after the cluster stop. This is the expected stopped-node state, not evidence that
+they are orphaned or safe to delete. No PVC, disk, or other Azure resource was deleted. The dev
+application replicas were scaled to zero, API HPAs removed, and dev Argo automated sync paused
+before stopping. After the release PR is reviewed and merged, use the checked
+[stop/start procedure](operations.md#stop-and-start), restart AKS, verify PVC/data recovery, and
+restore dev automation and workload state before further experiments. Keep prod manual pending
+the corrected A12 release. Refresh this inventory and posted costs before a later cleanup decision.
