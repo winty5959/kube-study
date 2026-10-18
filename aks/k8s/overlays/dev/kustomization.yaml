@@ -15,7 +15,7 @@ images:
   - name: ghcr.io/winty5959/album-aks-worker
     newTag: sha-4486b3b
   - name: ghcr.io/winty5959/album-aks-frontend
-    newTag: sha-4486b3b
+    newTag: sha-a6976fc
 
   - name: ghcr.io/winty5959/album-aks-minio
     newTag: sha-4486b3b
