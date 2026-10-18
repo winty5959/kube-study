@@ -1,7 +1,7 @@
 # AKS operations
 
 The learning cluster is `aks-kube-study` in `rg-seonung-aks-test`, under the
-`Enterprise부문-아키텍처강화TF` subscription. Use the dedicated `aks-kube-study` kubectl
+`Enterprise부문-아키텍처강화TF` subscription. Use the dedicated `aks-study` kubectl
 context. `aks/scripts/aks-power.sh` pins that Azure subscription, resource group, cluster, and
 Kubernetes context; it checks that the kubeconfig endpoint matches the selected AKS endpoint.
 It does not switch the user's Azure or Kubernetes context.
@@ -14,7 +14,7 @@ allows one disruption; keep the frontend at two. The command below uses normal e
 for PDBs. It does not force evictions:
 
 ```bash
-kubectl --context aks-kube-study drain "$NODE" \
+kubectl --context aks-study drain "$NODE" \
   --ignore-daemonsets --delete-emptydir-data --timeout=10m
 ```
 
