@@ -18,7 +18,7 @@ images:
     newTag: aks-v1.0.1
 
   - name: ghcr.io/winty5959/album-aks-minio
-    newTag: aks-v1.0.0
+    newTag: aks-v1.0.1
 
 configMapGenerator:
   - name: album-config
