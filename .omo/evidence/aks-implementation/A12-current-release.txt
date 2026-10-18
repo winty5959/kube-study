@@ -49,3 +49,41 @@ Current gate recheck, 2026-10-18 14:38 UTC:
   were 0/0. A separate browser record shows the dev Album UI rendered its existing photo.
 - The AX subscription still listed both K3S VMs and all three managed disks. They were deallocated/
   Reserved or Unattached in the read-only check; no K3S mutation was made.
+
+## Owner merge and A12 acceptance, 2026-10-19 KST
+
+The repository owner merged PR #6 at 2026-10-18 17:07:47 UTC (2026-10-19 02:07:47 KST).
+GitHub returned `mergedBy=winty5959`, `reviews=[]`, and `statusCheckRollup=[]`; this record does
+not claim a separate formal review or PR check. Merge SHA:
+`1b7e521becccb6117d578d3a1f06132684631f5a`.
+
+AKS was restarted with `bash aks/scripts/aks-power.sh start`; the helper observed
+`power=Running`, `provisioning=Succeeded`, and 2/2 Ready nodes. The nine prior Retain PVCs
+remained Bound. `root-prod` observed the merge SHA without an automatic prod operation.
+`platform-prod` was manually synced first and returned Synced/Healthy at the merge SHA. MinIO
+ran `aks-v1.0.1` at digest `sha256:3e5e10b5c9ef95d5d4268404ce0541aba8b6010758b5e0d412273b4932ccf3dd`.
+
+`album-prod` remained manual. Its first sync attempt timed out on `/readyz` because the previous
+cost pause had left API replicas at zero; the API HPA cannot scale up from target zero. A second
+attempt stopped at the HPA health gate during metrics-server warmup. After API replicas were
+restored to the declared minimum of two and HPA CPU metrics became valid, the manual sync at
+17:20:35–17:21:04 UTC completed successfully. PreSync migration was already current. PostSync
+reported DB/Redis/S3 ready, uploaded and processed the generated fixture, returned 200x100 and
+800x400 WebP thumbnails, downloaded the original, deleted the fixture, and ended `SMOKE OK`.
+
+The actual Album surface was opened through the loopback route
+`http://album.aks.prod.localhost:18080/`. The page title was “Mini Photo Album,” the API version
+was `sha-b7122b7`, and the gallery showed zero photos after fixture cleanup. Screenshot:
+[A12-prod-album.png](A12-prod-album.png).
+
+Running imageID values matched the four previously verified dev/release registry digests:
+
+| Component | Tag | Running manifest digest |
+|---|---|---|
+| API | `aks-v1.0.1` | `sha256:91b6d71a6db96f6d3108cbe5476b644481334b17a465c3aa79580f0e27b2c263` |
+| Worker | `aks-v1.0.1` | `sha256:e756aaf2e2ab0b66d0fc941bb770fde5604ce06dc89abfd2d426490f3190092a` |
+| Frontend | `aks-v1.0.1` | `sha256:e0bbe1d083583845c9aa73cec7f367745465fa973b67e6c0baa98d54369c5bc1` |
+| MinIO | `aks-v1.0.1` | `sha256:3e5e10b5c9ef95d5d4268404ce0541aba8b6010758b5e0d412273b4932ccf3dd` |
+
+A12 is complete. E-13 records the release promotion. Prod automated sync remains disabled; K3S
+traffic and resources were not changed.

@@ -120,3 +120,22 @@ comparison and the no-prod-Sync verification are in [A12-current-release.txt](A1
 The dev browser check is in [A8-browser-resumed.txt](A8-browser-resumed.txt). No prod Sync was
 run. AKS was stopped after this check while review is pending; see the latest status in
 [A15-cost-refresh.txt](A15-cost-refresh.txt).
+
+## Post-merge promotion and smoke, 2026-10-19 KST
+
+Owner merge #6 was observed at 2026-10-18 17:07:47 UTC; merge SHA is
+`1b7e521becccb6117d578d3a1f06132684631f5a`. `reviews=[]` and `statusCheckRollup=[]`, so the
+owner merge is recorded without claiming a separate formal review or reported PR checks.
+
+After AKS start completed at 17:16:30 UTC, two nodes were Ready and all nine PVCs remained Bound.
+`root-prod` observed the merged main revision. Production apps remained manual-only.
+`platform-prod` was manually synced first; PostgreSQL, Redis, and MinIO were Ready and all three
+prod PVCs remained Bound. Then `album-prod` was manually synced. After restoring the API from the
+prior cost-pause zero replicas and waiting for valid HPA metrics, the 17:20:35–17:21:04 UTC sync
+completed. Migration was current and PostSync logged the full upload, processing, thumbnail,
+original-download, delete, and `SMOKE OK` sequence. The post-smoke DB count was zero and Redis
+lists were empty.
+
+The browser displayed the empty `album-prod` gallery at the loopback prod route. The screenshot
+and four `imageID` digest matches are in [A12-current-release.txt](A12-current-release.txt).
+No real user traffic was redirected, and no K3S resource was changed.

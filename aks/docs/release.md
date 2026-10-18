@@ -35,6 +35,14 @@ generation, original download, and delete. Compare all four running image
 manifest digests with the release PR's verified digest table. The prod host is
 `album.aks.prod.localhost`.
 
+If AKS was stopped for a cost pause, restart it with the documented helper and
+wait for both nodes, the three prod data services, and all three prod PVCs to
+be ready. The pause leaves application Deployments at zero and removes the API
+HPA. Set `album-prod` API replicas to its declared minimum of two before the
+manual app Sync; wait until those Pods are Ready and the HPA reports valid CPU
+metrics so Argo's health gate does not evaluate an empty metrics sample. Prod
+remains manual-only before and after the release.
+
 Prod album credentials are generated separately from dev at
 `~/.local/share/kube-study/aks-prod-secrets.env`. The local plaintext file and
 AKS Sealed Secrets private key backup stay outside Git; only strict-scope
