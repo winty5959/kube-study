@@ -64,3 +64,28 @@ Registry recheck (2026-10-17 03:46 KST)
   still match the digests recorded above for api, worker, frontend, and minio.
 - PR #4 remains OPEN with no reviews and no reported status checks. No prod application Sync or
   merge was performed.
+
+Production deployment follow-up (2026-10-18 13:02 UTC)
+- The repository owner merged PR #4 as merge commit
+  `51b9ea9f3285866b26cfe4daa5db70b40a6c31d7`. `platform-prod` and `album-prod` were then
+  manually synced at that revision. Platform data StatefulSets are Ready and all three prod PVCs
+  remain Bound. Prod API and frontend each have two Ready replicas; the worker is idle at zero.
+- The PostSync `album-smoke` Job failed after `/readyz` returned 200 with PostgreSQL, Redis, and
+  S3 all healthy and the generated photo reached `DONE`. Its signed thumbnail request returned
+  HTTP 200 but `Content-Type: text/html`; smoke expected `image/webp`. The failure is recorded,
+  not counted as A12 success.
+- The live `album-objects` IngressRoute lacked `spec.ingressClassName`, while the Traefik CRD
+  provider is configured with ingress class `traefik`. The request therefore fell through to the
+  frontend route. PR #5 adds the class selector to dev and prod overlays.
+- The first PR #5 scan found HIGH `CVE-2026-77214` in the deployed frontend base's
+  `libexpat 2.8.5-r0`. The Dockerfile now upgrades expat from the pinned Alpine base repository.
+  A linux/amd64 local build used `libexpat 2.9.0-r0`, retained runtime UID 101, and Trivy 0.70.0
+  reported zero HIGH/CRITICAL findings. The subsequent GitHub run passed all four image jobs;
+  `update-dev` was skipped because the PR was not merged.
+- The generated prod smoke fixture was explicitly deleted through the API (204); a subsequent
+  GET returned 404. Redis `album:queue` and `album:processing` both have length zero. The failed
+  Job remains as history. No PVC, Azure resource, or K3S resource was deleted.
+- PR #5 remains OPEN with all build checks successful and human review outstanding. Its frontend
+  fix changes the image digest; do not retag the immutable `aks-v1.0.0` alias. Publish and verify
+  a new release version after merge, then repeat the manual prod sync, all thumbnail/original
+  checks, fixture cleanup, and four-component digest comparison. A12 and E-13/E-14 remain open.

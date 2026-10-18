@@ -613,6 +613,8 @@ PDB·단일 replica 데이터 서비스·LRS 제약으로 무중단 전체 노�
 - [AKS 중지/재개 조건](https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster)
 - [AKS 이전 가이드](https://learn.microsoft.com/en-us/azure/aks/aks-migration)
 
-2026-10-17 KST 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12는
-release PR #4 사용자 검토/승인 대기, A13은 E-13/E-14 수행 대기, A15는 실제 Azure 비용
-게시 대기다. Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
+2026-10-18 KST 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12의
+release PR #4는 merge되어 prod에 수동 동기화됐지만 PostSync thumbnail smoke가 object route
+class 누락으로 실패했다. 수정 PR #5의 사람 검토/merge 후 새 immutable frontend release를
+검증해 A12 smoke를 다시 통과해야 한다. A13의 E-13/E-14와 A15의 최종 ActualCost 대조는
+남아 있다. Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.

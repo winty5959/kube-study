@@ -2,7 +2,7 @@
 
 ## Inventory snapshot
 
-Checked 2026-10-17 03:32 KST in the selected Enterprise subscription. The AKS cluster is
+Checked 2026-10-18 22:02 KST in the selected Enterprise subscription. The AKS cluster is
 Running, provisioning succeeded, and the single system VM scale set has capacity two at
 `Standard_D4as_v5`.
 
@@ -24,8 +24,10 @@ All nine map by disk ID to Kubernetes PVs with `Retain` policy and Bound PVCs:
 
 The A14 generated AKS smoke fixture was deleted and its API lookup returned 404. The intentional
 migrated dev photo remains `DONE`; `album-dev` queues are empty. Prod data services and their
-Bound PVCs remain in place for A12/A13. `album-prod` is not deployed yet because release PR #4
-has not been reviewed or merged.
+Bound PVCs remain in place for A12/A13. PR #4 was merged and `album-prod` was manually synced.
+Its generated A12 smoke photo was deleted (API 204, then GET 404); both prod Redis queues are
+empty. The smoke Job remains Failed pending a route fix and a corrected release; no Azure resource
+or PVC was deleted.
 
 ## Cleanup decision
 
