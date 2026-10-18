@@ -71,6 +71,11 @@ charges. Nine disks remain provisioned (33 GiB); the Azure inventory currently r
 `Unattached` while the nodes are stopped. Query ActualCost again after the release experiments and
 allow for billing-posting delay before closing A15.
 
+A repeat ActualCost query at 2026-10-18 13:22 UTC returned the same 52 node-resource-group rows
+and the same partial Oct 16–18 totals; the AKS resource group still returned zero rows. No new
+usage rows had posted since the prior query. This short-interval result does not measure the
+stop's cost impact; retain the 24–48 hour posting wait and repeat after release experiments.
+
 ## Existing K3S development environment ActualCost
 
 At 2026-10-17 03:32 KST, a separate Cost Management `ActualCost` / `PreTaxCost` query covered

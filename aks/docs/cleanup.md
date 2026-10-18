@@ -2,7 +2,7 @@
 
 ## Inventory snapshot
 
-Checked 2026-10-18 13:17 UTC in the selected Enterprise subscription. The AKS cluster is
+Checked 2026-10-18 13:22 UTC in the selected Enterprise subscription. The AKS cluster is
 `Stopped`, provisioning succeeded, and the system pool is configured for two
 `Standard_D4as_v5` nodes. Node compute is paused until the cluster is started again.
 

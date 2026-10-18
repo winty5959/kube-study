@@ -30,7 +30,7 @@ deleted. AKS remains Running for A12 onward; K3S was not modified.
 
 ## Temporary cost pause while PR #5 awaits review
 
-At approximately 2026-10-18 13:15 UTC, confirmed there were no active workload jobs and both
+Before 2026-10-18 13:11:54 UTC, confirmed there were no active workload jobs and both
 Redis queues were empty. `album-dev` contained the intentional migrated photo as its only row;
 `album-prod` contained zero photo rows. The prod smoke failure remained historical and its fixture
 had already been deleted. Before stopping, API, frontend, and worker replicas were set to zero in
@@ -40,8 +40,9 @@ both namespaces, the API HPAs were removed, and automated sync was paused on `ro
 The power helper initially refused to run because its pinned Kubernetes context was incorrectly
 set to `aks-kube-study`; the actual context is `aks-study`. The helper and operations example were
 corrected, and shell syntax/lint checks passed. The corrected `bash aks/scripts/aks-power.sh stop`
-then completed successfully. At 2026-10-18 13:17 UTC, Azure reported
-`powerState=Stopped`, `provisioningState=Succeeded`, and configured node count two. All nine
+then completed successfully. Azure Activity Log recorded Stop Managed Cluster as Started at
+13:11:54.738Z, Accepted at 13:11:55.144Z, and Succeeded at 13:15:26.061Z. At 13:22 UTC, Azure
+reported `powerState=Stopped`, `provisioningState=Succeeded`, and configured node count two. All nine
 `StandardSSD_LRS` disks (33 GiB total) reported `Unattached`; immediately before the stop they
 mapped to nine Bound `Retain` PVCs. This records the current temporary pause, not a new full A11
 stop/start experiment. K3S was not modified.

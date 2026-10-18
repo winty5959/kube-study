@@ -17,7 +17,7 @@ final delayed-cost reconciliation remain open.
 
 ## Current Azure state
 
-As of 2026-10-18 13:17 UTC, `aks-kube-study` is `Stopped` with provisioning `Succeeded` in
+As of 2026-10-18 13:22 UTC, `aks-kube-study` is `Stopped` with provisioning `Succeeded` in
 `Enterprise부문-아키텍처강화TF` / `rg-seonung-aks-test`, Korea Central. The configured system pool
 still has two `Standard_D4as_v5` nodes. Before stopping, the dev API, frontend, and worker and the
 same three prod workloads were scaled to zero; API HPAs were removed. `root-dev` and `album-dev`

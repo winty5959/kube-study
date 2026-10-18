@@ -100,6 +100,10 @@ report Unattached while the nodes are stopped. No PVC, Azure resource, or K3S re
 Restart and verify cluster/data recovery after PR review and merge, then publish a new immutable
 release digest and rerun the complete A12 smoke before attempting E-13/E-14.
 
+Azure Activity Log records the stop action Started at 2026-10-18 13:11:54.738Z, Accepted at
+13:11:55.144Z, and Succeeded at 13:15:26.061Z. A 13:22 UTC follow-up still showed the cluster
+Stopped/Succeeded; no corrected release Sync was run.
+
 PR #5 validation after the power-context and temporary-pause commits:
 - GitHub Actions run `39131054774` at head `63c3f0c7a48946e81a8a814910b271d9b4834e72` completed
   successfully. `build (api)`, `build (worker)`, `build (frontend)`, and `build (minio)` all passed;

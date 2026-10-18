@@ -145,3 +145,16 @@ Temporary cost pause inventory, checked 2026-10-18 13:17 UTC:
 - PR #5 is open and review submissions are empty. After review/merge, restart AKS, verify two Ready
   nodes and recovery of all nine PVCs/data, restore dev sync and workloads, then publish a new
   immutable release alias and continue A12/E-13/E-14. The stop does not close A15.
+
+Repeated cost query and stop operation verification, 2026-10-18 13:22 UTC:
+- Azure Activity Log for the AKS resource ID records `Microsoft.ContainerService/managedClusters/stop/action`
+  Started at 13:11:54.7380916Z, Accepted at 13:11:55.1443762Z, and Succeeded at
+  13:15:26.0613384Z.
+- A second `ActualCost` / `PreTaxCost` query covered 2026-10-16T00:00Z through 2026-10-19T00:00Z,
+  grouped daily by resource ID and meter category. At 13:22 UTC the AKS resource group still had
+  zero rows and the node resource group still had the same 52 rows and Oct 16–18 partial totals
+  listed above. No new cost rows had posted since the 12:55 UTC query.
+- The repeated result does not show post-stop savings; the stop had completed only seven minutes
+  before this query and ActualCost posting had not advanced. Repeat after the billing delay and
+  after A12/E-13/E-14 before closing A15. The cluster remained Stopped/Succeeded in the follow-up
+  inventory, with all nine disks Unattached.
