@@ -119,3 +119,31 @@ Read-only inventory immediately afterward reconfirmed the cluster `Stopped` / `S
 `Unattached`, one Standard load balancer, and one Standard static public IP. The nine disk names
 match the nine PVC-derived managed disks mapped to Bound Retain PVs immediately before the stop;
 the pre-stop requested capacity was 33 GiB. No resource was deleted.
+
+## Retail meter refresh and stopped-resource estimate, 2026-10-18 18:04 UTC
+
+Read-only Azure Retail Prices API queries (`2023-01-01-preview`, USD, Consumption, primary meter)
+confirmed the current rates used by the cost estimate: Standard_D4as_v5 `$0.212` / VM-hour;
+P6 LRS `$10.207` / month; E1/E2/E3 Standard SSD `$0.30` / `$0.60` / `$1.20` per month; Global
+Standard Load Balancer included rules/outbound `$0.025` / hour; Standard static IPv4 `$0.005` /
+hour.
+
+The `$354.83/month` base estimate covers two nodes, two P6 OS disks, six dev/monitoring PVC disks,
+one outbound rule, and one static IP. The three additional PVCs used during the A12 release add
+about `$1.80/month` in Standard SSD capacity tiers, yielding a nine-PVC running configuration of
+about `$356.63/month` at 730 hours. This remains a public retail comparison, not an Enterprise
+agreement invoice rate.
+
+At the current stopped inventory, the node VMSS capacity is zero with no instances; the managed
+disk inventory contains only the nine PVC-derived disks, not node OS disk resources. The disks are
+four 1-GiB plus two 2-GiB volumes billed at E1, one 5-GiB E2, and two 10-GiB E3, for about
+`$4.80/month`. One Standard outbound rule is still configured on the Standard load balancer
+(`$18.25/month` at 730 hours); the retained Standard static IPv4 is `$3.65/month`. The resulting
+stopped-resource public retail run-rate estimate is about `$26.70/month`, excluding I/O, load
+balancer data processing, egress, backup, contract discounts, and taxes. It is not an invoice
+forecast.
+
+The 18:00 UTC ActualCost query was unchanged from 17:48: zero AKS RG rows and 52 node RG rows / 21
+resource IDs totaling KRW 20,640.730839. It ran about 29 minutes after stop, before the planned
+24-hour posting minimum, so it cannot close A15. Recheck after 2026-10-19 17:31 UTC and later if
+the release/stop usage is still not represented.

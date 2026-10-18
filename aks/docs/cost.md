@@ -214,3 +214,30 @@ timestamps or prove that every charge from the 17:11:29–17:30:59 UTC release w
 Treat this as preliminary; re-query after 2026-10-19 17:31 UTC and later if needed. The KRW
 ActualCost period is partial and must not be compared directly with the USD 354.83/month retail
 estimate or treated as a full invoice variance.
+
+## Retail price refresh and stopped-resource estimate, 2026-10-18 18:04 UTC
+
+The Azure Retail Prices API was rechecked for the primary USD consumption meters. D4as_v5 remains
+`$0.212` per VM-hour; P6 LRS is `$10.207` per month; Standard SSD E1/E2/E3 are `$0.30` / `$0.60` /
+`$1.20` per month; the Global primary Standard Load Balancer included-rules/outbound meter is
+`$0.025` per hour; and the Standard static IPv4 meter is `$0.005` per hour.
+
+The `$354.83/month` estimate is the two-node base with two P6 OS disks, six dev/monitoring PVC
+disks, one outbound rule, and one static IP. The A12 release added three Standard SSD PVC disks;
+their same-size capacity tiers add about `$1.80/month`, so the nine-PVC release configuration is
+about `$356.63/month` while both nodes run. These are public retail estimates, not the Enterprise
+agreement rate or an invoice total.
+
+At the stopped inventory check, the VMSS had zero instances and the node resource group contained
+only the nine PVC-derived StandardSSD_LRS disks, not node OS disk resources. Their sizes map to six
+E1 disks (four 1-GiB and two 2-GiB), one E2 disk (5 GiB), and two E3 disks (10 GiB each), for about
+`$4.80/month`. The one remaining Standard Load Balancer has one outbound rule, about `$18.25/month`
+at 730 hours; its Standard static IPv4 adds about `$3.65/month`. That gives a stopped-resource
+retail run-rate estimate of about `$26.70/month`, excluding disk operations, load-balancer data
+processing, egress, backup, taxes, and contract discounts. It is not a predicted or posted invoice
+amount.
+
+The separate `ActualCost` query at 2026-10-18 18:00 UTC remained unchanged from 17:48: zero AKS
+resource-group rows and 52 node-resource-group rows totaling KRW 20,640.730839. This was only about
+29 minutes after stop and remains preliminary; wait until after 2026-10-19 17:31 UTC before the
+final posting check. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
