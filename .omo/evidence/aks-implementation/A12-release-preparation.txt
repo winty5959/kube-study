@@ -99,3 +99,11 @@ sync was paused. The nine pre-stop Bound Retain PVCs remain provisioned; all nin
 report Unattached while the nodes are stopped. No PVC, Azure resource, or K3S resource was deleted.
 Restart and verify cluster/data recovery after PR review and merge, then publish a new immutable
 release digest and rerun the complete A12 smoke before attempting E-13/E-14.
+
+PR #5 validation after the power-context and temporary-pause commits:
+- GitHub Actions run `39131054774` at head `63c3f0c7a48946e81a8a814910b271d9b4834e72` completed
+  successfully. `build (api)`, `build (worker)`, `build (frontend)`, and `build (minio)` all passed;
+  `update-dev` was skipped because the PR is unmerged.
+- PR #5 remains open and has no submitted reviews. The passing CI does not validate the live prod
+  route or release smoke. AKS restart/data recovery and a new immutable release remain gated on
+  review/merge; A12 and E-13/E-14 are still open.
