@@ -172,12 +172,20 @@ Current acceptance status, 2026-10-18 14:40 UTC:
   ActualCost query after release use and billing posting remain open.
 
 Final stop after A12/A13, 2026-10-18 17:30:59 UTC: Azure reported `Stopped` / `Succeeded`.
-ActualCost queried at 17:26 UTC remained KRW 20,361.926634 across 52 node resource group rows;
-the AKS resource group returned zero rows. No posted row represented the 17:11:29–17:30:59 UTC
-restart/release/stop window, so this is not a post-test total. The VMSS now has capacity zero and
-no instances; all nine StandardSSD_LRS disks are Unattached and still map to the nine Bound Retain
-PVs recorded just before stop (33 GiB). The load balancer and static Standard IP remain. Both
-source K3S VMs are deallocated and all three source disks remain present. No cleanup candidate
-was verified, and no resource was deleted. Keep A15 open until the delayed ActualCost posting is
-queried after 2026-10-19 17:31 UTC; do not infer zero charge or compare partial KRW with the USD
-354.83 monthly retail estimate.
+The 17:26 UTC ActualCost query returned KRW 20,361.926634 across 52 node resource group rows and
+zero AKS RG rows. A preliminary repeat at 17:48 UTC returned KRW 20,640.730839 across the same
+52 rows and 21 resource IDs, with zero AKS RG rows. The partial Oct 18 total increased by KRW
+278.804205, including KRW 173.596200 in Virtual Machines. Daily grouping cannot assign the increase
+to exact minutes or prove that the entire 17:11:29–17:30:59 UTC restart/release/stop window has
+posted. It is preliminary, not a final post-test total. The VMSS remains capacity zero with no
+instances; all nine StandardSSD_LRS disks are Unattached and map to the nine Bound Retain PVs
+recorded just before stop (33 GiB). The load balancer and static Standard IP remain. Both source
+K3S VMs are deallocated and all three source disks remain present. No cleanup candidate was
+verified, and no resource was deleted. Repeat after 2026-10-19 17:31 UTC; do not infer zero charge
+or compare partial KRW with the USD 354.83 monthly retail estimate.
+
+Read-only Azure inventory immediately after the preliminary query reconfirmed one system VMSS
+configured for `Standard_D4as_v5` at capacity zero with no instances, nine `StandardSSD_LRS`
+disks `Unattached`, one Standard load balancer, and one Standard static public IP. The nine disk
+names match the pre-stop PVC-derived managed disk inventory and remain present. No Azure resource
+or K3S resource was deleted.

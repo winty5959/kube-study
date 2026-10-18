@@ -90,3 +90,32 @@ retail estimate remains USD 354.83/month including the existing fixed-item estim
 ActualCost is partial KRW and cannot establish a final monthly variance or invoice FX. A15 remains
 open until a query after the planned 24–48 hour usage-posting delay captures the restart/stop
 period and the invoice comparison can be made without guessing.
+
+## Preliminary post-stop ActualCost query, 2026-10-18 17:48 UTC
+
+This read-only query was run about 17 minutes after the final AKS stop, before the planned 24-hour
+minimum. It used the same `ActualCost` / `PreTaxCost` daily query, grouped by `ResourceId` and
+`MeterCategory`, over 2026-10-16T00:00Z through 2026-10-21T00:00Z, at the separate AKS RG and node
+RG scopes in `Enterprise부문-아키텍처강화TF`.
+
+- `rg-seonung-aks-test`: zero rows.
+- `MC_rg-seonung-aks-test_aks-kube-study_koreacentral`: 52 rows across 21 resource IDs, all KRW.
+- Total posted cost: KRW 20,640.730839. Partial Oct 16 was KRW 6,934.548243; Oct 17 was KRW
+  9,655.210093; partial Oct 18 was KRW 4,050.972503.
+- Relative to the 17:26 UTC query, the reported Oct 18 partial total increased by KRW 278.804205.
+  The meter increments were Virtual Machines KRW 173.596200, Storage KRW 48.208733, Load
+  Balancer KRW 47.951394, Virtual Network KRW 8.939112, and Bandwidth KRW 0.108766.
+- Daily grouping does not identify the exact usage timestamps. The new Oct 18 posting is
+  consistent with some release-window charges becoming visible, but it does not establish that
+  the full 17:11:29–17:30:59 UTC interval has posted. Do not present this preliminary total as
+  final or infer invoice FX / a monthly variance from it.
+
+AKS remained `Stopped` / `Succeeded` at this query. Repeat after 2026-10-19 17:31 UTC (24 hours
+after the stop) and again later if the usage window is still incomplete. The public USD 354.83/month
+retail estimate remains a separate benchmark, not an invoice total.
+
+Read-only inventory immediately afterward reconfirmed the cluster `Stopped` / `Succeeded`, one
+`Standard_D4as_v5` VMSS at capacity zero with no instances, nine `StandardSSD_LRS` disks all
+`Unattached`, one Standard load balancer, and one Standard static public IP. The nine disk names
+match the nine PVC-derived managed disks mapped to Bound Retain PVs immediately before the stop;
+the pre-stop requested capacity was 33 GiB. No resource was deleted.

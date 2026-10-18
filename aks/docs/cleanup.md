@@ -100,12 +100,21 @@ sync remained manual. On next start, restore dev policy and workloads per
 [operations](operations.md#stop-and-start); for prod, restore two API replicas and wait for valid
 HPA metrics before manual sync.
 
-The latest ActualCost query at 17:26 UTC does not include posted usage for the 17:11–17:31 UTC
-restart/release/stop period. It returned 52 node resource group rows, KRW 20,361.926634, and zero
-AKS resource group rows across partial Oct 16, Oct 17, and partial Oct 18. Repeat after the
-24–48 hour posting delay before comparing actual cost or making a deletion decision. The AKS
+The preliminary ActualCost query at 17:48 UTC returned 52 node resource group rows totaling KRW
+20,640.730839 and zero AKS resource group rows. The partial Oct 18 amount increased by KRW
+278.804205 from the 17:26 UTC query, but daily grouping cannot attribute it to exact minutes or
+prove that the entire 17:11–17:31 UTC restart/release/stop period has posted. Repeat after the
+24–48 hour posting delay before final cost reconciliation or a deletion decision. The AKS
 inventory does not identify an unused disk or temporary pool eligible for cleanup.
 
 The AX source check showed both `vm-kube-dev` and `vm-kube-prod` present and deallocated. All
 three source managed disks remain present (two Reserved, one Unattached). No source resource was
 changed and current K3S service availability is not established by this inventory.
+
+## Preliminary post-stop recheck, 2026-10-18 about 17:50 UTC
+
+Read-only Azure CLI queries reconfirmed the AKS system VMSS at capacity zero with no instances,
+nine StandardSSD_LRS disks all `Unattached`, one Standard load balancer, and one Standard static
+public IP. The nine disk names match the PVC-derived managed disks mapped to Bound Retain PVs just
+before stop (33 GiB requested). The cluster remains `Stopped` / `Succeeded`; no resource was
+deleted. Cost results from the 17:48 UTC query are preliminary; see [cost reconciliation](cost.md).

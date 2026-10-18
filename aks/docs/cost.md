@@ -189,3 +189,28 @@ A15 stays open until ActualCost has had the plan's 24–48 hours to post the res
 usage. The earliest recheck is after 2026-10-19 17:31 UTC; use a later query if the new usage date
 has not appeared. Then reconcile VM, OS disk, PVC, load balancer, IP, I/O, egress, and any backup
 meters against the retail estimate without combining the AX K3S scope.
+
+## Preliminary post-stop ActualCost, 2026-10-18 17:48 UTC
+
+A read-only daily `ActualCost` / `PreTaxCost` query covered 2026-10-16T00:00Z through
+2026-10-21T00:00Z, grouped by resource ID and meter category. The two resource groups were
+queried separately. The AKS RG returned zero rows; the node RG returned 52 rows across 21 resource
+IDs, all KRW.
+
+| UTC usage date | Virtual Machines | Storage | Load Balancer | Virtual Network | Bandwidth | Total KRW |
+|---|---:|---:|---:|---:|---:|---:|
+| 2026-10-16, partial | 5,957.256181 | 461.714050 | 435.512096 | 77.672197 | 2.393719 | 6,934.548243 |
+| 2026-10-17 | 8,260.287702 | 712.129790 | 574.310265 | 107.269350 | 1.212985 | 9,655.210093 |
+| 2026-10-18, partial | 3,298.327800 | 382.801599 | 311.065546 | 58.104231 | 0.673327 | 4,050.972503 |
+| **Reported total** | **17,515.871683** | **1,556.645440** | **1,320.887907** | **243.045778** | **4.280031** | **20,640.730839** |
+
+Values are displayed to six decimal places from the unrounded query result. The rounded Oct 17
+meter cells sum to KRW 9,655.210092 while the underlying daily total rounds to KRW 9,655.210093.
+
+Compared with the 17:26 UTC query, the partial Oct 18 total increased by KRW 278.804205:
+Virtual Machines KRW 173.596200, Storage KRW 48.208733, Load Balancer KRW 47.951394, Virtual
+Network KRW 8.939112, and Bandwidth KRW 0.108766. Daily grouping cannot identify exact usage
+timestamps or prove that every charge from the 17:11:29–17:30:59 UTC release window has posted.
+Treat this as preliminary; re-query after 2026-10-19 17:31 UTC and later if needed. The KRW
+ActualCost period is partial and must not be compared directly with the USD 354.83/month retail
+estimate or treated as a full invoice variance.
