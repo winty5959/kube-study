@@ -1,0 +1,45 @@
+AKS A13 release-experiment evidence
+
+Run date: 2026-10-19 KST
+Subscription: Enterprise부문-아키텍처강화TF
+Cluster: aks-kube-study, Korea Central, Standard_D4as_v5 x2
+Context: aks-study
+Main revision: 1b7e521becccb6117d578d3a1f06132684631f5a
+
+E-13 — release promotion
+- The owner merged PR #6 at 2026-10-18 17:07:47 UTC. GitHub returned no separate review
+  records and no PR status checks; the merge event is recorded without claiming formal review.
+- root-prod observed the merge revision. platform-prod was manually synced before album-prod;
+  both production Applications have no automated sync policy.
+- First album-prod attempt failed because API replicas were zero after the previous cluster pause.
+  The next operation stopped at the HPA health gate while metrics-server warmed up. After API
+  replicas and valid metrics were restored, manual sync completed at 17:20:35–17:21:04 UTC.
+- Migration was already current. PostSync smoke passed readiness, upload, DONE processing, both
+  WebP dimensions, original download, and fixture deletion. Result: SMOKE OK.
+- Browser-harness opened the loopback prod route and showed the Album empty state, zero photos,
+  and API version. Screenshot: [A12-prod-album.png](A12-prod-album.png).
+- API, worker, frontend, and MinIO running imageIDs matched their aks-v1.0.1 registry digests;
+  see [E-13](../../../aks/docs/experiments/E-13.md).
+
+E-14 — live rollback and GitOps restoration
+- `kubectl rollout undo deployment/api -n album-prod --to-revision=1` changed the live image
+  reference to aks-v1.0.0 while preserving two ready replicas.
+- Argo reported album-prod OutOfSync / Healthy; automatic prod sync stayed disabled.
+- Manual sync at main revision 1b7e521 restored the aks-v1.0.1 declaration. PreSync and
+  PostSync succeeded; album-prod returned Synced / Healthy at 17:26:08 UTC.
+- Git remained unchanged at the last desired release, so no git revert commit was necessary.
+  This verified live drift detection and manual Git reconciliation, not behavioral rollback to
+  a different API image digest.
+
+Recovery state
+- AKS dev retained its one intentional DONE photo; album-prod contained zero photo rows after
+  smoke cleanup. Redis job lists were empty before shutdown and no active Jobs remained.
+- Both namespaces' API, frontend, and worker Deployments were scaled to zero; API HPAs were
+  removed. root-dev and album-dev auto-sync were paused; prod remained manual.
+- `bash aks/scripts/aks-power.sh stop` completed. Azure Activity Log recorded Started at
+  17:28:35.3096115Z, Accepted at 17:28:35.6846421Z, and Succeeded at 17:30:59.575028Z.
+- At final inspection, AKS was Stopped / Succeeded, the VMSS capacity was zero, and nine
+  StandardSSD_LRS disks were Unattached. All nine had mapped to Bound Retain PVCs before stop;
+  no disk, PVC, or Azure resource was deleted.
+- Existing K3S VMs remained deallocated and all three source disks remained present. No K3S
+  resource or user traffic was modified.

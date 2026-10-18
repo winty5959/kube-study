@@ -476,7 +476,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A12. prod namespace와 동일 digest Release 실습
 
-- [ ] 완료
+- [x] 완료 — PR #6 owner merge 이후 수동 platform/app Sync, prod smoke, 실행 digest, Album UI 확인; `.omo/evidence/aks-implementation/A12-current-release.txt`
 - **수정:** `.github/workflows/aks-release.yaml`, `aks/scripts/{prepare-release,set-image-tag}.py`,
   해당 tests, `aks/argocd/{root-prod.yaml,bootstrap/prod/**,prerequisites/prod/**}`,
   `aks/k8s/{overlays,gitops,secrets}/prod/**`, `aks/docs/release.md`.
@@ -501,7 +501,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A13. 기존 15개 실험을 AKS에서 새로 수행
 
-- [ ] 완료
+- [x] 완료 — E-13/E-14를 AKS prod에서 새로 수행; `aks/docs/experiments/E-13.md`, `E-14.md` 및 `.omo/evidence/aks-implementation/A13-experiments.txt`
 - **수정:** `aks/docs/experiments/{README,TEMPLATE,E-01,...,E-15}.md`,
   관련 `aks/loadtest/` 명령·context/URL 설정.
 - **순서:** dev의 안전한 단일 실험부터 수행하고 각 실험의 변경·fixture를 복구한 뒤 다음으로 간다.
@@ -576,7 +576,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 | E-11 GitOps CI | AKS API-only build·scan·dev 자동 Sync | A2/A8/A13; K3S 승격 미발생 확인 |
 | E-12 selfHeal | dev 드리프트가 Git 선언으로 복구 | A7/A13; HPA 소유 replica와 구분 |
 | E-13 승격 | 네 dev/release digest 동일, prod 수동 Sync | A12/A13; 승인 전 prod 미변경 |
-| E-14 롤백 | live undo는 OutOfSync, 수동 Sync가 Git 적용 | A12/A13; Git revert로 마지막 선언 복구 |
+| E-14 롤백 | live undo는 OutOfSync, 수동 Sync가 Git 적용 | A12/A13; 마지막 Git 선언을 수동 Sync로 복구 |
 | E-15 배포 gate | 실패 PreSync가 신규 rollout 차단 | A8/A13; 정상 migration 설정·Sync 복구 |
 
 추가 AKS 실험은 **AKS-DATA**(DB·객체 복원), **AKS-NODE**(drain·RWO 재연결),
@@ -613,11 +613,17 @@ PDB·단일 replica 데이터 서비스·LRS 제약으로 무중단 전체 노�
 - [AKS 중지/재개 조건](https://learn.microsoft.com/en-us/azure/aks/start-stop-cluster)
 - [AKS 이전 가이드](https://learn.microsoft.com/en-us/azure/aks/aks-migration)
 
-2026-10-18 14:40 UTC 기준 A0~A11 및 A14는 실제 Azure 상태와 실행 증거로 완료했다. A12의
-PR #6은 aks-v1.0.1 승격을 제안하며 네 이미지의 registry manifest digest가 현재 dev와
-일치한다. PR은 아직 열려 있고 사람의 검토와 merge가 없다. merge 뒤 album-prod를 수동
-동기화하고 upload-thumbnail-original-download-delete smoke 및 실행 이미지 digest 비교를
-통과해야 A12를 닫을 수 있다. A13의 E-13/E-14는 그 뒤 수행한다. A15 ActualCost는 Oct 16과
-18 부분일 및 Oct 17 게시분만 포함하므로 게시 지연 뒤 다시 대조한다. AKS 중지를 요청했고
-2026-10-18 14:40 UTC Azure는 powerState Stopped, provisioningState Succeeded를 반환했다.
+2026-10-18 17:07:47 UTC에 저장소 owner가 PR #6을 merge했다. GitHub 응답에는 별도
+review와 PR status check 기록이 없으므로 이를 숨기지 않는다. main merge SHA는
+`1b7e521becccb6117d578d3a1f06132684631f5a`다. 2026-10-19 02:21 KST까지 A12 prod
+수동 Sync, migration/PostSync smoke, 네 이미지 실행 digest, 실제 Album 화면 검증을
+마쳤다. E-13과 E-14도 AKS에서 실행하고 선언된 release로 복구했다. AKS는 실험 후
+2026-10-18 17:30:59 UTC에 `Stopped` / `Succeeded`가 됐다.
+
+A15의 마지막 `ActualCost` 조회는 2026-10-18 17:26 UTC다. node resource group에 KRW
+20,361.926634, 52행이 있었고 AKS resource group에는 행이 없었다. 이는 Oct 16 부분,
+Oct 17, Oct 18 부분 사용분이며 17:11 UTC 재가동 뒤 약 15분의 compute/실험 사용과
+17:28–17:31 UTC 중지 요청은 과금 데이터에 아직 보이지 않았다. 계획은 사용 뒤 24–48시간
+게시 지연을 반영하도록 요구한다. 따라서 A15 비용 확정과 이 goal의 전체 완료는 새 게시분을
+조회·대조할 때까지 열어 둔다. 다음 비용 확인은 2026-10-19 17:31 UTC 이후가 최소 기준이다.
 Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
