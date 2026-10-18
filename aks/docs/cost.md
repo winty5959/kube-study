@@ -237,7 +237,7 @@ retail run-rate estimate of about `$26.70/month`, excluding disk operations, loa
 processing, egress, backup, taxes, and contract discounts. It is not a predicted or posted invoice
 amount.
 
-The separate `ActualCost` query at 2026-10-18 18:00 UTC remained unchanged from 17:48: zero AKS
-resource-group rows and 52 node-resource-group rows totaling KRW 20,640.730839. This was only about
-29 minutes after stop and remains preliminary; wait until after 2026-10-19 17:31 UTC before the
-final posting check. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+The separate `ActualCost` query at 2026-10-18 18:10 UTC remained unchanged from 18:00 and 17:48:
+zero AKS resource-group rows and 52 node-resource-group rows totaling KRW 20,640.730839. This was
+about 40 minutes after stop and remains preliminary; wait until after 2026-10-19 17:31 UTC before
+the final posting check. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
