@@ -174,8 +174,8 @@ returned zero rows; the node resource group returned 52 KRW rows across 21 resou
 | **Reported total** | **17,342.275483** | **1,508.436706** | **1,272.936513** | **234.106666** | **4.171265** | **20,361.926634** |
 
 The query was unchanged from 17:08 UTC. The AKS Activity Log records the restart request at
-17:11:29.752829 UTC and start success at 17:16:30.546730 UTC; the stop request was accepted at
-17:28:35.684642 UTC and stop succeeded at 17:30:59.575028 UTC. The 17:26 query fell after start
+17:11:29.7528291 UTC and start success at 17:16:30.5467299 UTC; the stop request was accepted at
+17:28:35.6846421 UTC and stop succeeded at 17:30:59.575028 UTC. The 17:26 query fell after start
 success and before the stop request. These AKS operation events do not establish exact VM billing
 start or end boundaries. The short ActualCost period does not measure those charges or demonstrate
 savings, and daily grouping cannot attribute usage to this interval. Dates include two partial
@@ -241,7 +241,11 @@ retail run-rate estimate of about `$26.70/month`, excluding disk operations, loa
 processing, egress, backup, taxes, and contract discounts. It is not a predicted or posted invoice
 amount.
 
-The separate `ActualCost` query at 2026-10-18 18:10 UTC remained unchanged from 18:00 and 17:48:
-zero AKS resource-group rows and 52 node-resource-group rows totaling KRW 20,640.730839. This was
-about 40 minutes after stop and remains preliminary; wait until after 2026-10-19 17:31 UTC before
-the final posting check. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+The separate `ActualCost` query at 2026-10-18 18:18 UTC remained unchanged from 18:10, 18:00, and
+17:48: zero AKS resource-group rows and 52 node-resource-group rows / 21 resource IDs totaling
+KRW 20,640.730839. The node-group daily totals were partial Oct 16 KRW 6,934.548243, Oct 17 KRW
+9,655.210093, and partial Oct 18 KRW 4,050.972503. Meter totals are Virtual Machines KRW
+17,515.871683, Storage KRW 1,556.645440, Load Balancer KRW 1,320.887907, Virtual Network KRW
+243.045778, and Bandwidth KRW 4.280031. This query preceded the 24-hour posting minimum, so it
+does not establish that the short release interval is fully represented. Recheck after
+2026-10-19 17:31 UTC. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).

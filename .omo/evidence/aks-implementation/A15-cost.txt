@@ -189,3 +189,17 @@ configured for `Standard_D4as_v5` at capacity zero with no instances, nine `Stan
 disks `Unattached`, one Standard load balancer, and one Standard static public IP. The nine disk
 names match the pre-stop PVC-derived managed disk inventory and remain present. No Azure resource
 or K3S resource was deleted.
+
+Latest pre-delay ActualCost recheck, 2026-10-18 18:18 UTC:
+- Microsoft.CostManagement/query API `2023-03-01`; `ActualCost` / `PreTaxCost`; daily; grouped by
+  `ResourceId` and `MeterCategory`; requested period 2026-10-16T00:00Z through 2026-10-21T00:00Z.
+- `rg-seonung-aks-test`: zero rows. Node RG: 52 rows / 21 resource IDs, all KRW.
+- Node RG daily totals: partial Oct 16 KRW 6,934.548243; Oct 17 KRW 9,655.210093; partial Oct 18
+  KRW 4,050.972503; reported total KRW 20,640.730839.
+- Meter totals: Virtual Machines KRW 17,515.871683; Storage KRW 1,556.645440; Load Balancer KRW
+  1,320.887907; Virtual Network KRW 243.045778; Bandwidth KRW 4.280031.
+- Results were unchanged from 18:10, 18:00, and 17:48 UTC. Partial daily grouping does not
+  establish exact release-window attribution or prove all charges have posted.
+- The query ran before 24 hours elapsed after Azure's stop success at
+  `2026-10-18T17:30:59.575028Z`; it cannot close A15. Recheck after 2026-10-19 17:31 UTC and later
+  within the 48-hour window if the period remains incomplete.

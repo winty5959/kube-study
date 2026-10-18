@@ -41,10 +41,10 @@ The nine PVCs were Bound to `Retain` PVs at the pre-stop check; Azure reported a
 `Unattached` after the cluster stop. This is the expected stopped-node state, not evidence that
 they are orphaned or safe to delete. No PVC, disk, or other Azure resource was deleted. The dev
 application replicas were scaled to zero, API HPAs removed, and dev Argo automated sync paused
-before stopping. After the release PR is reviewed and merged, use the checked
-[stop/start procedure](operations.md#stop-and-start), restart AKS, verify PVC/data recovery, and
-restore dev automation and workload state before further experiments. Keep prod manual pending
-the corrected A12 release. Refresh this inventory and posted costs before a later cleanup decision.
+before stopping. PR #6 was merged and E-13/E-14 completed before the final stop. For later work,
+use the checked [stop/start procedure](operations.md#stop-and-start), restart AKS, verify PVC/data
+recovery, and restore dev automation and workload state. Keep prod manual. Refresh this inventory
+and posted costs before a later cleanup decision.
 
 ## Refreshed inventory
 
@@ -118,3 +118,21 @@ nine StandardSSD_LRS disks all `Unattached`, one Standard load balancer, and one
 public IP. The nine disk names match the PVC-derived managed disks mapped to Bound Retain PVs just
 before stop (33 GiB requested). The cluster remains `Stopped` / `Succeeded`; no resource was
 deleted. Cost results from the 17:48 UTC query are preliminary; see [cost reconciliation](cost.md).
+
+## Final delayed-cost wait check, 2026-10-18 18:19 UTC
+
+Resource inventory around 18:16 UTC showed `aks-kube-study` `Stopped` / `Succeeded`, its
+`Standard_D4as_v5` system VMSS at capacity zero with no instances, all nine PVC-named
+StandardSSD_LRS disks `Unattached`, one Standard load balancer, and one Standard static IP. A
+cluster-state query at 18:19 UTC reconfirmed `Stopped` / `Succeeded`. The AX K3S dev/prod VMs were
+still deallocated and all three source disks remained present (two Reserved and one Unattached).
+No resource was changed or deleted.
+
+The separate daily ActualCost query at 18:18 UTC covered 2026-10-16T00:00Z through
+2026-10-21T00:00Z and grouped by ResourceId and MeterCategory. The AKS RG returned zero rows; the
+node RG returned 52 KRW rows across 21 resource IDs totaling KRW 20,640.730839: partial Oct 16
+KRW 6,934.548243, Oct 17 KRW 9,655.210093, and partial Oct 18 KRW 4,050.972503. These results
+were unchanged from 18:10 UTC and were captured before 24 hours had elapsed from the 17:30:59.575028
+UTC stop success event. They cannot close A15 or prove exact release-window attribution. Recheck
+after 2026-10-19 17:31 UTC; keep the retained disks and other resources until a separate cleanup
+decision.

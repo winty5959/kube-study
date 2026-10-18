@@ -75,8 +75,8 @@ The AKS and node resource groups were queried separately in
 - Meter categories are Bandwidth, Load Balancer, Storage, Virtual Machines, and Virtual Network.
   The date/category totals are in `aks/docs/cost.md`.
 - This result matched the 17:08 UTC query. The AKS Activity Log records the start request at
-  17:11:29.752829 UTC and start success at 17:16:30.546730 UTC; the stop request was accepted at
-  17:28:35.684642 UTC and stop succeeded at 17:30:59.575028 UTC. The query fell after start
+  17:11:29.7528291 UTC and start success at 17:16:30.5467299 UTC; the stop request was accepted at
+  17:28:35.6846421 UTC and stop succeeded at 17:30:59.575028 UTC. The query fell after start
   success and before the stop request. These AKS operation events do not establish exact VM billing
   boundaries, and daily ActualCost grouping cannot attribute usage to this interval. Do not infer
   the short run's charge or cost savings from these unchanged rows.
@@ -165,7 +165,30 @@ posting appeared in this query.
 AKS remained `Stopped` / `Succeeded`. The query was about 40 minutes after the final stop, before
 the planned 24-hour minimum, so the result remains preliminary and cannot prove that all
 17:11:29–17:30:59 UTC release-window usage is posted. The Activity Log shows start requested at
-17:11:29.752829 UTC, start succeeded at 17:16:30.546730 UTC, stop requested at 17:28:35.309612
-UTC (accepted at 17:28:35.684642 UTC), and stop succeeded at 17:30:59.575028 UTC. These control
+17:11:29.7528291 UTC, start succeeded at 17:16:30.5467299 UTC, stop requested at 17:28:35.3096115
+UTC (accepted at 17:28:35.6846421 UTC), and stop succeeded at 17:30:59.575028 UTC. These control
 plane events are not exact VM billing boundaries. The final delayed check is due after 2026-10-19
 17:31 UTC; continue later within the 48-hour window if the period is still incomplete.
+
+## Early ActualCost recheck, 2026-10-18 18:18 UTC
+
+Microsoft.CostManagement/query API `2023-03-01` was called again at separate AKS RG and node RG
+scopes. The query used `ActualCost` / `PreTaxCost`, daily granularity, `ResourceId` and
+`MeterCategory` dimensions, and 2026-10-16T00:00Z through 2026-10-21T00:00Z.
+
+- `rg-seonung-aks-test`: zero rows.
+- `MC_rg-seonung-aks-test_aks-kube-study_koreacentral`: 52 KRW rows across 21 resource IDs.
+- Total: KRW 20,640.730839 (partial Oct 16 KRW 6,934.548243; Oct 17 KRW 9,655.210093; partial
+  Oct 18 KRW 4,050.972503). Meter totals were Storage KRW 1,556.645440, Bandwidth KRW 4.280031,
+  Virtual Machines KRW 17,515.871683, Load Balancer KRW 1,320.887907, and Virtual Network KRW
+  243.045778.
+- Results matched the 18:10 UTC query. Partial Oct 18 cannot be attributed to exact minutes and
+  does not prove that the restart/release/stop charges have fully posted.
+
+Read-only resource inventory around 18:16 UTC showed the AKS cluster stopped, its
+`Standard_D4as_v5` VMSS at capacity zero with no instances, nine PVC-derived StandardSSD_LRS disks
+`Unattached`, one Standard load balancer, and one Standard static public IP. A cluster-state query
+at 18:19 UTC reconfirmed `Stopped` / `Succeeded`. In the AX source subscription, both K3S VMs
+remained deallocated and all three source disks remained (two Reserved, one Unattached). No
+resource was changed or deleted. Because the 24-hour minimum after the 17:30:59.575028 UTC stop
+success event had not elapsed, this query does not close A15. Recheck after 2026-10-19 17:31 UTC.

@@ -58,3 +58,21 @@ reports `ScalingActive=True`. Keep production automated sync disabled.
 Stopping removes AKS node compute charges while it is stopped. Retained disks and other attached
 resources may continue to incur charges. Never deallocate the AKS VM scale set directly; do not
 delete retained disks as a stop/start shortcut. See [AKS-STOP](experiments/AKS-STOP.md).
+
+## Latest paused state
+
+The release exercise started AKS at 2026-10-18 17:11:29.7528291 UTC; Azure reported start success
+at 17:16:30.5467299 UTC. The stop request began at 17:28:35.3096115 UTC, was accepted at
+17:28:35.6846421 UTC, and succeeded at 17:30:59.575028 UTC. These are AKS control-plane operation
+events, not exact VM billing boundaries. A read-only cluster-state check at 18:19 UTC confirmed
+`Stopped` / `Succeeded`. Resource inventory around 18:16 UTC showed the `Standard_D4as_v5` VMSS at
+capacity zero with no instances, nine PVC-derived disks `Unattached`, one Standard load balancer,
+and one Standard static public IP. The disks mapped to Bound Retain PVs immediately before stop.
+No resource was deleted. The partial ActualCost query is pending the 24-hour posting delay; see [cost
+reconciliation](cost.md) and [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+
+Before stopping, both namespaces' app Deployments were zero, API HPAs were absent, dev automated
+sync was paused, prod sync remained manual, both Redis queues were empty, no Job was active, dev
+retained one intentional `DONE` photo, and prod had zero photo rows. On restart, follow the
+verification and restoration sequence above; do not infer that workloads are running while AKS is
+stopped. The observed state and disk ownership are recorded in [cleanup inventory](cleanup.md).

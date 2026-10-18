@@ -38,13 +38,13 @@ prod VMs were still deallocated and all three source disks remained present at t
 read-only inventory. No K3S resource or real user traffic was changed. A14 remains a dev-only
 cutover rehearsal; it does not prove current K3S service availability.
 
-The 18:10 UTC ActualCost query returned zero AKS resource-group rows and 52 node resource-group
-rows totaling KRW 20,640.730839 across partial Oct 16, Oct 17, and partial Oct 18, unchanged from
-18:00 and 17:48. The Oct 18 total was KRW 278.804205 higher than at 17:26 UTC, including KRW 173.596200 in
-Virtual Machines. Daily grouping cannot establish exact usage timestamps or prove the entire
-17:11–17:31 UTC window is posted. Activity Log records AKS start success at 17:16:30.546730 UTC
-and stop success at 17:30:59.575028 UTC; these are operation events, not exact VM billing
-boundaries. Current retail estimates distinguish the USD 354.83/month
+The 18:18 UTC ActualCost query returned zero AKS resource-group rows and 52 node resource-group
+rows / 21 resource IDs totaling KRW 20,640.730839 across partial Oct 16, Oct 17, and partial
+Oct 18, unchanged from 18:10, 18:00, and 17:48. The Oct 18 total was KRW 278.804205 higher than
+at 17:26 UTC, including KRW 173.596200 in Virtual Machines. Daily grouping cannot establish exact
+usage timestamps or prove the entire 17:11–17:31 UTC window is posted. Activity Log records AKS
+start success at 17:16:30.5467299 UTC and stop success at 17:30:59.575028 UTC; these are operation
+events, not exact VM billing boundaries. Current retail estimates distinguish the USD 354.83/month
 six-PVC base, the USD 356.63/month nine-PVC release configuration while running, and the
 approximately USD 26.70/month stopped-resource run-rate. Those estimates are not invoice totals.
 A15 and overall goal completion remain open until delayed ActualCost captures and reconciles the
