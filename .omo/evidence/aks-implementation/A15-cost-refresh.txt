@@ -74,9 +74,12 @@ The AKS and node resource groups were queried separately in
   3,772.168299 for partial Oct 18; reported total KRW 20,361.926634.
 - Meter categories are Bandwidth, Load Balancer, Storage, Virtual Machines, and Virtual Network.
   The date/category totals are in `aks/docs/cost.md`.
-- This result matched the 17:08 UTC query. No posted row yet represented the AKS start at
-  17:11:29 UTC or the release/stop work. Do not infer the short run's charge or cost savings from
-  these unchanged rows.
+- This result matched the 17:08 UTC query. The AKS Activity Log records the start request at
+  17:11:29.752829 UTC and start success at 17:16:30.546730 UTC; the stop request was accepted at
+  17:28:35.684642 UTC and stop succeeded at 17:30:59.575028 UTC. The query fell after start
+  success and before the stop request. These AKS operation events do not establish exact VM billing
+  boundaries, and daily ActualCost grouping cannot attribute usage to this interval. Do not infer
+  the short run's charge or cost savings from these unchanged rows.
 
 At 17:30:59.575028 UTC, Azure confirmed AKS `Stopped` / `Succeeded`. Current node RG inventory
 showed VMSS capacity zero and no VMSS instances, one Standard load balancer, one Standard static
@@ -111,7 +114,8 @@ RG scopes in `Enterprise부문-아키텍처강화TF`.
   final or infer invoice FX / a monthly variance from it.
 
 AKS remained `Stopped` / `Succeeded` at this query. Repeat after 2026-10-19 17:31 UTC (24 hours
-after the stop) and again later if the usage window is still incomplete. The public USD 354.83/month
+after the 17:30:59.575028 UTC stop success event) and again later if the usage window is still
+incomplete. The public USD 354.83/month
 retail estimate remains a separate benchmark, not an invoice total.
 
 Read-only inventory immediately afterward reconfirmed the cluster `Stopped` / `Succeeded`, one
@@ -145,7 +149,8 @@ forecast.
 
 The 18:00 UTC ActualCost query was unchanged from 17:48: zero AKS RG rows and 52 node RG rows / 21
 resource IDs totaling KRW 20,640.730839. It ran about 29 minutes after stop, before the planned
-24-hour posting minimum, so it cannot close A15. Recheck after 2026-10-19 17:31 UTC and later if
+24-hour posting minimum, so it cannot close A15. The stop success event was at 17:30:59.575028 UTC.
+Recheck after 2026-10-19 17:31 UTC and later if
 the release/stop usage is still not represented.
 
 ## Repeat preliminary ActualCost query, 2026-10-18 18:10 UTC
@@ -159,5 +164,8 @@ posting appeared in this query.
 
 AKS remained `Stopped` / `Succeeded`. The query was about 40 minutes after the final stop, before
 the planned 24-hour minimum, so the result remains preliminary and cannot prove that all
-17:11:29–17:30:59 UTC release-window usage is posted. The final delayed check is due after
-2026-10-19 17:31 UTC; continue later within the 48-hour window if the period is still incomplete.
+17:11:29–17:30:59 UTC release-window usage is posted. The Activity Log shows start requested at
+17:11:29.752829 UTC, start succeeded at 17:16:30.546730 UTC, stop requested at 17:28:35.309612
+UTC (accepted at 17:28:35.684642 UTC), and stop succeeded at 17:30:59.575028 UTC. These control
+plane events are not exact VM billing boundaries. The final delayed check is due after 2026-10-19
+17:31 UTC; continue later within the 48-hour window if the period is still incomplete.

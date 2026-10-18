@@ -173,11 +173,14 @@ returned zero rows; the node resource group returned 52 KRW rows across 21 resou
 | 2026-10-18, partial | 3,124.731600 | 334.592866 | 263.114152 | 49.165119 | 0.564561 | 3,772.168299 |
 | **Reported total** | **17,342.275483** | **1,508.436706** | **1,272.936513** | **234.106666** | **4.171265** | **20,361.926634** |
 
-The query was unchanged from 17:08 UTC. No row yet covered the AKS restart at 17:11:29 UTC or
-the release and stop work through 17:30:59 UTC. This short ActualCost period does not measure
-those charges or demonstrate savings. Dates include two partial days and are in KRW; the USD
-354.83/month retail estimate is not a direct comparison with this posted total. Do not infer
-invoice FX or a final monthly variance.
+The query was unchanged from 17:08 UTC. The AKS Activity Log records the restart request at
+17:11:29.752829 UTC and start success at 17:16:30.546730 UTC; the stop request was accepted at
+17:28:35.684642 UTC and stop succeeded at 17:30:59.575028 UTC. The 17:26 query fell after start
+success and before the stop request. These AKS operation events do not establish exact VM billing
+start or end boundaries. The short ActualCost period does not measure those charges or demonstrate
+savings, and daily grouping cannot attribute usage to this interval. Dates include two partial
+days and are in KRW; the USD 354.83/month retail estimate is not a direct comparison with this
+posted total. Do not infer invoice FX or a final monthly variance.
 
 Azure confirmed `Stopped` / `Succeeded` at 17:30:59 UTC. The node VMSS has capacity zero and no
 instances. Nine StandardSSD_LRS disks are `Unattached`, having mapped immediately before stop to
@@ -186,7 +189,8 @@ remain provisioned and may continue to incur charges. No resource was deleted. S
 evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
 
 A15 stays open until ActualCost has had the plan's 24–48 hours to post the restart/release/stop
-usage. The earliest recheck is after 2026-10-19 17:31 UTC; use a later query if the new usage date
+usage. The earliest recheck is after 2026-10-19 17:31 UTC, 24 hours after the stop success event;
+use a later query if the new usage date
 has not appeared. Then reconcile VM, OS disk, PVC, load balancer, IP, I/O, egress, and any backup
 meters against the retail estimate without combining the AX K3S scope.
 
