@@ -38,13 +38,17 @@ selected AX사업부문-인프라아키텍처팀, then explicitly changed the AK
 Enterprise부문-아키텍처강화TF subscription and `rg-seonung-aks-test`. A0 found
 Standard_F4s_v2 unavailable and the user chose Standard_D4as_v5. Using the user's Owner access,
 AKS cluster RBAC roles were assigned. A0-A11 and A14 have implementation evidence in
-`.omo/evidence/aks-implementation/`. A12 awaits user review/approval of release PR #4; A13
-awaits E-13/E-14; A15 awaits posted Azure cost data. These cards remain in progress.
-K3S traffic/data migration and source-environment deletion remain outside this goal.
+`.omo/evidence/aks-implementation/`. As of 2026-10-19 KST, A0-A14 are complete: repository
+owner-merged PR #6 was manually promoted to `album-prod`, the E-13/E-14 experiments passed,
+and AKS is stopped after the user-requested cost pause. GitHub recorded no separate formal review
+or PR checks; the release evidence says so explicitly. A15 remains open only for the delayed
+ActualCost query covering the final Oct 18 restart/release/stop interval. Its earliest 24-hour
+recheck is 2026-10-19 17:31 UTC. K3S traffic/data migration and source-environment deletion
+remain outside this goal.
 
 ---
 
-> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A11 and A14 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; A12/A13/A15 remain in progress; live K3S cutover/deletion is excluded.
+> TL;DR (machine): Large / Medium risk / same repository; K3S relocation and F1-F4 checks complete; AKS A0-A14 complete in the user-selected Enterprise subscription on two D4as_v5 nodes; the cluster is stopped and A15 awaits delayed ActualCost reconciliation; live K3S cutover/deletion is excluded.
 
 ## Scope
 ### Affected user and ideal state
@@ -91,7 +95,7 @@ K3S traffic/data migration and source-environment deletion remain outside this g
 ### 실행 순서
 준비/구조 작업: 1 → 2; 로드맵 3은 작업 2와 독립 문서로 준비할 수 있으나 같은 파일을 동시 수정하지 않는다.
 게시/전환 작업: 2·3 → 4 → 5 → 6. live dev와 prod 전환은 반드시 순차적이다.
-최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 먼저 AX사업부문-인프라아키텍처팀을 골랐고 이후 Enterprise부문-아키텍처강화TF와 `rg-seonung-aks-test`로 정정했다. A0-A11은 실제 Azure 검증과 증거를 완료했고 A12-A15를 이 goal에서 계속한다.
+최종 검증은 F1~F4. K3S 구현은 사용자의 2026-10-16 goal 요청으로 승인되어 수행했다. 사용자는 AKS 대상으로 먼저 AX사업부문-인프라아키텍처팀을 골랐고 이후 Enterprise부문-아키텍처강화TF와 `rg-seonung-aks-test`로 정정했다. A0-A14는 실제 Azure 검증과 실험 증거를 완료했고, A15의 지연 과금 대사만 남았다. 현재 클러스터는 비용 pause로 중지 상태다.
 
 ### Dependency matrix
 | Todo | Depends on | Blocks | Can parallelize with |
