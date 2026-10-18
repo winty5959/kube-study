@@ -13,7 +13,7 @@ images:
   - name: ghcr.io/winty5959/album-aks-api
     newTag: aks-v1.0.1
   - name: ghcr.io/winty5959/album-aks-worker
-    newTag: aks-v1.0.0
+    newTag: aks-v1.0.1
   - name: ghcr.io/winty5959/album-aks-frontend
     newTag: aks-v1.0.0
 
