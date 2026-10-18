@@ -158,3 +158,15 @@ Repeated cost query and stop operation verification, 2026-10-18 13:22 UTC:
   before this query and ActualCost posting had not advanced. Repeat after the billing delay and
   after A12/E-13/E-14 before closing A15. The cluster remained Stopped/Succeeded in the follow-up
   inventory, with all nine disks Unattached.
+
+Current acceptance status, 2026-10-18 14:40 UTC:
+- The latest refreshed posted cost query is [A15-cost-refresh.txt](A15-cost-refresh.txt): 52 rows,
+  KRW 19,547.98 in the node resource group across partial Oct 16, full Oct 17, and partial Oct 18;
+  the AKS resource group returned zero rows. These dates do not form a final monthly invoice
+  comparison with the USD 354.83 public retail estimate, and no historical invoice FX was inferred.
+- AKS is `Stopped` / `Succeeded`; Azure lists zero VMSS instances and nine `Unattached` disks.
+  All nine disks mapped to Bound Retain PVs before the stop. No resource was deleted.
+- Both source K3S VMs remain present and deallocated; all three source managed disks remain present.
+  Current K3S service availability is not proven and no source resource was modified.
+- A12 is still gated by owner review/merge of PR #6. Post-merge prod smoke, E-13/E-14, and another
+  ActualCost query after release use and billing posting remain open.

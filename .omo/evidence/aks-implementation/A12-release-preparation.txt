@@ -111,3 +111,12 @@ PR #5 validation after the power-context and temporary-pause commits:
 - PR #5 remains open and has no submitted reviews. The passing CI does not validate the live prod
   route or release smoke. AKS restart/data recovery and a new immutable release remain gated on
   review/merge; A12 and E-13/E-14 are still open.
+
+## Current release gate, 2026-10-18 14:38 UTC
+
+The current aks-v1.0.1 release PR is [PR #6](https://github.com/winty5959/kube-study/pull/6).
+It remains OPEN with no owner review or reported PR checks. Current four-image alias digest
+comparison and the no-prod-Sync verification are in [A12-current-release.txt](A12-current-release.txt).
+The dev browser check is in [A8-browser-resumed.txt](A8-browser-resumed.txt). No prod Sync was
+run. AKS was stopped after this check while review is pending; see the latest status in
+[A15-cost-refresh.txt](A15-cost-refresh.txt).
