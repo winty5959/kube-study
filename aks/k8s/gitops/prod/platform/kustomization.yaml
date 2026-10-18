@@ -5,6 +5,14 @@ resources:
   - ../../../overlays/prod
   - smoke-access.yaml
 patches:
+  - target: {kind: IngressRoute, name: album-objects}
+    patch: |-
+      apiVersion: traefik.io/v1alpha1
+      kind: IngressRoute
+      metadata:
+        name: album-objects
+      spec:
+        ingressClassName: traefik
   - target: {kind: Deployment, name: api}
     patch: |-
       apiVersion: apps/v1
