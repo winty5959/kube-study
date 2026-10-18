@@ -40,10 +40,29 @@ summary in [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.t
 At the inventory check, the node resource group contained one current VM scale set at capacity two
 and nine managed disks, all attached; no unattached managed disks were listed. Cost rows include
 historical resource IDs that are no longer in that current VM scale-set listing. They were not
-deleted or treated as unused. A15 remains open until at least 24-48 hours of usage has posted and
-the retained data, node, and temporary-resource charges can be reconciled. Existing K3S
-development resource-group costs were queried separately in the AX subscription; those rows are
-summarized below.
+deleted or treated as unused. A15 remains open until the final release experiments finish and
+the posted node, retained-data, network, and temporary-resource charges can be reconciled.
+Existing K3S development resource-group costs were queried separately in the AX subscription;
+those rows are summarized below.
+
+## Refreshed AKS ActualCost (partial)
+
+An authenticated `ActualCost` / `PreTaxCost` query was run at approximately 2026-10-18 12:55 UTC,
+grouped by UTC usage date, resource ID, and meter category. The request covered
+2026-10-16T00:00Z through 2026-10-18T00:00Z. Azure returned 52 node-resource-group rows spanning
+Oct 16, Oct 17, and partial Oct 18; the AKS resource-group scope returned no rows.
+
+| UTC usage date | Node RG total (KRW) | Rows |
+|---|---:|---:|
+| 2026-10-16, partial after restart | 6,934.55 | 22 |
+| 2026-10-17 | 9,655.21 | 15 |
+| 2026-10-18, partial | 2,147.96 | 15 |
+
+The Oct 17 meter categories were Virtual Machines KRW 8,260.29, Storage KRW 712.13,
+Load Balancer KRW 574.31, Virtual Network KRW 107.27, and Bandwidth KRW 1.21. Oct 16 and Oct 18
+category breakdowns are preserved in [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.txt).
+These are posted usage amounts, not invoice-period totals. The Oct 18 row is partial, and the
+values must not be compared directly with the USD retail estimate or combined with K3S costs.
 
 ## Existing K3S development environment ActualCost
 

@@ -80,3 +80,44 @@ Documentation validation after this update:
 - `graphify update .` completed with exit status 0.
 - `git diff --check` completed with exit status 0.
 - Local links in the four updated/added Markdown files were checked; zero broken links were found.
+
+Refreshed AKS ActualCost query:
+- Query time: approximately 2026-10-18 12:55 UTC (21:55 KST).
+- Subscription: Enterprise부문-아키텍처강화TF, selected explicitly.
+- API: Microsoft.CostManagement/query, api-version 2023-03-01.
+- Type/metric: ActualCost / PreTaxCost; daily granularity; grouped by ResourceId and MeterCategory.
+- Requested time period: 2026-10-16T00:00:00Z through 2026-10-18T00:00:00Z.
+- AKS RG `rg-seonung-aks-test`: zero returned rows.
+- Node RG `MC_rg-seonung-aks-test_aks-kube-study_koreacentral`: 52 rows in KRW.
+
+Node resource-group totals by UTC usage date:
+| UTC usage date | KRW | Rows |
+|---|---:|---:|
+| 2026-10-16 (partial after restart) | 6,934.548243 | 22 |
+| 2026-10-17 | 9,655.210093 | 15 |
+| 2026-10-18 (partial) | 2,147.956266 | 15 |
+
+Meter totals by date (KRW):
+| UTC usage date | Bandwidth | Load Balancer | Storage | Virtual Machines | Virtual Network |
+|---|---:|---:|---:|---:|---:|
+| 2026-10-16 | 2.393719 | 435.512096 | 461.714050 | 5,957.256181 | 77.672197 |
+| 2026-10-17 | 1.212985 | 574.310265 | 712.129790 | 8,260.287702 | 107.269350 |
+| 2026-10-18, partial | 0.363233 | 167.417565 | 212.926574 | 1,735.962000 | 31.286894 |
+
+Updated inventory at approximately 2026-10-18 13:03 UTC:
+- AKS remains Running/Succeeded with two D4as_v5 nodes. Both album prod and platform Argo
+  Applications are Synced/Healthy at merge SHA `51b9ea9f3285866b26cfe4daa5db70b40a6c31d7`;
+  album-prod's most recent sync operation is Failed due to its PostSync thumbnail smoke.
+- Nine StandardSSD_LRS managed disks total 33 GiB; all nine are Attached, and zero are unattached.
+  The nine Kubernetes PVCs remain Bound: 13 GiB in album-dev, 13 GiB in album-prod, and 7 GiB
+  in monitoring. No PVC or Azure resource was deleted.
+- Prod API and frontend each have two Ready replicas; worker is idle at zero. MinIO, PostgreSQL,
+  and Redis are Ready. The generated failed smoke fixture was deleted through the API (204,
+  then GET 404), and both prod Redis queue lists are empty.
+- Oct 18 remains partial. A15 is still open pending corrected release smoke, E-13/E-14, and final
+  cost/inventory reconciliation. Costs from the existing K3S resource group remain separate.
+
+Documentation validation after the refreshed AKS query record:
+- `graphify update .` completed with exit status 0.
+- `git diff --check` completed with exit status 0.
+- Six changed Markdown files were checked for local file links; zero missing targets were found.
