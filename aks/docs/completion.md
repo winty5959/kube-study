@@ -13,7 +13,7 @@ have evidence. Only the final delayed-cost reconciliation remains open.
 | A12 release promotion | Complete | Owner merged [PR #6](https://github.com/winty5959/kube-study/pull/6). `platform-prod` and `album-prod` were manually synced; migration, PostSync upload/thumbnail/download/delete smoke, runtime digest comparison, and browser Album check passed. GitHub reported no separate review or PR checks. [Current A12 evidence](../../.omo/evidence/aks-implementation/A12-current-release.txt). |
 | A13 AKS experiments | Complete | E-01–E-15 are recorded; E-13 promotion and E-14 live rollback/manual Git reconciliation passed after A12. [Experiment results](experiments/README.md) and [A13 evidence](../../.omo/evidence/aks-implementation/A13-experiments.txt). |
 | A14 dev cutover rehearsal | Complete | [A14 evidence](../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt) |
-| A15 costs, final status and cleanup | In progress; delayed billing pending | The 18:10 UTC query remained unchanged from 18:00 and 17:48: zero AKS RG rows and 52 node RG rows / 21 resource IDs totaling KRW 20,640.730839. The Oct 18 amount was KRW 278.804205 higher than at 17:26. Daily grouping cannot prove exact interval attribution. Recheck after the 24-hour posting delay. Public retail estimates are USD 354.83/month for the six-PVC base, USD 356.63/month for the nine-PVC release configuration while running, and about USD 26.70/month for current stopped retained resources; none is an invoice amount. Inventory is reconciled; no cleanup candidate or deletion was authorized. [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt) and [latest refresh](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt). |
+| A15 costs, final status and cleanup | Complete; final cost calculation skipped at user direction | The latest posted ActualCost snapshot remains preliminary (AKS RG 0 rows; node RG 52 rows / 21 IDs / KRW 20,640.730839 across partial dates). It does not prove final posting or the release interval charge. No final invoice total or retail variance is claimed. The user directed that further cost calculation be skipped. Read-only Azure checks at 2026-10-19 00:23 UTC confirmed `Stopped` / `Succeeded`, VMSS capacity zero with no instances, nine retained `Unattached` PVC disks, and the Standard load balancer and static public IP still present. No resource was deleted. [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt) and [latest posted snapshot](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt). |
 
 ## Current Azure state
 
@@ -47,9 +47,13 @@ start success at 17:16:30.5467299 UTC and stop success at 17:30:59.575028 UTC; t
 events, not exact VM billing boundaries. Current retail estimates distinguish the USD 354.83/month
 six-PVC base, the USD 356.63/month nine-PVC release configuration while running, and the
 approximately USD 26.70/month stopped-resource run-rate. Those estimates are not invoice totals.
-A15 and overall goal completion remain open until delayed ActualCost captures and reconciles the
-interval; see
-[cost](cost.md), [cleanup inventory](cleanup.md), and [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+On 2026-10-19 the user directed that cost calculation be skipped. A15 is complete within that
+amended scope: the last posted ActualCost remains explicitly preliminary, no final invoice amount
+or estimate variance is claimed, and no new billing query or cost arithmetic was performed.
+Read-only Azure CLI checks at 00:23 UTC reconfirmed `Stopped` / `Succeeded`, a zero-capacity VMSS
+with no instances, nine `Unattached` PVC-derived StandardSSD_LRS disks, one Standard load balancer,
+and one Standard static public IP. No resource was deleted. See [cost](cost.md),
+[cleanup inventory](cleanup.md), and [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt).
 
 ## Project boundary
 

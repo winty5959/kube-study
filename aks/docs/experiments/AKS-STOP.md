@@ -84,5 +84,7 @@ Retain PVs requesting 33 GiB total. This is the expected stopped-node state, not
 
 At 17:26 UTC the latest ActualCost query still returned only 52 KRW rows for partial Oct 16,
 Oct 17, and partial Oct 18; it had no usage row for the 17:11–17:31 UTC restart/release/stop
-period. Repeat after the plan's 24–48 hour posting delay. The cost pause does not prove zero
-charges because disks, load balancer, public IP, and network resources remain.
+period. At the time this experiment note was written, a follow-up after the plan's 24–48 hour
+posting delay was planned. The user later directed that cost calculation be skipped, so no final
+ActualCost was collected. The cost pause does not prove zero charges because disks, load balancer,
+public IP, and network resources remain; see [final cost scope](../cost.md#a15-final-cost-scope).

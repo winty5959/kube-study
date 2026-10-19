@@ -155,8 +155,8 @@ Repeated cost query and stop operation verification, 2026-10-18 13:22 UTC:
   zero rows and the node resource group still had the same 52 rows and Oct 16–18 partial totals
   listed above. No new cost rows had posted since the 12:55 UTC query.
 - The repeated result does not show post-stop savings; the stop had completed only seven minutes
-  before this query and ActualCost posting had not advanced. Repeat after the billing delay and
-  after A12/E-13/E-14 before closing A15. The cluster remained Stopped/Succeeded in the follow-up
+  before this query and ActualCost posting had not advanced. At that time, another query after the
+  billing delay and A12/E-13/E-14 was planned. The cluster remained Stopped/Succeeded in the follow-up
   inventory, with all nine disks Unattached.
 
 Current acceptance status, 2026-10-18 14:40 UTC:
@@ -181,8 +181,9 @@ posted. It is preliminary, not a final post-test total. The VMSS remains capacit
 instances; all nine StandardSSD_LRS disks are Unattached and map to the nine Bound Retain PVs
 recorded just before stop (33 GiB). The load balancer and static Standard IP remain. Both source
 K3S VMs are deallocated and all three source disks remain present. No cleanup candidate was
-verified, and no resource was deleted. Repeat after 2026-10-19 17:31 UTC; do not infer zero charge
-or compare partial KRW with the USD 354.83 monthly retail estimate.
+verified, and no resource was deleted. The planned recheck after 2026-10-19 17:31 UTC was later
+superseded by the user's instruction to skip cost calculation. Do not infer zero charge or compare
+partial KRW with the USD 354.83 monthly retail estimate.
 
 Read-only Azure inventory immediately after the preliminary query reconfirmed one system VMSS
 configured for `Standard_D4as_v5` at capacity zero with no instances, nine `StandardSSD_LRS`
@@ -201,5 +202,21 @@ Latest pre-delay ActualCost recheck, 2026-10-18 18:18 UTC:
 - Results were unchanged from 18:10, 18:00, and 17:48 UTC. Partial daily grouping does not
   establish exact release-window attribution or prove all charges have posted.
 - The query ran before 24 hours elapsed after Azure's stop success at
-  `2026-10-18T17:30:59.575028Z`; it cannot close A15. Recheck after 2026-10-19 17:31 UTC and later
-  within the 48-hour window if the period remains incomplete.
+  `2026-10-18T17:30:59.575028Z`; at that time it could not close A15 and a later recheck was
+  planned. The user subsequently directed that cost calculation be skipped; see the final scope
+  decision below.
+
+## Final A15 scope decision, 2026-10-19
+
+The user explicitly instructed: “비용계산은 스킵해.” No additional Microsoft Cost Management
+query or cost arithmetic was performed after this direction. The 2026-10-18 18:18 UTC result above
+remains preliminary; it does not establish the complete restart/release/stop charge, a final invoice
+total, or a variance against the public USD retail estimates.
+
+Read-only Azure CLI checks at approximately 2026-10-19 00:23 UTC in
+`Enterprise부문-아키텍처강화TF` confirmed `aks-kube-study` as `Stopped` / `Succeeded`. The
+`Standard_D4as_v5` VMSS had capacity zero and `list-instances` returned an empty list. Its node
+resource group still contained nine PVC-derived `StandardSSD_LRS` disks, all `Unattached`, one
+Standard load balancer, and one Standard static public IP. The nine disks map to Bound Retain PVs
+captured immediately before stop (33 GiB requested total). No Azure or K3S resource was changed or
+deleted. A15 is closed within the user's amended scope; final actual cost remains unverified.

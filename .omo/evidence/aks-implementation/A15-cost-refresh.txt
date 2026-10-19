@@ -191,4 +191,11 @@ Read-only resource inventory around 18:16 UTC showed the AKS cluster stopped, it
 at 18:19 UTC reconfirmed `Stopped` / `Succeeded`. In the AX source subscription, both K3S VMs
 remained deallocated and all three source disks remained (two Reserved, one Unattached). No
 resource was changed or deleted. Because the 24-hour minimum after the 17:30:59.575028 UTC stop
-success event had not elapsed, this query does not close A15. Recheck after 2026-10-19 17:31 UTC.
+success event had not elapsed, this query did not close A15 at that time; a later query was planned.
+
+## Final A15 scope decision, 2026-10-19
+
+The user directed that cost calculation be skipped. No later ActualCost query or cost arithmetic was
+performed. This refresh remains the latest posted snapshot and is preliminary; it does not establish
+the final release-window amount or a final invoice total. The current disposition and later
+read-only Azure state check are recorded in `A15-cost.txt`.

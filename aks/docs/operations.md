@@ -68,8 +68,9 @@ events, not exact VM billing boundaries. A read-only cluster-state check at 18:1
 `Stopped` / `Succeeded`. Resource inventory around 18:16 UTC showed the `Standard_D4as_v5` VMSS at
 capacity zero with no instances, nine PVC-derived disks `Unattached`, one Standard load balancer,
 and one Standard static public IP. The disks mapped to Bound Retain PVs immediately before stop.
-No resource was deleted. The partial ActualCost query is pending the 24-hour posting delay; see [cost
-reconciliation](cost.md) and [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+No resource was deleted. At the user's direction, the final delayed-cost query and calculation were
+skipped; the existing partial ActualCost remains preliminary and does not establish zero charges.
+See [cost status](cost.md) and [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt).
 
 Before stopping, both namespaces' app Deployments were zero, API HPAs were absent, dev automated
 sync was paused, prod sync remained manual, both Redis queues were empty, no Job was active, dev

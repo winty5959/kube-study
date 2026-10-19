@@ -541,23 +541,26 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
 
 ### A15. 실제 비용·완료 증거·장기 미사용 정리
 
-- [ ] 완료
+- [x] 완료 — 사용자의 2026-10-19 비용 계산 생략 지시를 반영해 최종 ActualCost 대조 없이 완료 범위를 조정함.
 - **수정:** `aks/docs/{completion,cost,operations,cleanup}.md`, `aks/README.md`.
 - **순서:** (15a) 기능·CI/CD·15실험·복원·stop/start 결과 연결 →
-  (15b) 과금 반영 후 AKS RG와 node RG meter 조회 → (15c) 견적과 실제 차이 설명 →
-  (15d) 현재 running/stopped 상태·미사용 disk·임시 pool·fixture 정리 상태 기록.
-- 생성 후 24~48시간 지연된 실제 비용으로 VM/OS disk/PVC/LB/IP/I/O/egress/backup을 구분한다.
-  시작·종료/실험·surge 시간과 기존 build VM 비용도 기록한다. Free tier와 worker=0을
-  전체 무료로 표현하지 않는다. 예산·알림 수신자는 결과를 보고 정하며 임의 연락처를 만들지 않는다.
+  (15b) 기존 게시 ActualCost를 preliminary로 표시 → (15c) 사용자가 비용 계산을 생략하도록
+  지시해 추가 meter 조회와 견적 대비 실제 차이 계산은 생략 → (15d) 현재 stopped 상태,
+  보존 리소스와 fixture 정리 상태 기록.
+- 마지막 ActualCost는 2026-10-18 18:18 UTC 조회의 부분 기간 자료다. 사용자의 지시 뒤에는
+  추가 Azure Cost Management 조회나 비용 산술을 하지 않는다. 그 자료를 최종 청구액,
+  release 구간 원가, USD retail 견적 대비 차이로 표현하지 않는다. 기존 retail 값은
+  공개 가격 기준 추정이며 실제 invoice가 아니다.
 - 처음에는 수동 start/stop만 운영한다. 장기 미사용 삭제는 backup restore 증거와
   AKS 전용 resource inventory를 확인하고 별도 삭제 요청이 있을 때 수행한다.
   Retain disk는 cluster/PVC 삭제 후에도 과금될 수 있어 소유와 참조를 개별 확인한다.
-- **성공 검증:** A0~A14 상태·증거 링크, 누락/미실행, 실제 최소 SKU 판정과 비용,
+- **성공 검증:** A0~A14 상태·증거 링크, 누락/미실행, 비용 계산 생략 범위, 실제 최소 SKU 판정,
   실행 가능한 start/stop/복구·정리 지침이 일치한다. `git diff --check`, 문서 링크 검사,
   `graphify update .` 완료·exit status를 기록한다. Graphify 품질 검사는 완료 gate에 넣지 않는다.
-- **실패 검증·복구:** 과금 미반영이면 비용 확인 대기라고 적고 견적을 실제 청구로 표시하지 않는다.
-  소유 불명 disk·공유 리소스는 삭제하지 않는다. 완료 상태는 실제 검증된 범위로 제한한다.
-- **커밋 단위:** `docs(aks): close acceptance with costs and recovery evidence`.
+- **실패 검증·복구:** 부분 ActualCost를 최종 청구로 표시하지 않는다. 소유 불명 disk·공유
+  리소스는 삭제하지 않는다. 최종 비용은 검증 범위 밖으로 명시하고, 관찰된 리소스 상태만
+  기록한다.
+- **커밋 단위:** `docs(aks): close acceptance with scoped cost evidence`.
 
 ## 6. E-01~E-15 적용표
 
@@ -620,10 +623,13 @@ review와 PR status check 기록이 없으므로 이를 숨기지 않는다. mai
 마쳤다. E-13과 E-14도 AKS에서 실행하고 선언된 release로 복구했다. AKS는 실험 후
 2026-10-18 17:30:59 UTC에 `Stopped` / `Succeeded`가 됐다.
 
-A15의 마지막 예비 `ActualCost` 조회는 2026-10-18 17:48 UTC다. node resource group에 KRW
+A15의 마지막 예비 `ActualCost` 조회는 2026-10-18 18:18 UTC다. node resource group에 KRW
 20,640.730839, 52행이 있었고 AKS resource group에는 행이 없었다. Oct 18 부분 합계는
 17:26 UTC 조회보다 KRW 278.804205 증가했다. 일별 그룹만으로 17:11:29–17:30:59 UTC의
-정확한 사용 시각이나 전체 반영 여부를 증명할 수는 없다. 계획의 24–48시간 게시 지연을
-충족하려면 2026-10-19 17:31 UTC 이후 다시 조회해야 한다. 따라서 A15 비용 확정과 이 goal의
-전체 완료는 그 결과를 대조할 때까지 열어 둔다.
+정확한 사용 시각이나 전체 반영 여부를 증명할 수는 없다. 2026-10-19 사용자가 비용 계산을
+생략하도록 지시했으므로 추가 조회와 견적 대비 계산은 하지 않았다. A15는 그 사용자 지정
+범위로 완료했으며, 최종 청구액은 확정하지 않았다. 2026-10-19 00:23 UTC 읽기 전용 Azure
+확인에서 AKS는 `Stopped` / `Succeeded`, VMSS capacity는 0이고 인스턴스는 없었다. PVC에서
+온 StandardSSD_LRS disk 9개는 `Unattached`, Standard load balancer와 static public IP는
+존재했다. 삭제 후보가 검증되지 않아 어떤 Azure 리소스도 삭제하지 않았다.
 Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.

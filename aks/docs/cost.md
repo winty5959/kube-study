@@ -13,7 +13,9 @@ in the queried regions, including Korea Central.
 These are public retail estimates, not the Enterprise agreement invoice. They exclude discounts,
 tax, actual storage I/O, traffic, backup, and delayed billing adjustments. An AKS stop removes
 node compute charges while stopped; retained disks, public IPs, and other resources can continue
-to incur charges. A15 records the actual cost query after Azure billing has had time to post.
+to incur charges. At the user's direction, A15 did not run a final delayed-cost query or calculation.
+The latest posted ActualCost below remains preliminary; no final invoice amount or estimate variance
+is claimed. See [final A15 disposition](#a15-final-cost-scope).
 
 ## Initial posted ActualCost (partial)
 
@@ -40,8 +42,9 @@ summary in [A15 cost evidence](../../.omo/evidence/aks-implementation/A15-cost.t
 At the inventory check, the node resource group contained one current VM scale set at capacity two
 and nine managed disks, all attached; no unattached managed disks were listed. Cost rows include
 historical resource IDs that are no longer in that current VM scale-set listing. They were not
-deleted or treated as unused. A15 remains open until the final release experiments finish and
-the posted node, retained-data, network, and temporary-resource charges can be reconciled.
+deleted or treated as unused. At this early inventory timestamp, final release experiments and
+ActualCost reconciliation were pending. The user later directed that final cost calculation be
+skipped; see the final A15 disposition at the end of this document.
 Existing K3S development resource-group costs were queried separately in the AX subscription;
 those rows are summarized below.
 
@@ -68,13 +71,14 @@ At 2026-10-18 13:17 UTC, the cluster was `Stopped` / `Succeeded` to pause node c
 while PR #5 awaits review. The ActualCost query above was made before the stop and does not measure
 the post-stop period. Retained disks, the public IP, and other resources may continue to incur
 charges. Nine disks remain provisioned (33 GiB); the Azure inventory currently reports them
-`Unattached` while the nodes are stopped. Query ActualCost again after the release experiments and
-allow for billing-posting delay before closing A15.
+`Unattached` while the nodes are stopped. At that point a later query was planned after the release
+experiments and posting delay; the final A15 disposition below records the user's later instruction
+to skip cost calculation.
 
 A repeat ActualCost query at 2026-10-18 13:22 UTC returned the same 52 node-resource-group rows
 and the same partial Oct 16–18 totals; the AKS resource group still returned zero rows. No new
 usage rows had posted since the prior query. This short-interval result does not measure the
-stop's cost impact; retain the 24–48 hour posting wait and repeat after release experiments.
+stop's cost impact. A later user instruction superseded the planned 24–48 hour follow-up.
 
 ## Existing K3S development environment ActualCost
 
@@ -144,7 +148,7 @@ KRW returned KRW 289.327 per hour using the API's current retail currency conver
 two-node 730-hour estimate remains USD 309.52 for compute and USD 354.83 including the existing
 fixed-item estimate. The localized KRW rate is not the historical FX or negotiated rate used on
 the subscription invoice. These partial posted amounts therefore do not establish a complete
-monthly variance; repeat after the release exercises and billing delay.
+monthly variance. A later user instruction superseded the planned final cost query.
 
 At 2026-10-18 14:34 UTC, AKS was Running/Succeeded with two D4as_v5 nodes. Nine attached
 StandardSSD_LRS disks mapped to nine Bound Retain PVs totaling 33 GiB. The AKS resource group
@@ -157,7 +161,8 @@ The AX subscription K3S dev and prod VMs read as deallocated in the 14:34 UTC in
 managed disks remained present. This project did not change or delete the K3S source. The AKS
 cluster stop was requested at 14:38 UTC while A12 review is pending. Azure confirmed `Stopped` /
 `Succeeded` at 14:40 UTC. Node compute is paused; retained disks and network resources may still
-accrue charges. A15 remains open for final release testing and delayed ActualCost reconciliation.
+accrue charges. At this snapshot, final release testing and delayed ActualCost reconciliation were
+still pending; later A15 status is recorded at the end of this document.
 
 ## Release-window ActualCost and final pause
 
@@ -188,11 +193,10 @@ nine Bound Retain PVCs totaling 33 GiB. The Standard load balancer and static St
 remain provisioned and may continue to incur charges. No resource was deleted. See [latest A15
 evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
 
-A15 stays open until ActualCost has had the plan's 24–48 hours to post the restart/release/stop
-usage. The earliest recheck is after 2026-10-19 17:31 UTC, 24 hours after the stop success event;
-use a later query if the new usage date
-has not appeared. Then reconcile VM, OS disk, PVC, load balancer, IP, I/O, egress, and any backup
-meters against the retail estimate without combining the AX K3S scope.
+A15 was still open at this snapshot while ActualCost had not had the plan's 24–48 hours to post the
+restart/release/stop usage. The planned recheck was after 2026-10-19 17:31 UTC; the later user
+instruction to skip cost calculation superseded that plan. See the final disposition below. If a
+future owner requests reconciliation, use the query details in the evidence file.
 
 ## Preliminary post-stop ActualCost, 2026-10-18 17:48 UTC
 
@@ -215,7 +219,7 @@ Compared with the 17:26 UTC query, the partial Oct 18 total increased by KRW 278
 Virtual Machines KRW 173.596200, Storage KRW 48.208733, Load Balancer KRW 47.951394, Virtual
 Network KRW 8.939112, and Bandwidth KRW 0.108766. Daily grouping cannot identify exact usage
 timestamps or prove that every charge from the 17:11:29–17:30:59 UTC release window has posted.
-Treat this as preliminary; re-query after 2026-10-19 17:31 UTC and later if needed. The KRW
+Treat this as preliminary. The user later instructed that no further cost query be run. The KRW
 ActualCost period is partial and must not be compared directly with the USD 354.83/month retail
 estimate or treated as a full invoice variance.
 
@@ -247,5 +251,19 @@ KRW 20,640.730839. The node-group daily totals were partial Oct 16 KRW 6,934.548
 9,655.210093, and partial Oct 18 KRW 4,050.972503. Meter totals are Virtual Machines KRW
 17,515.871683, Storage KRW 1,556.645440, Load Balancer KRW 1,320.887907, Virtual Network KRW
 243.045778, and Bandwidth KRW 4.280031. This query preceded the 24-hour posting minimum, so it
-does not establish that the short release interval is fully represented. Recheck after
-2026-10-19 17:31 UTC. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+does not establish that the short release interval is fully represented. No later query was run
+because the user directed that cost calculation be skipped. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+
+## A15 final cost scope
+
+On 2026-10-19 the user explicitly instructed: “비용계산은 스킵해.” No additional Azure
+Cost Management query or cost arithmetic was performed after that instruction. The 2026-10-18
+18:18 UTC snapshot remains preliminary: it covers partial usage dates, cannot attribute the release
+interval, and is not a final invoice. Do not report a final post-test charge or variance against the
+existing USD retail estimates.
+
+Read-only Azure checks at 2026-10-19 00:23 UTC confirmed `aks-kube-study` was `Stopped` /
+`Succeeded`, its `Standard_D4as_v5` VMSS had capacity zero and no instances, and the node resource
+group retained nine PVC-derived `StandardSSD_LRS` disks in `Unattached` state, one Standard load
+balancer, and one Standard static public IP. The nine disks map to the Bound Retain PVs captured
+immediately before stop (33 GiB requested total). No Azure or K3S resource was deleted.

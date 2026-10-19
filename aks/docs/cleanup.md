@@ -66,7 +66,7 @@ Their current service availability is not proven by the earlier A14 rehearsal.
 
 The latest posted ActualCost snapshot is partial: the AKS resource group returned no rows and the
 node resource group returned 52 KRW rows through partial Oct 18. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt)
-and [cost reconciliation](cost.md). Repeat the query after release exercises and posting delay.
+and [cost status](cost.md). At the time, a later query was planned; the user's final cost-skip instruction is recorded below.
 
 At 2026-10-18 14:40 UTC, a stop requested while waiting for owner review of PR #6 reached
 `powerState=Stopped` and `provisioningState=Succeeded`. The pre-stop disk-to-PV/PVC mapping remains the
@@ -103,8 +103,8 @@ HPA metrics before manual sync.
 The preliminary ActualCost query at 17:48 UTC returned 52 node resource group rows totaling KRW
 20,640.730839 and zero AKS resource group rows. The partial Oct 18 amount increased by KRW
 278.804205 from the 17:26 UTC query, but daily grouping cannot attribute it to exact minutes or
-prove that the entire 17:11–17:31 UTC restart/release/stop period has posted. Repeat after the
-24–48 hour posting delay before final cost reconciliation or a deletion decision. The AKS
+prove that the entire 17:11–17:31 UTC restart/release/stop period has posted. At that time, a repeat
+after the 24–48 hour posting delay was planned before final cost reconciliation or a deletion decision. The AKS
 inventory does not identify an unused disk or temporary pool eligible for cleanup.
 
 The AX source check showed both `vm-kube-dev` and `vm-kube-prod` present and deallocated. All
@@ -133,6 +133,16 @@ The separate daily ActualCost query at 18:18 UTC covered 2026-10-16T00:00Z throu
 node RG returned 52 KRW rows across 21 resource IDs totaling KRW 20,640.730839: partial Oct 16
 KRW 6,934.548243, Oct 17 KRW 9,655.210093, and partial Oct 18 KRW 4,050.972503. These results
 were unchanged from 18:10 UTC and were captured before 24 hours had elapsed from the 17:30:59.575028
-UTC stop success event. They cannot close A15 or prove exact release-window attribution. Recheck
-after 2026-10-19 17:31 UTC; keep the retained disks and other resources until a separate cleanup
-decision.
+UTC stop success event. At that time they could not close A15 or prove exact release-window
+attribution, and a later query was planned. The user subsequently directed that cost calculation be
+skipped; see the final disposition below. Keep the retained disks and other resources until a
+separate cleanup decision.
+
+## Final A15 disposition
+
+On 2026-10-19 the user directed that cost calculation be skipped. No further ActualCost query or
+cost arithmetic was performed. The last posted snapshot remains preliminary and is not a final
+invoice or an estimate variance. A read-only Azure check at 00:23 UTC confirmed AKS
+`Stopped` / `Succeeded`, VMSS capacity zero with no instances, nine PVC-derived StandardSSD_LRS
+disks `Unattached`, one Standard load balancer, and one Standard static public IP. The disk-to-PV
+ownership mapping was captured immediately before stop. No Azure or K3S resource was deleted.
