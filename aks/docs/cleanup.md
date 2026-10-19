@@ -141,8 +141,11 @@ separate cleanup decision.
 ## Final A15 disposition
 
 On 2026-10-19 the user directed that cost calculation be skipped. No further ActualCost query or
-cost arithmetic was performed. The last posted snapshot remains preliminary and is not a final
-invoice or an estimate variance. A read-only Azure check at 00:23 UTC confirmed AKS
+cost arithmetic was performed. The latest recorded 18:27 UTC snapshot remains preliminary and is
+not a final invoice or an estimate variance. A read-only Azure check at 00:23 UTC confirmed AKS
 `Stopped` / `Succeeded`, VMSS capacity zero with no instances, nine PVC-derived StandardSSD_LRS
-disks `Unattached`, one Standard load balancer, and one Standard static public IP. The disk-to-PV
-ownership mapping was captured immediately before stop. No Azure or K3S resource was deleted.
+disks `Unattached`, one Standard load balancer, and one Standard static public IP. A 06:17 UTC
+read-only Azure disk tag query mapped each disk ID to its PV name and exact PVC namespace/name.
+Immediately before stop, Kubernetes reported the nine claims Bound to Retain PVs; live Kubernetes
+bindings are not claimed while stopped. See the [per-disk A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt#per-disk-pvc-ownership-evidence-2026-10-19-0617-utc).
+No Azure or K3S resource was deleted.

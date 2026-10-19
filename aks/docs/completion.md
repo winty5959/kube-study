@@ -14,7 +14,7 @@ ActualCost remains preliminary, and no final invoice amount or retail variance i
 | A12 release promotion | Complete | Owner merged [PR #6](https://github.com/winty5959/kube-study/pull/6). `platform-prod` and `album-prod` were manually synced; migration, PostSync upload/thumbnail/download/delete smoke, runtime digest comparison, and browser Album check passed. GitHub reported no separate review or PR checks. [Current A12 evidence](../../.omo/evidence/aks-implementation/A12-current-release.txt). |
 | A13 AKS experiments | Complete | E-01–E-15 are recorded; E-13 promotion and E-14 live rollback/manual Git reconciliation passed after A12. [Experiment results](experiments/README.md) and [A13 evidence](../../.omo/evidence/aks-implementation/A13-experiments.txt). |
 | A14 dev cutover rehearsal | Complete | [A14 evidence](../../.omo/evidence/aks-implementation/A14-cutover-rehearsal.txt) |
-| A15 costs, final status and cleanup | Complete; final cost calculation skipped at user direction | The latest posted ActualCost snapshot remains preliminary (AKS RG 0 rows; node RG 52 rows / 21 IDs / KRW 20,640.730839 across partial dates). It does not prove final posting or the release interval charge. No final invoice total or retail variance is claimed. The user directed that further cost calculation be skipped. Read-only Azure checks at 2026-10-19 00:23 UTC confirmed `Stopped` / `Succeeded`, VMSS capacity zero with no instances, nine retained `Unattached` PVC disks, and the Standard load balancer and static public IP still present. No resource was deleted. [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt) and [latest posted snapshot](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt). |
+| A15 costs, final status and cleanup | Complete; final cost calculation skipped at user direction | The latest recorded 18:27 UTC ActualCost snapshot remains preliminary (AKS RG 0 rows; node RG 52 rows / 21 IDs / KRW 20,640.730839 across partial dates). It does not prove final posting or the release interval charge. No final invoice total or retail variance is claimed. The user directed that further cost calculation be skipped. Read-only Azure checks at 2026-10-19 00:23 UTC confirmed `Stopped` / `Succeeded`, VMSS capacity zero with no instances, nine retained `Unattached` PVC disks, and the Standard load balancer and static public IP still present. A later read-only tag query recorded the exact disk-to-PV-to-PVC mapping; the immediately pre-stop Kubernetes observation had all nine claims Bound to Retain PVs. No resource was deleted. [A15 evidence](../../.omo/evidence/aks-implementation/A15-cost.txt), [per-disk mapping](../../.omo/evidence/aks-implementation/A15-cost.txt#per-disk-pvc-ownership-evidence-2026-10-19-0617-utc), and [latest detailed snapshot](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt). |
 
 ## Current Azure state
 
@@ -39,11 +39,12 @@ prod VMs were still deallocated and all three source disks remained present at t
 read-only inventory. No K3S resource or real user traffic was changed. A14 remains a dev-only
 cutover rehearsal; it does not prove current K3S service availability.
 
-The 18:18 UTC ActualCost query returned zero AKS resource-group rows and 52 node resource-group
+The 18:18 UTC detailed ActualCost query returned zero AKS resource-group rows and 52 node resource-group
 rows / 21 resource IDs totaling KRW 20,640.730839 across partial Oct 16, Oct 17, and partial
 Oct 18, unchanged from 18:10, 18:00, and 17:48. The Oct 18 total was KRW 278.804205 higher than
 at 17:26 UTC, including KRW 173.596200 in Virtual Machines. Daily grouping cannot establish exact
-usage timestamps or prove the entire 17:11–17:31 UTC window is posted. Activity Log records AKS
+usage timestamps or prove the entire 17:11–17:31 UTC window is posted. Ledger records identical
+rechecks through 18:27 UTC, the latest recorded snapshot. Activity Log records AKS
 start success at 17:16:30.5467299 UTC and stop success at 17:30:59.575028 UTC; these are operation
 events, not exact VM billing boundaries. Current retail estimates distinguish the USD 354.83/month
 six-PVC base, the USD 356.63/month nine-PVC release configuration while running, and the

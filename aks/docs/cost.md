@@ -245,20 +245,23 @@ retail run-rate estimate of about `$26.70/month`, excluding disk operations, loa
 processing, egress, backup, taxes, and contract discounts. It is not a predicted or posted invoice
 amount.
 
-The separate `ActualCost` query at 2026-10-18 18:18 UTC remained unchanged from 18:10, 18:00, and
+The detailed `ActualCost` query at 2026-10-18 18:18 UTC remained unchanged from 18:10, 18:00, and
 17:48: zero AKS resource-group rows and 52 node-resource-group rows / 21 resource IDs totaling
 KRW 20,640.730839. The node-group daily totals were partial Oct 16 KRW 6,934.548243, Oct 17 KRW
 9,655.210093, and partial Oct 18 KRW 4,050.972503. Meter totals are Virtual Machines KRW
 17,515.871683, Storage KRW 1,556.645440, Load Balancer KRW 1,320.887907, Virtual Network KRW
 243.045778, and Bandwidth KRW 4.280031. This query preceded the 24-hour posting minimum, so it
-does not establish that the short release interval is fully represented. No later query was run
-because the user directed that cost calculation be skipped. See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt).
+does not establish that the short release interval is fully represented. Ledger records identical
+rechecks at 18:24 and 18:27 UTC; 18:27 UTC is the latest recorded snapshot. No Cost Management
+query or cost arithmetic was performed after the user directed that cost calculation be skipped.
+See [A15 refresh evidence](../../.omo/evidence/aks-implementation/A15-cost-refresh.txt) and
+[per-disk ownership evidence](../../.omo/evidence/aks-implementation/A15-cost.txt).
 
 ## A15 final cost scope
 
 On 2026-10-19 the user explicitly instructed: “비용계산은 스킵해.” No additional Azure
-Cost Management query or cost arithmetic was performed after that instruction. The 2026-10-18
-18:18 UTC snapshot remains preliminary: it covers partial usage dates, cannot attribute the release
+Cost Management query or cost arithmetic was performed after that instruction. The latest recorded
+2026-10-18 18:27 UTC snapshot remains preliminary: it covers partial usage dates, cannot attribute the release
 interval, and is not a final invoice. Do not report a final post-test charge or variance against the
 existing USD retail estimates.
 

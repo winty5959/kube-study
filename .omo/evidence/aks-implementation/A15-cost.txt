@@ -191,7 +191,7 @@ disks `Unattached`, one Standard load balancer, and one Standard static public I
 names match the pre-stop PVC-derived managed disk inventory and remain present. No Azure resource
 or K3S resource was deleted.
 
-Latest pre-delay ActualCost recheck, 2026-10-18 18:18 UTC:
+Detailed pre-delay ActualCost query, 2026-10-18 18:18 UTC:
 - Microsoft.CostManagement/query API `2023-03-01`; `ActualCost` / `PreTaxCost`; daily; grouped by
   `ResourceId` and `MeterCategory`; requested period 2026-10-16T00:00Z through 2026-10-21T00:00Z.
 - `rg-seonung-aks-test`: zero rows. Node RG: 52 rows / 21 resource IDs, all KRW.
@@ -209,9 +209,12 @@ Latest pre-delay ActualCost recheck, 2026-10-18 18:18 UTC:
 ## Final A15 scope decision, 2026-10-19
 
 The user explicitly instructed: “비용계산은 스킵해.” No additional Microsoft Cost Management
-query or cost arithmetic was performed after this direction. The 2026-10-18 18:18 UTC result above
-remains preliminary; it does not establish the complete restart/release/stop charge, a final invoice
-total, or a variance against the public USD retail estimates.
+query or cost arithmetic was performed after this direction. Ledger records show identical repeated
+queries at 18:24 and 18:27 UTC on 2026-10-18. Both returned zero AKS RG rows and 52 node RG rows /
+21 resource IDs totaling KRW 20,640.730839, with the same partial-date breakdown above. The 18:27
+UTC result is the latest recorded snapshot. These preliminary results do not establish the complete
+restart/release/stop charge, a final invoice total, or a variance against the public USD retail
+estimates.
 
 Read-only Azure CLI checks at approximately 2026-10-19 00:23 UTC in
 `Enterprise부문-아키텍처강화TF` confirmed `aks-kube-study` as `Stopped` / `Succeeded`. The
@@ -220,3 +223,29 @@ resource group still contained nine PVC-derived `StandardSSD_LRS` disks, all `Un
 Standard load balancer, and one Standard static public IP. The nine disks map to Bound Retain PVs
 captured immediately before stop (33 GiB requested total). No Azure or K3S resource was changed or
 deleted. A15 is closed within the user's amended scope; final actual cost remains unverified.
+
+### Per-disk PVC ownership evidence, 2026-10-19 06:17 UTC
+
+With AKS still stopped, this read-only Azure CLI query returned the disk tags used to map each disk
+to its PV and claim:
+
+```sh
+az disk list --subscription ac84ab97-619a-420e-a67d-b861449e63f0 -g MC_rg-seonung-aks-test_aks-kube-study_koreacentral --query '[].{name:name,state:diskState,tags:tags}' -o json
+```
+
+Exit status: 0. Each `kubernetes.io-created-for-pv-name` tag matches the Azure disk name. PVC name
+and namespace come from the corresponding `kubernetes.io-created-for-pvc-*` tags. Immediately
+before stop, Kubernetes reported these nine claims Bound to Retain PVs; this tag query does not
+claim live Kubernetes bindings while the cluster is stopped.
+
+| Azure disk / PV | PVC namespace/name | Current disk state |
+|---|---|---|
+| `pvc-04efd531-3102-4ed2-81f7-029c6efa6e3f` | `album-prod/data-redis-0` | Unattached |
+| `pvc-0e0b0ae4-6011-4158-9453-827b01950727` | `album-prod/data-postgres-0` | Unattached |
+| `pvc-11cfed44-89bf-48e7-97e0-71ef14c77f99` | `album-dev/data-minio-0` | Unattached |
+| `pvc-1c4076b5-79ac-4a80-af38-6b5b5e3f8974` | `monitoring/monitoring-grafana` | Unattached |
+| `pvc-30227fb4-efe7-495b-84b4-fbe179880f4c` | `album-dev/data-redis-0` | Unattached |
+| `pvc-54b047b5-92a7-4d02-943f-0526f51bf45e` | `album-dev/data-postgres-0` | Unattached |
+| `pvc-6d880640-24c0-4903-93a1-290bc29c2d7a` | `album-prod/data-minio-0` | Unattached |
+| `pvc-b66c54c2-7cf8-4871-b4bd-b6a310a6befd` | `monitoring/alertmanager-monitoring-kube-prometheus-alertmanager-db-alertmanager-monitoring-kube-prometheus-alertmanager-0` | Unattached |
+| `pvc-d9ef043b-b8ab-4000-9c15-eea57aa453a4` | `monitoring/prometheus-monitoring-kube-prometheus-prometheus-db-prometheus-monitoring-kube-prometheus-prometheus-0` | Unattached |

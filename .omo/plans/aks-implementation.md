@@ -547,7 +547,7 @@ A12를 생략하면 dev 환경 완료만 보고하며 E-13/E-14까지 전체 완
   (15b) 기존 게시 ActualCost를 preliminary로 표시 → (15c) 사용자가 비용 계산을 생략하도록
   지시해 추가 meter 조회와 견적 대비 실제 차이 계산은 생략 → (15d) 현재 stopped 상태,
   보존 리소스와 fixture 정리 상태 기록.
-- 마지막 ActualCost는 2026-10-18 18:18 UTC 조회의 부분 기간 자료다. 사용자의 지시 뒤에는
+- 마지막 기록 ActualCost는 2026-10-18 18:27 UTC 조회의 부분 기간 자료다. 사용자의 지시 뒤에는
   추가 Azure Cost Management 조회나 비용 산술을 하지 않는다. 그 자료를 최종 청구액,
   release 구간 원가, USD retail 견적 대비 차이로 표현하지 않는다. 기존 retail 값은
   공개 가격 기준 추정이며 실제 invoice가 아니다.
@@ -623,13 +623,14 @@ review와 PR status check 기록이 없으므로 이를 숨기지 않는다. mai
 마쳤다. E-13과 E-14도 AKS에서 실행하고 선언된 release로 복구했다. AKS는 실험 후
 2026-10-18 17:30:59 UTC에 `Stopped` / `Succeeded`가 됐다.
 
-A15의 마지막 예비 `ActualCost` 조회는 2026-10-18 18:18 UTC다. node resource group에 KRW
-20,640.730839, 52행이 있었고 AKS resource group에는 행이 없었다. Oct 18 부분 합계는
+A15의 마지막 예비 `ActualCost` 조회는 2026-10-18 18:27 UTC다. 18:18 UTC 상세 결과와 동일하게
+node resource group에 KRW 20,640.730839, 52행이 있었고 AKS resource group에는 행이 없었다. Oct 18 부분 합계는
 17:26 UTC 조회보다 KRW 278.804205 증가했다. 일별 그룹만으로 17:11:29–17:30:59 UTC의
 정확한 사용 시각이나 전체 반영 여부를 증명할 수는 없다. 2026-10-19 사용자가 비용 계산을
 생략하도록 지시했으므로 추가 조회와 견적 대비 계산은 하지 않았다. A15는 그 사용자 지정
 범위로 완료했으며, 최종 청구액은 확정하지 않았다. 2026-10-19 00:23 UTC 읽기 전용 Azure
-확인에서 AKS는 `Stopped` / `Succeeded`, VMSS capacity는 0이고 인스턴스는 없었다. PVC에서
-온 StandardSSD_LRS disk 9개는 `Unattached`, Standard load balancer와 static public IP는
+확인에서 AKS는 `Stopped` / `Succeeded`, VMSS capacity는 0이고 인스턴스는 없었다. 읽기 전용
+Azure disk tags query에서 StandardSSD_LRS disk 9개의 ID-to-PV-to-PVC 매핑을 확인했다. 직전
+Kubernetes 관측은 claims Bound/Retain이었고 현재 디스크는 `Unattached`다. Standard load balancer와 static public IP는
 존재했다. 삭제 후보가 검증되지 않아 어떤 Azure 리소스도 삭제하지 않았다.
 Live K3S 트래픽/데이터 전환과 원본 환경 삭제는 이 goal의 종료 조건이 아니다.
