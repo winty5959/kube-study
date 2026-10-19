@@ -1,8 +1,9 @@
 # AKS acceptance and completion status
 
-**Status: in progress, not complete.** The repository migration, AKS foundation, dev workload,
-recovery exercises, A12 release promotion, A13 experiments, and the A14 dev-only cutover rehearsal
-have evidence. Only the final delayed-cost reconciliation remains open.
+**Status: complete within the user-approved scope.** The repository migration, AKS foundation, dev
+workload, recovery exercises, A12 release promotion, A13 experiments, and the A14 dev-only cutover
+rehearsal have evidence. The user directed that final cost calculation be skipped; the last posted
+ActualCost remains preliminary, and no final invoice amount or retail variance is claimed.
 
 ## Acceptance ledger
 
